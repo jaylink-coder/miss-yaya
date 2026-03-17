@@ -1,0 +1,38 @@
+# Yaya-7B Model Configuration
+# Primary target model — competitive with LLaMA-3 7B class
+
+model_name: "yaya-7b"
+model_type: "yaya"
+
+# Architecture
+architecture:
+  vocab_size: 64000
+  hidden_size: 4096
+  intermediate_size: 11008       # ~2.69x hidden_size for SwiGLU
+  num_hidden_layers: 32
+  num_attention_heads: 32
+  num_key_value_heads: 8          # GQA: 8 KV heads
+  max_position_embeddings: 8192
+  rope_theta: 500000.0
+  rms_norm_eps: 1.0e-5
+  tie_word_embeddings: false
+  hidden_act: "silu"
+  attention_dropout: 0.0
+  attention_bias: false
+  mlp_bias: false
+
+# Vision encoder
+vision:
+  enabled: true
+  image_size: 336
+  patch_size: 14
+  vision_hidden_size: 1024
+  vision_layers: 24
+  vision_heads: 16
+  projection_dim: 4096
+
+# Precision
+dtype: "bfloat16"
+
+# Initialization
+initializer_range: 0.02

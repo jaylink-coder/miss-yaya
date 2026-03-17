@@ -1,0 +1,177 @@
+# Data Sources Configuration — Yaya AI
+# Defines all datasets, categories, and mix ratios for pre-training
+#
+# Categories and target mix ratios for 1.5B PoC:
+#   web_text: 45%   — general knowledge
+#   code: 12%       — programming + logical reasoning
+#   books: 10%      — coherent long-form text
+#   academic: 8%    — technical knowledge
+#   math: 5%        — mathematical reasoning
+#   conversation: 5% — dialog capability
+#   wikipedia: 5%    — factual backbone
+#   domain: 10%     — business/enterprise
+
+mix_ratios:
+  web_text: 0.45
+  code: 0.12
+  books: 0.10
+  academic: 0.08
+  math: 0.05
+  conversation: 0.05
+  wikipedia: 0.05
+  domain: 0.10
+
+# Target token counts (for 1.5B PoC: ~100B tokens)
+target_tokens:
+  total: 100_000_000_000
+  web_text: 45_000_000_000
+  code: 12_000_000_000
+  books: 10_000_000_000
+  academic: 8_000_000_000
+  math: 5_000_000_000
+  conversation: 5_000_000_000
+  wikipedia: 5_000_000_000
+  domain: 10_000_000_000
+
+# Dataset definitions
+datasets:
+  # ── Web Text ──
+  slimpajama:
+    name: cerebras/SlimPajama-627B
+    source: huggingface
+    category: web_text
+    format: jsonl
+    text_field: text
+    splits: [train]
+    description: "627B token filtered web corpus (RedPajama cleaned)"
+    priority: 1
+
+  fineweb:
+    name: HuggingFaceFW/fineweb
+    source: huggingface
+    category: web_text
+    format: parquet
+    text_field: text
+    splits: [train]
+    description: "15T token high-quality web corpus"
+    priority: 2
+
+  # ── Code ──
+  the_stack_v2:
+    name: bigcode/the-stack-v2-dedup
+    source: huggingface
+    category: code
+    format: parquet
+    text_field: content
+    splits: [train]
+    description: "Permissively licensed deduplicated source code"
+    priority: 1
+    filters:
+      languages: [python, javascript, typescript, java, c, cpp, go, rust, sql, bash]
+
+  # ── Books ──
+  gutenberg:
+    name: manu/project_gutenberg
+    source: huggingface
+    category: books
+    format: jsonl
+    text_field: text
+    splits: [train]
+    description: "Public domain books from Project Gutenberg"
+    priority: 1
+
+  # ── Academic ──
+  arxiv:
+    name: togethercomputer/RedPajama-Data-1T
+    source: huggingface
+    category: academic
+    format: jsonl
+    text_field: text
+    splits: [train]
+    subset: arxiv
+    description: "ArXiv academic papers"
+    priority: 1
+
+  pes2o:
+    name: allenai/peS2o
+    source: huggingface
+    category: academic
+    format: jsonl
+    text_field: text
+    splits: [train]
+    description: "Semantic Scholar open-access papers"
+    priority: 2
+
+  # ── Math ──
+  openwebmath:
+    name: open-web-math/open-web-math
+    source: huggingface
+    category: math
+    format: jsonl
+    text_field: text
+    splits: [train]
+    description: "Mathematical web pages filtered for quality"
+    priority: 1
+
+  # ── Conversation ──
+  oasst:
+    name: OpenAssistant/oasst2
+    source: huggingface
+    category: conversation
+    format: jsonl
+    text_field: text
+    splits: [train]
+    description: "Open Assistant human-written conversations"
+    priority: 1
+
+  # ── Wikipedia ──
+  wikipedia:
+    name: wikimedia/wikipedia
+    source: huggingface
+    category: wikipedia
+    format: parquet
+    text_field: text
+    splits: [train]
+    subset: "20231101.en"
+    description: "English Wikipedia dump"
+    priority: 1
+
+  # ── Domain (Business/Finance) ──
+  finweb:
+    name: sujet-ai/Sujet-Finance-Instruct-177k
+    source: huggingface
+    category: domain
+    format: jsonl
+    text_field: text
+    splits: [train]
+    description: "Financial domain text"
+    priority: 2
+
+# Processing settings
+processing:
+  min_doc_length: 100
+  max_doc_length: 1000000
+  min_alpha_ratio: 0.5
+  max_special_char_ratio: 0.3
+  max_repetition_ratio: 0.5
+  dedup_method: minhash  # exact, minhash
+  minhash_num_perm: 128
+  minhash_threshold: 0.8
+  language: en
+  remove_pii: true
+  remove_urls: true
+  quality_threshold: 0.5
+
+# Tokenization settings
+tokenization:
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  shard_size: 100_000_000  # tokens per shard
+  dtype: uint16
+  num_workers: 8
+
+# Storage
+storage:
+  raw_dir: data/raw
+  processed_dir: data/processed
+  cache_dir: data/cache
+  stats_dir: data/stats

@@ -1,0 +1,45 @@
+# Training Configuration — Yaya-Tiny (Pipeline Validation)
+# Runs on CPU or single GPU in minutes
+
+seed: 42
+
+training:
+  per_device_batch_size: 8
+  gradient_accumulation_steps: 1
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 500
+  min_lr_ratio: 0.1
+  max_steps: 10000
+  max_seq_length: 128
+  dtype: float32
+
+checkpointing:
+  save_steps: 100
+  save_dir: checkpoints/yaya-tiny
+  keep_last_n: 2
+
+logging:
+  log_steps: 10
+  wandb_project: yaya-ai
+  wandb_run_name: null
+
+eval:
+  eval_steps: 100
+  eval_samples: 50
+
+data:
+  train_data: data/processed/wikitext2-v2/train
+  eval_data: data/processed/wikitext2-v2/eval
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 0
+
+distributed:
+  strategy: none
+  gradient_checkpointing: false
+  cpu_offload: false

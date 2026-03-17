@@ -1,0 +1,74 @@
+# Training Configuration for Yaya-1.5B
+# Phase 1: Text-only pretraining
+
+model_config: "configs/model/yaya_1_5b.yaml"
+
+# Training
+training:
+  # Batch
+  per_device_batch_size: 4
+  gradient_accumulation_steps: 8
+  global_batch_size_tokens: 2097152  # ~2M tokens per step
+
+  # Optimization
+  optimizer: "adamw"
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+
+  # Schedule
+  lr_scheduler: "cosine"
+  warmup_steps: 2000
+  min_lr_ratio: 0.1               # Final LR = 10% of peak
+
+  # Duration
+  max_steps: 100000                # ~200B tokens at 2M tokens/step
+  max_tokens: null                 # Alternative: stop after N tokens
+
+  # Precision
+  dtype: "bfloat16"
+  grad_scaler: false               # Not needed for bf16
+
+  # Sequence
+  max_seq_length: 4096
+
+# Checkpointing
+checkpointing:
+  save_steps: 1000
+  save_dir: "checkpoints/yaya-1.5b"
+  keep_last_n: 5
+  save_optimizer: true
+
+# Logging
+logging:
+  log_steps: 10
+  wandb_project: "yaya-ai"
+  wandb_run_name: "yaya-1.5b-pretrain"
+  log_grad_norm: true
+  log_learning_rate: true
+  log_loss_scale: true
+
+# Evaluation during training
+eval:
+  eval_steps: 5000
+  eval_samples: 1000
+
+# Data
+data:
+  train_data: "data/processed/train"
+  eval_data: "data/processed/eval"
+  tokenizer_path: "data/tokenizer/yaya_tokenizer.model"
+  num_workers: 4
+  shuffle_buffer_size: 10000
+
+# Distributed
+distributed:
+  strategy: "deepspeed_zero2"      # Options: ddp, fsdp, deepspeed_zero1/2/3
+  gradient_checkpointing: true
+  cpu_offload: false
+
+# Seed
+seed: 42

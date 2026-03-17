@@ -1,0 +1,37 @@
+# Tokenizer Training Configuration
+
+tokenizer:
+  algorithm: bpe
+  vocab_size: 64000
+  model_prefix: yaya_tokenizer
+  output_dir: data/tokenizer
+  character_coverage: 0.9995
+
+  special_tokens:
+    pad_token: '<pad>'
+    unk_token: '<unk>'
+    bos_token: '<s>'
+    eos_token: '</s>'
+    image_start_token: '<image>'
+    image_end_token: '</image>'
+    image_pad_token: '<image_pad>'
+    tool_start_token: '<tool_call>'
+    tool_end_token: '</tool_call>'
+    tool_result_token: '<tool_result>'
+    system_token: '<|system|>'
+    user_token: '</|user|>'
+    assistant_token: '</|assistant|>'
+
+  # SentencePiece training settings
+  training:
+    byte_fallback: true
+    split_digits: true
+    allow_whitespace_only_pieces: true
+    normalization_rule_name: identity
+    remove_extra_whitespaces: false
+    max_sentence_length: 16384
+    num_threads: 4
+
+  # Data sources for tokenizer training
+  data_sources:
+    - data/raw/text/*.txt

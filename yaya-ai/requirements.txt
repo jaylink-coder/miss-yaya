@@ -1,0 +1,33 @@
+# Core
+torch>=2.3.0
+torchvision>=0.18.0
+numpy>=1.26.0
+sentencepiece>=0.2.0
+tokenizers>=0.19.0
+safetensors>=0.4.0
+pyyaml>=6.0
+tqdm>=4.66.0
+pillow>=10.0.0
+requests>=2.31.0
+
+# Training
+deepspeed>=0.14.0
+wandb>=0.16.0
+datasets>=2.18.0
+accelerate>=0.28.0
+
+# FlashAttention (install separately: pip install flash-attn --no-build-isolation)
+# flash-attn>=2.5.0
+
+# Evaluation
+lm-eval>=0.4.0
+scikit-learn>=1.4.0
+
+# Serving
+fastapi>=0.110.0
+uvicorn>=0.29.0
+pydantic>=2.6.0
+
+# Dev
+pytest>=8.0.0
+ruff>=0.3.0

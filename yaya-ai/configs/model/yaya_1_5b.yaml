@@ -1,0 +1,38 @@
+# Yaya-1.5B Model Configuration
+# Proof of Concept — validate architecture decisions before scaling
+
+model_name: "yaya-1.5b"
+model_type: "yaya"
+
+# Architecture
+architecture:
+  vocab_size: 64000
+  hidden_size: 2048
+  intermediate_size: 5632        # ~2.75x hidden_size for SwiGLU
+  num_hidden_layers: 24
+  num_attention_heads: 16
+  num_key_value_heads: 4          # GQA: 4 KV heads shared across 16 query heads
+  max_position_embeddings: 4096
+  rope_theta: 10000.0
+  rms_norm_eps: 1.0e-5
+  tie_word_embeddings: true
+  hidden_act: "silu"              # SwiGLU activation
+  attention_dropout: 0.0
+  attention_bias: false           # No bias in attention projections
+  mlp_bias: false                 # No bias in FFN
+
+# Vision encoder (for multimodal phase)
+vision:
+  enabled: false                  # Disabled for Phase 1 text-only pretraining
+  image_size: 336
+  patch_size: 14
+  vision_hidden_size: 1024
+  vision_layers: 24
+  vision_heads: 16
+  projection_dim: 2048            # Must match LLM hidden_size
+
+# Precision
+dtype: "bfloat16"
+
+# Initialization
+initializer_range: 0.02

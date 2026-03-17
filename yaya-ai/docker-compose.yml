@@ -1,0 +1,32 @@
+version: "3.8"
+
+services:
+  train:
+    build: .
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+      - ./configs:/app/configs
+    command: >
+      python scripts/train.py
+        --model_config configs/model/yaya_1_5b.yaml
+        --train_config configs/training/train_1_5b.yaml
+
+  serve:
+    build: .
+    runtime: nvidia
+    ports:
+      - "8000:8000"
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=0
+    volumes:
+      - ./checkpoints:/app/checkpoints
+      - ./data/tokenizer:/app/data/tokenizer
+    command: >
+      python scripts/serve.py
+        --checkpoint checkpoints/yaya-1.5b/latest
+        --model_config configs/model/yaya_1_5b.yaml
+        --port 8000
