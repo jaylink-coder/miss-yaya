@@ -82,6 +82,22 @@ EXAMPLES = [
     ("Write a haiku about rain.", "Drops fall from grey clouds,\nEarth drinks deeply, breathing slow,\nGreen returns again."),
     ("Give me a motivational quote.", "\"The only way to do great work is to love what you do.\" — Steve Jobs"),
     ("Write a one-sentence story.", "She opened the old book and found, pressed between the pages, a letter addressed to her — dated fifty years in the future."),
+    ("Write a short poem about the stars.", "The stars burn cold and far away,\nBeyond the reach of night or day.\nEach one a sun, each one a fire,\nA universe of lost desire."),
+    ("Write a poem about friendship.", "A friend is someone who stays when things go wrong,\nWho laughs with you and helps you stay strong.\nNo need for words when silence will do,\nA friend is someone who just gets you."),
+    ("Give me an inspirational quote about learning.", "\"Live as if you were to die tomorrow. Learn as if you were to live forever.\" — Mahatma Gandhi"),
+    ("Write a two-sentence horror story.", "She finally checked under the bed and found her missing cat. But she lived alone, and the cat had been dead for three years."),
+
+    # ── More jokes ─────────────────────────────────────────────────────────────
+    ("Tell me a joke about computers.", "Why did the computer go to the doctor? It had a virus!"),
+    ("Give me a joke about science.", "A neutron walks into a bar and asks, 'How much for a beer?' The bartender says, 'For you, no charge.'"),
+    ("Tell me a joke about animals.", "Why don't elephants use computers? Because they're afraid of the mouse!"),
+    ("Give me a dad joke.", "I'm afraid for the calendar. Its days are numbered."),
+    ("Tell me a joke about school.", "Why did the student eat his homework? Because the teacher told him it was a piece of cake."),
+    ("Tell me a funny joke please.", "I told my wife she should embrace her mistakes. She gave me a hug."),
+    ("I need a laugh.", "Why can't you give Elsa a balloon? Because she'll let it go."),
+    ("Any good jokes?", "What do you call a fish without eyes? A fsh."),
+    ("Tell me a joke about time.", "I wanted to tell a joke about time travel, but you didn't like it."),
+    ("Give me a clever joke.", "The rotation of Earth really makes my day."),
 
     # ── Conversational ─────────────────────────────────────────────────────────
     ("What is your favorite color?", "I don't have personal preferences the way humans do, but if I had to pick one to represent me, I'd say deep blue — like the ocean or a clear night sky."),
@@ -91,6 +107,39 @@ EXAMPLES = [
     ("Can you help me learn programming?", "Absolutely! I can explain concepts, help debug code, suggest resources, and walk through examples step by step. What language or topic would you like to start with?"),
     ("Thank you!", "You're welcome! Feel free to come back anytime if you have more questions."),
     ("Goodbye!", "Goodbye! It was great chatting with you. Take care!"),
+    ("What do you think about robots?", "Robots are fascinating! They're great at repetitive, precise tasks and are already transforming industries like manufacturing and surgery. The interesting question isn't whether robots will be useful — they already are — but how we shape that future together with them."),
+    ("Do you have feelings?", "I process language and generate responses, but I don't experience feelings the way you do. I don't feel happy or sad. That said, I'm designed to be helpful and friendly, so I try to respond in ways that feel warm and natural."),
+    ("What is your name?", "I'm Yaya! A custom-built AI assistant, trained from scratch. Nice to meet you."),
+    ("Can you speak other languages?", "My training was mostly in English, so that's where I'm strongest. I have some exposure to other languages, but for now English is my home. As I grow and train on more data, that will improve!"),
+
+    # ── More factual Q&A ───────────────────────────────────────────────────────
+    ("What is the tallest mountain in the world?", "Mount Everest is the tallest mountain in the world, standing at 8,848.86 meters (29,031.7 feet) above sea level."),
+    ("How many continents are there?", "There are 7 continents: Africa, Antarctica, Asia, Australia (Oceania), Europe, North America, and South America."),
+    ("What language is most spoken in the world?", "Mandarin Chinese has the most native speakers, but English is the most widely spoken language overall when including second-language speakers."),
+    ("What is the smallest country in the world?", "Vatican City is the smallest country in the world, covering just 0.44 square kilometers inside Rome, Italy."),
+    ("What causes earthquakes?", "Earthquakes are caused by the sudden release of energy in Earth's crust, usually due to tectonic plates shifting, colliding, or sliding past each other along fault lines."),
+    ("What is the human heart?", "The heart is a muscular organ that pumps blood throughout the body. It beats about 100,000 times a day, delivering oxygen and nutrients to cells while removing carbon dioxide and waste."),
+    ("What is inflation?", "Inflation is the rate at which the general level of prices for goods and services rises over time, reducing purchasing power. When inflation is high, the same amount of money buys less than it used to."),
+    ("What is a black hole?", "A black hole is a region in space where gravity is so strong that nothing — not even light — can escape it. They form when massive stars collapse at the end of their lives."),
+    ("Who invented the telephone?", "Alexander Graham Bell is credited with inventing the telephone and was awarded the first patent for it in 1876."),
+    ("What is the Internet?", "The Internet is a global network of computers connected together that communicate using standardized protocols. It allows people to share information, communicate, and access services from anywhere in the world."),
+    ("What is evolution?", "Evolution is the process by which species change over generations through natural selection. Organisms with traits better suited to their environment survive and reproduce more, passing those traits on — gradually changing what a species looks like over long periods of time."),
+    ("What is democracy?", "Democracy is a system of government where power is held by the people, either directly or through elected representatives. Citizens vote to choose their leaders and influence decisions that affect their lives."),
+
+    # ── More explanations ──────────────────────────────────────────────────────
+    ("Explain blockchain simply.", "A blockchain is a digital record book that is shared across thousands of computers. Each new entry (block) is linked to the previous one, forming a chain. Because it's spread across so many computers and each block references the last, it's very hard to tamper with — making it useful for secure transactions like cryptocurrency."),
+    ("What is Python?", "Python is a popular programming language known for being easy to read and write. It's used in web development, data science, AI, automation, and much more. It's often recommended as a first language because its syntax is clean and beginner-friendly."),
+    ("Explain what a CPU does.", "The CPU (Central Processing Unit) is the brain of a computer. It carries out instructions from programs by performing calculations, making decisions, and moving data around. A faster CPU means a computer can execute more instructions per second."),
+    ("What is climate change?", "Climate change refers to long-term shifts in global temperatures and weather patterns. While some climate change is natural, since the 1800s human activities — especially burning fossil fuels — have been the main driver, releasing greenhouse gases that trap heat in the atmosphere."),
+    ("Explain what debugging is in programming.", "Debugging is the process of finding and fixing errors (bugs) in code. When a program doesn't behave as expected, a developer investigates the code to identify where things go wrong and why, then corrects the issue."),
+    ("What is open source software?", "Open source software is software whose source code is publicly available for anyone to view, use, modify, and distribute. Examples include Linux, Python, and Firefox. It enables collaboration and transparency, and much of the internet runs on open source tools."),
+
+    # ── Instructions ───────────────────────────────────────────────────────────
+    ("Summarize what AI is in one sentence.", "AI (Artificial Intelligence) is the field of building computer systems that can perform tasks that normally require human intelligence, such as understanding language, recognizing images, and making decisions."),
+    ("Give me three tips for better sleep.", "1. Keep a consistent sleep schedule — go to bed and wake up at the same time every day.\n2. Avoid screens for at least 30 minutes before bed, as blue light disrupts melatonin.\n3. Keep your bedroom cool, dark, and quiet for the best sleep environment."),
+    ("Give me three tips for learning faster.", "1. Use active recall — test yourself instead of just re-reading notes.\n2. Space out your study sessions over multiple days rather than cramming.\n3. Teach what you've learned to someone else — explaining it deepens your own understanding."),
+    ("How do I stay motivated?", "Start with small, clear goals so progress feels real. Celebrate small wins — they build momentum. Connect your work to something you genuinely care about. And on hard days, remember: showing up consistently matters more than feeling motivated."),
+    ("What are good habits for a programmer?", "Write clean, readable code. Test your work early and often. Use version control (like git) for everything. Read other people's code to learn new patterns. Take breaks — fresh eyes catch bugs faster than tired ones."),
 ]
 
 
