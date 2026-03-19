@@ -13,9 +13,11 @@ TRAIN_DIR = 'data/processed/openwebtext/train'
 EVAL_DIR  = 'data/processed/openwebtext/eval'
 
 # ── 1. Download data ──────────────────────────────────────────────────────────
-print('\n[1/3] Downloading OpenWebText (2% sample)...')
+print('\n[1/3] Downloading dataset...')
 from datasets import load_dataset
-ds = load_dataset('openwebtext', split='train[:2%]')
+
+# Use wikitext — downloads in seconds, no memory issues
+ds = load_dataset('wikitext', 'wikitext-103-raw-v1', split='train')
 print(f'  Loaded {len(ds):,} documents')
 
 # ── 2. Tokenize ───────────────────────────────────────────────────────────────
@@ -27,23 +29,41 @@ print(f'  Vocab size: {tokenizer.vocab_size}')
 os.makedirs(TRAIN_DIR, exist_ok=True)
 os.makedirs(EVAL_DIR,  exist_ok=True)
 
-split    = ds.train_test_split(test_size=0.01, seed=42)
+split    = ds.train_test_split(test_size=0.005, seed=42)
 train_ds = split['train']
 eval_ds  = split['test']
 
-def tokenize_and_save(dataset, path, filename):
-    tokens = []
-    for i, row in enumerate(dataset):
-        tokens.extend(tokenizer.encode(row['text']))
-        if (i + 1) % 5000 == 0:
-            print(f'  {i+1:,} docs, {len(tokens):,} tokens')
-    arr = np.array(tokens, dtype=np.uint16)
-    arr.tofile(os.path.join(path, filename))
-    print(f'  Saved {len(arr):,} tokens → {path}/{filename}')
-    return len(arr)
+def tokenize_and_save(dataset, path, filename, max_tokens=30_000_000):
+    """Stream tokens directly to disk in chunks — no OOM."""
+    out_path = os.path.join(path, filename)
+    total = 0
+    chunk = []
+    CHUNK_SIZE = 500_000
 
-n_train = tokenize_and_save(train_ds, TRAIN_DIR, 'shard_00000.bin')
-n_eval  = tokenize_and_save(eval_ds,  EVAL_DIR,  'eval.bin')
+    with open(out_path, 'wb') as f:
+        for i, row in enumerate(dataset):
+            text = row.get('text', '').strip()
+            if not text:
+                continue
+            chunk.extend(tokenizer.encode(text))
+            if len(chunk) >= CHUNK_SIZE:
+                arr = np.array(chunk, dtype=np.uint16)
+                arr.tofile(f)
+                total += len(arr)
+                chunk = []
+                print(f'  {i+1:,} docs, {total:,} tokens saved...')
+            if total >= max_tokens:
+                break
+        if chunk:
+            arr = np.array(chunk, dtype=np.uint16)
+            arr.tofile(f)
+            total += len(arr)
+
+    print(f'  Done: {total:,} tokens → {out_path}')
+    return total
+
+n_train = tokenize_and_save(train_ds, TRAIN_DIR, 'shard_00000.bin', max_tokens=30_000_000)
+n_eval  = tokenize_and_save(eval_ds,  EVAL_DIR,  'eval.bin',        max_tokens=1_000_000)
 print(f'  Total: {n_train:,} train | {n_eval:,} eval tokens')
 
 # ── 3. Train ──────────────────────────────────────────────────────────────────
