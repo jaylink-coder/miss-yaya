@@ -26,7 +26,7 @@ checkpointing:
 
 logging:
   log_steps: 50
-  wandb_project: yaya-ai
+  wandb_project: null
   wandb_run_name: null
 
 eval:
