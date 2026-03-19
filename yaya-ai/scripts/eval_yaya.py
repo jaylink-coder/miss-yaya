@@ -19,7 +19,7 @@ import torch
 from src.utils.config import load_model_config
 from src.model.yaya_model import YayaForCausalLM
 from src.tokenizer.tokenizer import YayaTokenizer
-from src.inference.generator import TextGenerator
+from src.inference.generator import TextGenerator, GenerationConfig
 from src.training.checkpointing import CheckpointManager
 
 SYSTEM_PROMPT = (
@@ -59,18 +59,19 @@ def evaluate(model, tokenizer, generator, use_chat_format: bool = False):
 
         response = generator.generate(
             full_prompt,
-            max_new_tokens=100,
-            temperature=0.8,
-            top_p=0.9,
+            config=GenerationConfig(max_new_tokens=100, temperature=0.8, top_p=0.9),
         )
 
-        # Strip the prompt from the response
-        if full_prompt in response:
+        # Strip everything up to and including <|assistant|>
+        tag = "<|assistant|>"
+        if tag in response:
+            response = response.split(tag)[-1]
+        elif full_prompt in response:
             response = response[len(full_prompt):]
 
-        # Clean up chat tags
-        for tag in ["</|assistant|>", "<|user|>", "<|system|>"]:
-            response = response.split(tag)[0]
+        # Clean up any trailing chat tags
+        for end_tag in ["<|user|>", "<|system|>", "</s>"]:
+            response = response.split(end_tag)[0]
 
         response = response.strip()
 

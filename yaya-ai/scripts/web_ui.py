@@ -68,10 +68,12 @@ def run_gradio(generator, tokenizer, args):
             top_p=args.top_p,
         )
 
-        if prompt in response:
+        if "<|assistant|>" in response:
+            response = response.split("<|assistant|>")[-1]
+        elif prompt in response:
             response = response[len(prompt):]
-        for tag in ["</|assistant|>", "<|user|>", "<|system|>"]:
-            response = response.split(tag)[0]
+        for end_tag in ["<|user|>", "<|system|>", "</s>"]:
+            response = response.split(end_tag)[0]
 
         return response.strip()
 

@@ -86,10 +86,14 @@ def main():
             top_p=args.top_p,
         )
 
-        # Strip the prompt and any trailing tags from response
-        if prompt in response:
+        # Strip everything up to and including <|assistant|>
+        if "<|assistant|>" in response:
+            response = response.split("<|assistant|>")[-1]
+        elif prompt in response:
             response = response[len(prompt):]
-        response = response.replace("</|assistant|>", "").strip()
+        for end_tag in ["<|user|>", "<|system|>", "</s>"]:
+            response = response.split(end_tag)[0]
+        response = response.strip()
 
         print(f"Yaya: {response}\n")
         history.append({"role": "assistant", "content": response})
