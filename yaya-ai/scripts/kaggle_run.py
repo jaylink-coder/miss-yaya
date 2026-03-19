@@ -81,7 +81,7 @@ def tokenize_streaming(dataset, path, filename, max_tokens, eval_tokens=0):
 
 n_train = tokenize_streaming(
     ds, TRAIN_DIR, 'shard_00000.bin',
-    max_tokens=20_000_000,   # 20M tokens — enough for real learning
+    max_tokens=50_000_000,   # 50M tokens = ~1 epoch at 750 steps
     eval_tokens=500_000,
 )
 print(f'  Done: {n_train:,} train tokens')
