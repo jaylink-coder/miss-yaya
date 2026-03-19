@@ -46,16 +46,23 @@ class TrainingLogger:
 
         # Initialize W&B on main process only
         self.wandb_run = None
-        if use_wandb and self.is_main:
+        wandb_disabled = (
+            not use_wandb
+            or not project
+            or os.environ.get("WANDB_DISABLED", "").lower() in ("true", "1", "yes")
+            or os.environ.get("WANDB_MODE", "").lower() == "disabled"
+        )
+        if not wandb_disabled and self.is_main:
             try:
                 import wandb
+                os.environ.setdefault("WANDB_SILENT", "true")
                 self.wandb_run = wandb.init(
                     project=project,
                     name=run_name,
                     resume="allow",
                 )
                 print(f"W&B initialized: {project}/{run_name}")
-            except Exception as e:
+            except BaseException as e:
                 print(f"W&B initialization failed: {e}. Continuing without W&B.")
 
     def log_step(

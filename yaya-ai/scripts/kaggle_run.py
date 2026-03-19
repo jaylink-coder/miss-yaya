@@ -8,6 +8,10 @@ REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, REPO_ROOT)
 os.chdir(REPO_ROOT)
 
+# Disable W&B — no interactive prompts
+os.environ['WANDB_DISABLED'] = 'true'
+os.environ['WANDB_MODE'] = 'disabled'
+
 CHECKPOINT_DIR = '/kaggle/working/yaya-checkpoints'
 TRAIN_DIR = 'data/processed/openwebtext/train'
 EVAL_DIR  = 'data/processed/openwebtext/eval'
