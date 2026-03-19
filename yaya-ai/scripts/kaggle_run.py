@@ -87,7 +87,7 @@ if resume:
 else:
     print('  Starting from scratch')
 
-os.system(f'python scripts/train.py '
+os.system(f'WANDB_DISABLED=true WANDB_MODE=disabled python scripts/train.py '
           f'--model_config configs/model/yaya_125m.yaml '
           f'--train_config configs/training/train_125m.yaml '
           f'{resume}')
