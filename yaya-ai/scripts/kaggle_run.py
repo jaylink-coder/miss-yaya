@@ -17,12 +17,11 @@ TRAIN_DIR = 'data/processed/openwebtext/train'
 EVAL_DIR  = 'data/processed/openwebtext/eval'
 
 # ── 1. Download data ──────────────────────────────────────────────────────────
-print('\n[1/3] Downloading dataset...')
+print('\n[1/3] Downloading OpenWebText (1% sample, streaming)...')
 from datasets import load_dataset
 
-# Use wikitext — downloads in seconds, no memory issues
-ds = load_dataset('wikitext', 'wikitext-103-raw-v1', split='train')
-print(f'  Loaded {len(ds):,} documents')
+# Use streaming=True to avoid downloading all 80 shards upfront
+ds = load_dataset('openwebtext', split='train', streaming=True)
 
 # ── 2. Tokenize ───────────────────────────────────────────────────────────────
 print('\n[2/3] Tokenizing...')
@@ -33,42 +32,59 @@ print(f'  Vocab size: {tokenizer.vocab_size}')
 os.makedirs(TRAIN_DIR, exist_ok=True)
 os.makedirs(EVAL_DIR,  exist_ok=True)
 
-split    = ds.train_test_split(test_size=0.005, seed=42)
-train_ds = split['train']
-eval_ds  = split['test']
+def tokenize_streaming(dataset, path, filename, max_tokens, eval_tokens=0):
+    """Stream from HuggingFace and write tokens to disk in chunks — zero OOM."""
+    train_path = os.path.join(path, filename)
+    eval_path  = os.path.join(EVAL_DIR, 'eval.bin') if eval_tokens else None
 
-def tokenize_and_save(dataset, path, filename, max_tokens=30_000_000):
-    """Stream tokens directly to disk in chunks — no OOM."""
-    out_path = os.path.join(path, filename)
-    total = 0
+    total_train = 0
+    total_eval  = 0
     chunk = []
-    CHUNK_SIZE = 500_000
+    CHUNK = 500_000
 
-    with open(out_path, 'wb') as f:
+    with open(train_path, 'wb') as ft, \
+         (open(eval_path, 'wb') if eval_path else open(os.devnull, 'wb')) as fe:
+
         for i, row in enumerate(dataset):
             text = row.get('text', '').strip()
             if not text:
                 continue
-            chunk.extend(tokenizer.encode(text))
-            if len(chunk) >= CHUNK_SIZE:
-                arr = np.array(chunk, dtype=np.uint16)
-                arr.tofile(f)
-                total += len(arr)
-                chunk = []
-                print(f'  {i+1:,} docs, {total:,} tokens saved...')
-            if total >= max_tokens:
+            toks = tokenizer.encode(text)
+            chunk.extend(toks)
+
+            while len(chunk) >= CHUNK:
+                arr = np.array(chunk[:CHUNK], dtype=np.uint16)
+                if total_eval < eval_tokens:
+                    arr.tofile(fe)
+                    total_eval += CHUNK
+                else:
+                    arr.tofile(ft)
+                    total_train += CHUNK
+                chunk = chunk[CHUNK:]
+
+            if (i + 1) % 10000 == 0:
+                print(f'  {i+1:,} docs | train {total_train:,} | eval {total_eval:,} tokens')
+
+            if total_train >= max_tokens:
                 break
+
+        # flush remainder to train
         if chunk:
             arr = np.array(chunk, dtype=np.uint16)
-            arr.tofile(f)
-            total += len(arr)
+            arr.tofile(ft)
+            total_train += len(arr)
 
-    print(f'  Done: {total:,} tokens → {out_path}')
-    return total
+    print(f'  Train: {total_train:,} tokens → {train_path}')
+    if eval_path:
+        print(f'  Eval:  {total_eval:,} tokens → {eval_path}')
+    return total_train
 
-n_train = tokenize_and_save(train_ds, TRAIN_DIR, 'shard_00000.bin', max_tokens=30_000_000)
-n_eval  = tokenize_and_save(eval_ds,  EVAL_DIR,  'eval.bin',        max_tokens=1_000_000)
-print(f'  Total: {n_train:,} train | {n_eval:,} eval tokens')
+n_train = tokenize_streaming(
+    ds, TRAIN_DIR, 'shard_00000.bin',
+    max_tokens=20_000_000,   # 20M tokens — enough for real learning
+    eval_tokens=500_000,
+)
+print(f'  Done: {n_train:,} train tokens')
 
 # ── 3. Train ──────────────────────────────────────────────────────────────────
 print('\n[3/3] Starting training...')
