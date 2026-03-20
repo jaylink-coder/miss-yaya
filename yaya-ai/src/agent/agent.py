@@ -1,278 +1,72 @@
-"""Yaya Agent — multi-step reasoning with tool use.
-
-Implements the plan-execute-observe-respond cycle that enables
-the model to use tools iteratively to solve complex tasks.
-"""
-
-import json
+"""Yaya Agent Loop — Phase 4: Planning and Tool Use."""
 import re
-import time
-from typing import List, Dict, Optional, Any, Callable
-from dataclasses import dataclass, field
+from src.tools import TOOL_MAP, ToolResult
 
-from src.agent.tools import ToolRegistry, ToolCall, ToolResult, create_default_registry
-from src.agent.chat_template import (
-    ChatTemplate,
-    TOOL_CALL_OPEN,
-    TOOL_CALL_CLOSE,
-    TOOL_RESULT_OPEN,
-    TOOL_RESULT_CLOSE,
-)
+TOOL_CALL_PATTERN = re.compile(r'<\|tool\|>(.*?):(.*?)<\|/tool\|>', re.DOTALL)
 
+AGENT_SYSTEM_PROMPT = """You are Yaya, a helpful and intelligent AI assistant with access to tools.
 
-@dataclass
-class AgentStep:
-    """A single step in the agent's reasoning chain."""
-    step_number: int
-    thought: str = ""
-    tool_call: Optional[ToolCall] = None
-    tool_result: Optional[ToolResult] = None
-    response: str = ""
-    timestamp: float = 0.0
+You can use the following tools:
+- <|tool|>calculator: EXPRESSION<|/tool|>
+- <|tool|>search: QUERY<|/tool|>
+- <|tool|>code_runner: CODE<|/tool|>
+
+Think step by step. Use tools when needed. Be honest, helpful, and friendly."""
 
 
-@dataclass
-class AgentConfig:
-    """Configuration for agent behavior."""
-    max_steps: int = 10
-    max_retries: int = 2
-    timeout_seconds: float = 30.0
-    verbose: bool = True
-    stop_on_error: bool = False
-    parallel_tools: bool = False
+class YayaAgent:
+    def __init__(self, generator, tokenizer, memory=None, max_iterations=5):
+        self.generator = generator
+        self.tokenizer = tokenizer
+        self.memory = memory
+        self.max_iter = max_iterations
 
+    def _extract_tool_calls(self, text):
+        return [(m.group(1).strip(), m.group(2).strip()) for m in TOOL_CALL_PATTERN.finditer(text)]
 
-class ToolCallParser:
-    """Parse tool calls from model-generated text.
+    def _execute_tool(self, tool_name, tool_input):
+        tool = TOOL_MAP.get(tool_name)
+        if not tool:
+            from src.tools.base import ToolResult as TR
+            return TR(tool_name=tool_name, success=False, output='', error=f'Unknown tool: {tool_name}')
+        return tool.run(tool_input)
 
-    Extracts structured tool calls from text containing
-    <tool_call>...</tool_call> tags.
-    """
+    def _inject_tool_result(self, text, result):
+        pattern = re.compile(r'<\|tool\|>.*?<\|/tool\|>', re.DOTALL)
+        result_text = (f'<|tool_result|>{result.output}<|/tool_result|>' if result.success
+                       else f'<|tool_result|>Error: {result.error}<|/tool_result|>')
+        return pattern.sub(result_text, text, count=1)
 
-    @staticmethod
-    def parse(text: str) -> List[ToolCall]:
-        """Extract all tool calls from text.
+    def run(self, user_message, conversation_history, max_new_tokens=300, temperature=0.7):
+        system = AGENT_SYSTEM_PROMPT
+        if self.memory:
+            mem_context = self.memory.format_for_prompt(user_message)
+            if mem_context:
+                system += '\n\n' + mem_context
 
-        Args:
-            text: Model output text potentially containing tool calls.
+        history = ([{'role': 'system', 'content': system}]
+                   + conversation_history
+                   + [{'role': 'user', 'content': user_message}])
+        accumulated = ''
 
-        Returns:
-            List of parsed ToolCall objects.
-        """
-        calls = []
-        # Find all tool call blocks
-        pattern = re.escape(TOOL_CALL_OPEN) + r"\s*(.*?)\s*" + re.escape(TOOL_CALL_CLOSE)
-        matches = re.finditer(pattern, text, re.DOTALL)
-
-        for i, match in enumerate(matches):
-            raw = match.group(1).strip()
-            try:
-                data = json.loads(raw)
-                call = ToolCall(
-                    name=data.get("name", ""),
-                    arguments=data.get("arguments", {}),
-                    call_id=f"call_{i}",
-                )
-                calls.append(call)
-            except (json.JSONDecodeError, KeyError, TypeError):
-                continue
-
-        return calls
-
-    @staticmethod
-    def has_tool_call(text: str) -> bool:
-        """Check if text contains any tool call tags."""
-        return TOOL_CALL_OPEN in text
-
-    @staticmethod
-    def extract_thought(text: str) -> str:
-        """Extract the thinking/reasoning text before any tool calls."""
-        if TOOL_CALL_OPEN in text:
-            return text[:text.index(TOOL_CALL_OPEN)].strip()
-        return text.strip()
-
-
-class Agent:
-    """Multi-step reasoning agent with tool use.
-
-    Manages the plan-execute-observe-respond loop:
-    1. Model generates text (possibly with tool calls)
-    2. Tool calls are parsed and executed
-    3. Results are fed back to the model
-    4. Repeat until model produces a final response (no tool calls)
-    """
-
-    def __init__(
-        self,
-        generate_fn: Callable[[str], str],
-        tool_registry: Optional[ToolRegistry] = None,
-        config: Optional[AgentConfig] = None,
-    ):
-        """Initialize agent.
-
-        Args:
-            generate_fn: Function that takes a prompt string and returns
-                        generated text. This wraps the model's generation.
-            tool_registry: Registry of available tools. Uses defaults if None.
-            config: Agent behavior configuration.
-        """
-        self.generate_fn = generate_fn
-        self.registry = tool_registry or create_default_registry()
-        self.config = config or AgentConfig()
-        self.parser = ToolCallParser()
-        self.history: List[AgentStep] = []
-
-    def _log(self, msg: str):
-        if self.config.verbose:
-            print(f"  [Agent] {msg}")
-
-    def run(
-        self,
-        user_message: str,
-        system_prompt: Optional[str] = None,
-        conversation: Optional[ChatTemplate] = None,
-    ) -> str:
-        """Run the agent on a user message.
-
-        Args:
-            user_message: The user's input message.
-            system_prompt: Optional system prompt (auto-generated if None).
-            conversation: Optional existing conversation context.
-
-        Returns:
-            The agent's final response text.
-        """
-        self.history = []
-
-        # Build conversation
-        if conversation is None:
-            if system_prompt is None:
-                system_prompt = self.registry.get_system_prompt()
-            conversation = ChatTemplate(system_prompt=system_prompt)
-
-        conversation.add_message("user", user_message)
-
-        for step_num in range(1, self.config.max_steps + 1):
-            step = AgentStep(step_number=step_num, timestamp=time.time())
-            self._log(f"Step {step_num}/{self.config.max_steps}")
-
-            # Generate model response
-            prompt = conversation.format_for_generation()
-            generated = self.generate_fn(prompt)
-
-            # Check for tool calls
-            if not self.parser.has_tool_call(generated):
-                # Final response — no tool calls
-                step.response = generated.strip()
-                self.history.append(step)
-                conversation.add_message("assistant", step.response)
-                self._log(f"Final response: {step.response[:100]}...")
-                return step.response
-
-            # Parse tool calls
-            step.thought = self.parser.extract_thought(generated)
-            tool_calls = self.parser.parse(generated)
-
+        for _ in range(self.max_iter):
+            prompt = self.tokenizer.format_chat(history) + '<|assistant|>\n' + accumulated
+            generated = self.generator.generate(prompt, max_new_tokens=max_new_tokens,
+                                                temperature=temperature, top_p=0.9)
+            if '<|assistant|>' in generated:
+                new_text = generated.split('<|assistant|>')[-1]
+            elif prompt in generated:
+                new_text = generated[len(prompt):]
+            else:
+                new_text = generated
+            for stop in ['<|user|>', '<|system|>', '</s>']:
+                new_text = new_text.split(stop)[0]
+            accumulated += new_text
+            tool_calls = self._extract_tool_calls(accumulated)
             if not tool_calls:
-                # Malformed tool call — treat as final response
-                step.response = generated.strip()
-                self.history.append(step)
-                conversation.add_message("assistant", step.response)
-                return step.response
+                break
+            tool_name, tool_input = tool_calls[0]
+            result = self._execute_tool(tool_name, tool_input)
+            accumulated = self._inject_tool_result(accumulated, result)
 
-            self._log(f"Thought: {step.thought[:80]}..." if step.thought else "No thought")
-            self._log(f"Tool calls: {[tc.name for tc in tool_calls]}")
-
-            # Execute tool calls
-            tc_dicts = [{"name": tc.name, "arguments": tc.arguments} for tc in tool_calls]
-            conversation.add_message("assistant", step.thought, tool_calls=tc_dicts)
-
-            for tc in tool_calls:
-                step.tool_call = tc
-                result = self.registry.execute(tc)
-                step.tool_result = result
-
-                self._log(f"  {tc.name}({tc.arguments}) -> {result.result[:80]}...")
-
-                conversation.add_tool_result(
-                    name=result.name,
-                    result=result.result if result.success else f"Error: {result.error}",
-                    success=result.success,
-                )
-
-                if not result.success and self.config.stop_on_error:
-                    step.response = f"Tool error: {result.error}"
-                    self.history.append(step)
-                    return step.response
-
-            self.history.append(step)
-
-        # Max steps reached
-        self._log("Max steps reached, generating final response")
-        prompt = conversation.format_for_generation()
-        final = self.generate_fn(prompt)
-        return final.strip()
-
-    def get_trace(self) -> List[Dict[str, Any]]:
-        """Get the full execution trace for debugging."""
-        trace = []
-        for step in self.history:
-            entry = {
-                "step": step.step_number,
-                "thought": step.thought,
-                "response": step.response,
-            }
-            if step.tool_call:
-                entry["tool_call"] = {
-                    "name": step.tool_call.name,
-                    "arguments": step.tool_call.arguments,
-                }
-            if step.tool_result:
-                entry["tool_result"] = {
-                    "name": step.tool_result.name,
-                    "result": step.tool_result.result,
-                    "success": step.tool_result.success,
-                }
-            trace.append(entry)
-        return trace
-
-
-class SimpleAgent:
-    """Simplified agent for single-turn tool use without a model.
-
-    Useful for testing and for building tool-use training data.
-    Executes tool calls directly without model generation.
-    """
-
-    def __init__(self, tool_registry: Optional[ToolRegistry] = None):
-        self.registry = tool_registry or create_default_registry()
-        self.parser = ToolCallParser()
-
-    def execute_text(self, text: str) -> List[ToolResult]:
-        """Parse and execute any tool calls found in text.
-
-        Args:
-            text: Text potentially containing tool call tags.
-
-        Returns:
-            List of ToolResult objects.
-        """
-        calls = self.parser.parse(text)
-        results = []
-        for call in calls:
-            result = self.registry.execute(call)
-            results.append(result)
-        return results
-
-    def execute_call(self, name: str, **kwargs) -> ToolResult:
-        """Execute a single tool call by name.
-
-        Args:
-            name: Tool name.
-            **kwargs: Tool arguments.
-
-        Returns:
-            ToolResult.
-        """
-        call = ToolCall(name=name, arguments=kwargs)
-        return self.registry.execute(call)
+        return accumulated.strip()
