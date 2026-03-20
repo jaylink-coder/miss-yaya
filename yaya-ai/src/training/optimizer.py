@@ -123,6 +123,17 @@ def create_scheduler(
         elif schedule_type == "linear":
             # Linear decay from 1.0 to min_lr_ratio
             return min_lr_ratio + (1.0 - min_lr_ratio) * (1.0 - progress)
+        elif schedule_type == "wsd":
+            # Warmup-Stable-Decay: hold peak LR for 80% of post-warmup steps,
+            # then cosine decay over last 20%. Much more robust than cosine when
+            # token count is limited — avoids locking into noise during decay.
+            decay_start = 0.8
+            if progress < decay_start:
+                return 1.0  # stable phase: full LR
+            decay_progress = (progress - decay_start) / (1.0 - decay_start)
+            return min_lr_ratio + (1.0 - min_lr_ratio) * 0.5 * (
+                1.0 + math.cos(math.pi * decay_progress)
+            )
         else:
             return 1.0
 

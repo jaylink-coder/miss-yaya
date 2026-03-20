@@ -12,12 +12,12 @@ training:
   adam_beta2: 0.95
   adam_epsilon: 1.0e-8
   max_grad_norm: 1.0
-  lr_scheduler: cosine
+  lr_scheduler: wsd
   warmup_steps: 2000
   min_lr_ratio: 0.1
   max_steps: 45700               # 3B tokens / (64 × 1024) ≈ 45,700 steps
   max_seq_length: 2048           # 2x context vs 125M
-  dtype: float16
+  dtype: bfloat16
 
 checkpointing:
   save_steps: 2000
