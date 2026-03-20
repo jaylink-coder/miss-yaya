@@ -110,6 +110,7 @@ class StreamingTextDataset(IterableDataset):
             raise FileNotFoundError(f"No shard files found in {data_dir}")
 
         print(f"StreamingTextDataset: {len(self.shard_files)} shards in {data_dir}")
+        self._iter_count = 0  # incremented each epoch so shard shuffle varies
 
     def __iter__(self) -> Iterator[Dict[str, torch.Tensor]]:
         """Iterate over data, yielding training samples."""
@@ -121,10 +122,11 @@ class StreamingTextDataset(IterableDataset):
         else:
             shards = self.shard_files
 
-        # Shuffle shard order
+        # Shuffle shard order — use a different seed each epoch so order varies
         if self.shuffle_shards:
-            rng = random.Random(self.seed)
+            rng = random.Random(self.seed + self._iter_count)
             rng.shuffle(shards)
+        self._iter_count += 1
 
         for shard_file in shards:
             shard_path = os.path.join(self.data_dir, shard_file)
