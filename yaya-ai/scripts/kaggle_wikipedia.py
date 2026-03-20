@@ -22,77 +22,83 @@ EVAL_TOKENS      =   2_000_000   # 2M eval tokens
 os.makedirs(TRAIN_DIR, exist_ok=True)
 os.makedirs(EVAL_DIR,  exist_ok=True)
 
-# ── 1. Tokenize ────────────────────────────────────────────────────────────────
-print('\n[1/2] Tokenizing Wikipedia...')
-from src.tokenizer.tokenizer import YayaTokenizer
-tokenizer = YayaTokenizer('data/tokenizer/yaya_tokenizer.model')
-print(f'  Vocab size: {tokenizer.vocab_size}')
-
-import pandas as pd
-
-parquet_files = sorted([
-    os.path.join(WIKI_DIR, f)
-    for f in os.listdir(WIKI_DIR)
-    if f.endswith('.parquet') and len(f) == 9  # single-letter files: a.parquet etc
-])
-print(f'  Found {len(parquet_files)} parquet files')
-
-CHUNK = 1_000_000  # write 1M tokens at a time
-
+# ── 1. Tokenize (skip if already done) ─────────────────────────────────────────
 train_path = os.path.join(TRAIN_DIR, 'shard_00000.bin')
 eval_path  = os.path.join(EVAL_DIR,  'eval.bin')
 
-total_train = 0
-total_eval  = 0
-chunk_buf   = []
-done        = False
+MIN_TRAIN_BYTES = MAX_TRAIN_TOKENS * 2 * 0.9  # 90% of target (uint16 = 2 bytes)
 
-ft = open(train_path, 'wb')
-fe = open(eval_path,  'wb')
+if os.path.exists(train_path) and os.path.getsize(train_path) >= MIN_TRAIN_BYTES:
+    tokens_on_disk = os.path.getsize(train_path) // 2
+    print(f'\n[1/2] Tokenization already done: {tokens_on_disk/1e6:.0f}M tokens on disk. Skipping.', flush=True)
+else:
+    print('\n[1/2] Tokenizing Wikipedia...', flush=True)
+    from src.tokenizer.tokenizer import YayaTokenizer
+    tokenizer = YayaTokenizer('data/tokenizer/yaya_tokenizer.model')
+    print(f'  Vocab size: {tokenizer.vocab_size}', flush=True)
 
-try:
-    for pfile in parquet_files:
-        if done:
-            break
-        letter = os.path.basename(pfile)
-        print(f'  Processing {letter}...')
-        df = pd.read_parquet(pfile, columns=['text'])
+    import pandas as pd
 
-        for i, row in enumerate(df.itertuples(index=False)):
-            text = str(row.text).strip()
-            if not text or len(text) < 50:
-                continue
-            toks = tokenizer.encode(text)
-            chunk_buf.extend(toks)
+    parquet_files = sorted([
+        os.path.join(WIKI_DIR, f)
+        for f in os.listdir(WIKI_DIR)
+        if f.endswith('.parquet') and len(f) == 9  # single-letter files: a.parquet etc
+    ])
+    print(f'  Found {len(parquet_files)} parquet files', flush=True)
 
-            while len(chunk_buf) >= CHUNK:
-                arr = np.array(chunk_buf[:CHUNK], dtype=np.uint16)
-                if total_eval < EVAL_TOKENS:
-                    arr.tofile(fe)
-                    total_eval += CHUNK
-                else:
-                    arr.tofile(ft)
-                    total_train += CHUNK
-                chunk_buf = chunk_buf[CHUNK:]
+    CHUNK = 1_000_000  # write 1M tokens at a time
 
-            if total_train >= MAX_TRAIN_TOKENS:
-                done = True
+    total_train = 0
+    total_eval  = 0
+    chunk_buf   = []
+    done        = False
+
+    ft = open(train_path, 'wb')
+    fe = open(eval_path,  'wb')
+
+    try:
+        for pfile in parquet_files:
+            if done:
                 break
+            letter = os.path.basename(pfile)
+            print(f'  Processing {letter}...', flush=True)
+            df = pd.read_parquet(pfile, columns=['text'])
 
-        print(f'    train {total_train/1e6:.1f}M | eval {total_eval/1e6:.1f}M tokens')
+            for i, row in enumerate(df.itertuples(index=False)):
+                text = str(row.text).strip()
+                if not text or len(text) < 50:
+                    continue
+                toks = tokenizer.encode(text)
+                chunk_buf.extend(toks)
 
-    # flush remainder
-    if chunk_buf and not done:
-        arr = np.array(chunk_buf, dtype=np.uint16)
-        arr.tofile(ft)
-        total_train += len(arr)
+                while len(chunk_buf) >= CHUNK:
+                    arr = np.array(chunk_buf[:CHUNK], dtype=np.uint16)
+                    if total_eval < EVAL_TOKENS:
+                        arr.tofile(fe)
+                        total_eval += CHUNK
+                    else:
+                        arr.tofile(ft)
+                        total_train += CHUNK
+                    chunk_buf = chunk_buf[CHUNK:]
 
-finally:
-    ft.close()
-    fe.close()
+                if total_train >= MAX_TRAIN_TOKENS:
+                    done = True
+                    break
 
-print(f'\n  Train: {total_train:,} tokens → {train_path}')
-print(f'  Eval:  {total_eval:,} tokens  → {eval_path}')
+            print(f'    train {total_train/1e6:.1f}M | eval {total_eval/1e6:.1f}M tokens', flush=True)
+
+        # flush remainder
+        if chunk_buf and not done:
+            arr = np.array(chunk_buf, dtype=np.uint16)
+            arr.tofile(ft)
+            total_train += len(arr)
+
+    finally:
+        ft.close()
+        fe.close()
+
+    print(f'\n  Train: {total_train:,} tokens → {train_path}', flush=True)
+    print(f'  Eval:  {total_eval:,} tokens  → {eval_path}', flush=True)
 
 # ── 2. Update config and train ─────────────────────────────────────────────────
 print('\n[2/2] Starting training...')
@@ -124,7 +130,7 @@ else:
     print('  Starting from scratch')
 
 os.system(
-    f'WANDB_DISABLED=true WANDB_MODE=disabled python scripts/train.py '
+    f'WANDB_DISABLED=true WANDB_MODE=disabled python -u scripts/train.py '
     f'--model_config configs/model/yaya_125m.yaml '
     f'--train_config configs/training/train_125m.yaml '
     f'{resume}'
