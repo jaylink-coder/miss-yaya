@@ -1,9 +1,14 @@
-"""Interactive chat with Yaya.
+"""Interactive chat with Yaya — with long-term memory.
 
 Usage:
     python scripts/chat.py \
         --model_config configs/model/yaya_125m.yaml \
         --checkpoint checkpoints/yaya-125m-sft/checkpoint-XXXXXXXX
+
+Commands during chat:
+    /memory        — show all stored memories
+    /forget <id>   — delete a memory by ID
+    quit / exit    — end the chat
 """
 
 import argparse
@@ -18,20 +23,31 @@ from src.model.yaya_model import YayaForCausalLM
 from src.tokenizer.tokenizer import YayaTokenizer
 from src.inference.generator import TextGenerator
 from src.training.checkpointing import CheckpointManager
+from src.memory.memory_store import MemoryStore
 
 SYSTEM_PROMPT = (
     "You are Yaya, a helpful and friendly AI assistant. "
-    "You answer questions clearly, tell jokes when asked, and are always honest."
+    "You answer questions clearly, tell jokes when asked, and are always honest. "
+    "When solving problems, you think step by step before giving your final answer."
 )
+
+
+def build_system_prompt(memory: MemoryStore, query: str) -> str:
+    """Extend the system prompt with relevant memories."""
+    mem_context = memory.format_for_prompt(query)
+    if mem_context:
+        return SYSTEM_PROMPT + '\n\n' + mem_context
+    return SYSTEM_PROMPT
 
 
 def main():
     parser = argparse.ArgumentParser(description="Chat with Yaya")
-    parser.add_argument("--model_config", type=str, required=True)
-    parser.add_argument("--checkpoint",   type=str, required=True)
-    parser.add_argument("--max_tokens",   type=int, default=200)
-    parser.add_argument("--temperature",  type=float, default=0.8)
-    parser.add_argument("--top_p",        type=float, default=0.9)
+    parser.add_argument("--model_config",  type=str, required=True)
+    parser.add_argument("--checkpoint",    type=str, required=True)
+    parser.add_argument("--max_tokens",    type=int,   default=200)
+    parser.add_argument("--temperature",   type=float, default=0.8)
+    parser.add_argument("--top_p",         type=float, default=0.9)
+    parser.add_argument("--memory_path",   type=str,   default='data/memory/yaya_memory.json')
     args = parser.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -43,7 +59,6 @@ def main():
     ckpt_dir = os.path.dirname(args.checkpoint)
     ckpt_mgr = CheckpointManager(save_dir=ckpt_dir)
     ckpt_mgr.load(model, checkpoint_path=args.checkpoint)
-
     model.eval().to(device)
 
     tokenizer = YayaTokenizer(
@@ -54,12 +69,14 @@ def main():
     )
 
     generator = TextGenerator(model, tokenizer, device=device)
+    memory    = MemoryStore(args.memory_path)
 
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 55)
     print("  Chat with Yaya  (type 'quit' to exit)")
-    print("=" * 50 + "\n")
+    print(f"  Memory: {len(memory)} stored memories")
+    print("=" * 55 + "\n")
 
-    history = [{"role": "system", "content": SYSTEM_PROMPT}]
+    conversation = []  # current session history (no system prompt here)
 
     while True:
         try:
@@ -70,13 +87,41 @@ def main():
 
         if not user_input:
             continue
+
+        # ── Built-in commands ────────────────────────────────────────────────
         if user_input.lower() in ("quit", "exit", "bye"):
             print("Yaya: Goodbye! It was great chatting with you.")
             break
 
-        history.append({"role": "user", "content": user_input})
+        if user_input.lower() == '/memory':
+            mems = memory.list_all()
+            if not mems:
+                print("[No memories stored yet]\n")
+            else:
+                print(f"[{len(mems)} memories stored:]")
+                for m in mems:
+                    print(f"  [{m['id']}] {m['content']}  ({m['timestamp'][:10]})")
+                print()
+            continue
 
-        # Format as chat prompt
+        if user_input.lower().startswith('/forget '):
+            try:
+                mem_id = int(user_input.split()[1])
+                memory.forget(mem_id)
+                print(f"[Memory {mem_id} deleted]\n")
+            except (ValueError, IndexError):
+                print("[Usage: /forget <id>]\n")
+            continue
+
+        # ── Auto-detect memorable information ───────────────────────────────
+        memorable = memory.extract_from_message(user_input)
+        if memorable:
+            memory.remember(memorable, category='user_info', source='conversation')
+
+        # ── Build prompt with memory context ────────────────────────────────
+        system = build_system_prompt(memory, user_input)
+        history = [{"role": "system", "content": system}] + conversation + [{"role": "user", "content": user_input}]
+
         prompt = tokenizer.format_chat(history) + "<|assistant|>\n"
 
         response = generator.generate(
@@ -86,7 +131,7 @@ def main():
             top_p=args.top_p,
         )
 
-        # Strip everything up to and including <|assistant|>
+        # Clean up response
         if "<|assistant|>" in response:
             response = response.split("<|assistant|>")[-1]
         elif prompt in response:
@@ -96,7 +141,14 @@ def main():
         response = response.strip()
 
         print(f"Yaya: {response}\n")
-        history.append({"role": "assistant", "content": response})
+
+        # Update conversation history
+        conversation.append({"role": "user",      "content": user_input})
+        conversation.append({"role": "assistant", "content": response})
+
+        # Keep context window manageable (last 10 exchanges)
+        if len(conversation) > 20:
+            conversation = conversation[-20:]
 
 
 if __name__ == "__main__":
