@@ -1,0 +1,28 @@
+# Yaya-1B — First billion-parameter model
+# Target: Kaggle T4 x2 (32GB combined VRAM), float16, gradient checkpointing
+# Parameters: ~967M (rounds to 1B)
+
+model_name: yaya-1b
+
+architecture:
+  vocab_size: 32768
+  hidden_size: 2048
+  intermediate_size: 5632        # 2.75x hidden (SwiGLU optimal ratio)
+  num_hidden_layers: 20
+  num_attention_heads: 16
+  num_key_value_heads: 4         # GQA — 4x memory saving on KV cache
+  max_position_embeddings: 2048  # 2x longer context than 125M
+
+  rope_theta: 10000.0
+  rms_norm_eps: 1.0e-5
+  tie_word_embeddings: false     # Separate input/output embeddings at 1B scale
+  hidden_act: silu
+  attention_dropout: 0.0
+  attention_bias: false
+  mlp_bias: false
+
+vision:
+  enabled: false                 # Enable in phase 12 fine-tune
+
+dtype: float16
+initializer_range: 0.02

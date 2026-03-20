@@ -1,0 +1,45 @@
+# Training Configuration — Yaya-1B (Kaggle T4 x2)
+# 3B Wikipedia tokens, 45,700 steps, 1 clean epoch, no repetition
+
+seed: 42
+
+training:
+  per_device_batch_size: 4       # Smaller batch — 1B model is larger
+  gradient_accumulation_steps: 16  # Effective batch = 64 sequences
+  learning_rate: 3.0e-4
+  weight_decay: 0.1
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 2000
+  min_lr_ratio: 0.1
+  max_steps: 45700               # 3B tokens / (64 × 1024) ≈ 45,700 steps
+  max_seq_length: 2048           # 2x context vs 125M
+  dtype: float16
+
+checkpointing:
+  save_steps: 2000
+  save_dir: checkpoints/yaya-1b
+  keep_last_n: 3
+
+logging:
+  log_steps: 100
+  wandb_project: null
+  wandb_run_name: null
+
+eval:
+  eval_steps: 5000
+  eval_samples: 50
+
+data:
+  train_data: data/processed/wikipedia/train
+  eval_data: data/processed/wikipedia/eval
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 2
+
+distributed:
+  strategy: none
+  gradient_checkpointing: true   # Essential for 1B on T4
+  cpu_offload: false
