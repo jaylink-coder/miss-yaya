@@ -21,9 +21,7 @@ class DPODataset(Dataset):
             for line in f:
                 if line.strip(): self.pairs.append(json.loads(line))
     def _encode(self, prompt, response):
-        text = f"<|user|>
-{prompt}<|assistant|>
-{response}</s>"
+        text = "<|user|>\n" + prompt + "<|assistant|>\n" + response + "</s>"
         ids = self.tokenizer.encode(text)[:self.max_length]
         return torch.tensor(ids, dtype=torch.long)
     def __len__(self): return len(self.pairs)
