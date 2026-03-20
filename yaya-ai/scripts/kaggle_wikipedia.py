@@ -101,12 +101,20 @@ import yaml
 with open('configs/training/train_125m.yaml') as f:
     cfg = yaml.safe_load(f)
 
+# Override only path fields — never touch learning_rate or other hyperparams
 cfg['checkpointing']['save_dir'] = CHECKPOINT_DIR
 cfg['data']['train_data'] = TRAIN_DIR
 cfg['data']['eval_data']  = EVAL_DIR
 
+# Safety: clamp LR to a stable value regardless of what's in the file
+if cfg['training']['learning_rate'] > 3e-5:
+    print(f"  [WARN] LR {cfg['training']['learning_rate']} too high — clamping to 2e-5")
+    cfg['training']['learning_rate'] = 2e-5
+
 with open('configs/training/train_125m.yaml', 'w') as f:
     yaml.dump(cfg, f)
+
+print(f"  LR = {cfg['training']['learning_rate']}  warmup = {cfg['training']['warmup_steps']}")
 
 ckpts  = sorted(glob.glob(f'{CHECKPOINT_DIR}/checkpoint-*'))
 resume = f'--resume {ckpts[-1]}' if ckpts else ''
