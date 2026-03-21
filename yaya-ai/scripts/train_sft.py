@@ -83,7 +83,7 @@ def main():
     eval_dataloader = create_dataloader(
         eval_dataset,
         batch_size=train_config.per_device_batch_size,
-        num_workers=0,
+        num_workers=train_config.num_workers,
         shuffle=False,
     ) if eval_dataset else None
 
