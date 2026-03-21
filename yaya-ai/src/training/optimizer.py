@@ -19,6 +19,7 @@ def create_optimizer(
     beta1: float = 0.9,
     beta2: float = 0.95,
     epsilon: float = 1e-8,
+    use_8bit: bool = True,
 ) -> AdamW:
     """Create AdamW optimizer with weight decay applied selectively.
 
@@ -66,6 +67,21 @@ def create_optimizer(
     num_decay = sum(p.numel() for p in decay_params)
     num_no_decay = sum(p.numel() for p in no_decay_params)
     print(f"Optimizer: {num_decay:,} params with decay, {num_no_decay:,} without")
+
+    # Use 8-bit Adam if available — cuts optimizer memory from 8GB to 2GB,
+    # essential for 1B+ models on 16GB GPUs like T4
+    if use_8bit:
+        try:
+            import bitsandbytes as bnb
+            print("Using 8-bit AdamW (bitsandbytes) — saves ~6GB optimizer memory")
+            return bnb.optim.AdamW8bit(
+                param_groups,
+                lr=learning_rate,
+                betas=(beta1, beta2),
+                eps=epsilon,
+            )
+        except ImportError:
+            print("bitsandbytes not found — falling back to standard AdamW")
 
     return AdamW(
         param_groups,
