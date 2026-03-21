@@ -117,14 +117,14 @@ def text_to_speech(tts_engine, text: str):
 
 def generate_response(generator, tokenizer, history: list,
                       max_tokens: int = 120, temperature: float = 0.7) -> str:
-    prompt = tokenizer.format_chat(history) + "<|assistant|>\n"
+    prompt = tokenizer.format_chat(history) + ASSISTANT_TOKEN + "\n"
     response = generator.generate(prompt, max_new_tokens=max_tokens,
                                   temperature=temperature, top_p=0.9)
-    if "<|assistant|>" in response:
-        response = response.split("<|assistant|>")[-1]
+    if ASSISTANT_TOKEN in response:
+        response = response.split(ASSISTANT_TOKEN)[-1]
     elif prompt in response:
         response = response[len(prompt):]
-    for stop in ["<|user|>", "<|system|>", "</s>"]:
+    for stop in [USER_TOKEN, SYSTEM_TOKEN, "</s>"]:
         response = response.split(stop)[0]
     return response.strip()
 
