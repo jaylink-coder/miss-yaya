@@ -42,7 +42,8 @@ TEST_PROMPTS = [
 ]
 
 
-def evaluate(model, tokenizer, generator, use_chat_format: bool = False):
+def evaluate(model, tokenizer, generator, use_chat_format: bool = False,
+             temperature: float = 0.8, top_p: float = 0.9):
     print("\n" + "=" * 70)
     print("  YAYA EVALUATION")
     print("=" * 70)
@@ -59,7 +60,7 @@ def evaluate(model, tokenizer, generator, use_chat_format: bool = False):
 
         response = generator.generate(
             full_prompt,
-            config=GenerationConfig(max_new_tokens=100, temperature=0.8, top_p=0.9),
+            config=GenerationConfig(max_new_tokens=100, temperature=temperature, top_p=top_p),
         )
 
         # Strip everything up to and including the assistant token
