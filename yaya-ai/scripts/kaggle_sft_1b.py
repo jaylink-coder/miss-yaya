@@ -48,6 +48,8 @@ import tempfile
 import torch
 import yaml
 
+n_gpus = torch.cuda.device_count() if torch.cuda.is_available() else 0
+
 with open('configs/training/sft_1b.yaml') as f:
     cfg = yaml.safe_load(f)
 
@@ -59,6 +61,14 @@ if torch.cuda.is_available():
 cfg['checkpointing']['save_dir'] = SFT_CKPT_DIR
 cfg['data']['num_workers']       = 0   # Kaggle Jupyter: forked workers hang
 cfg['logging']['log_steps']      = 1   # Log every step so progress is visible
+
+# Enable DDP when multiple GPUs available; halve grad_accum to keep effective batch constant
+if n_gpus > 1:
+    cfg['distributed']['strategy'] = 'ddp'
+    cfg['training']['gradient_accumulation_steps'] = max(
+        1, cfg['training']['gradient_accumulation_steps'] // n_gpus
+    )
+    print(f'  DDP enabled: {n_gpus} GPUs')
 
 # Write temp config — never mutate the committed sft_1b.yaml
 tmp = tempfile.NamedTemporaryFile(
