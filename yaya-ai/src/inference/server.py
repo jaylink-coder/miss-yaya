@@ -18,6 +18,7 @@ except ImportError:
     FASTAPI_AVAILABLE = False
 
 from src.inference.generator import TextGenerator, GenerationConfig
+from src.tokenizer.tokenizer import ASSISTANT_TOKEN
 
 
 # --- Pydantic models for API request/response ---
