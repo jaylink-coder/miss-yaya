@@ -32,7 +32,7 @@ eval:
 
 data:
   train_data: data/sft/yaya_instruct.jsonl
-  eval_data: data/sft/yaya_instruct.jsonl
+  eval_data: data/sft/yaya_instruct_eval.jsonl  # Held-out eval — not in training data
   tokenizer_path: data/tokenizer/yaya_tokenizer.model
   num_workers: 0
 
