@@ -182,11 +182,13 @@ import yaml
 with open('configs/training/train_1b.yaml') as f:
     cfg = yaml.safe_load(f)
 
-cfg['checkpointing']['save_dir'] = CHECKPOINT_DIR
-cfg['data']['train_data']        = active_train_dir
-cfg['data']['eval_data']         = EVAL_DIR
-cfg['data']['num_workers']       = 0        # Kaggle Jupyter: forked workers hang
-cfg['training']['dtype']         = DTYPE    # auto-detected above
+cfg['checkpointing']['save_dir']              = CHECKPOINT_DIR
+cfg['data']['train_data']                     = active_train_dir
+cfg['data']['eval_data']                      = EVAL_DIR
+cfg['data']['num_workers']                    = 0        # Kaggle Jupyter: forked workers hang
+cfg['training']['dtype']                      = DTYPE    # auto-detected above
+cfg['training']['gradient_accumulation_steps'] = 32      # batch=1 × accum=32 → 65K tokens/step
+cfg['logging']['log_steps']                   = 1        # log every optimizer step (not every 10)
 
 tmp_cfg = tempfile.NamedTemporaryFile(
     mode='w', suffix='.yaml', dir='configs/training',
