@@ -187,8 +187,16 @@ cfg['data']['train_data']                     = active_train_dir
 cfg['data']['eval_data']                      = EVAL_DIR
 cfg['data']['num_workers']                    = 0        # Kaggle Jupyter: forked workers hang
 cfg['training']['dtype']                      = DTYPE    # auto-detected above
-cfg['training']['gradient_accumulation_steps'] = 32      # batch=1 × accum=32 → 65K tokens/step
 cfg['logging']['log_steps']                   = 1        # log every optimizer step (not every 10)
+
+# With n_gpus GPUs via DDP, effective batch = per_device_batch × n_gpus × grad_accum.
+# Halve grad_accum per extra GPU so effective batch stays at 32 seqs (65K tokens/step).
+cfg['training']['gradient_accumulation_steps'] = max(1, 32 // max(n_gpus, 1))
+
+# Enable DDP when more than one GPU is available
+if n_gpus > 1:
+    cfg['distributed']['strategy'] = 'ddp'
+    print(f'  DDP enabled: {n_gpus} GPUs → effective batch stays 32 seqs (grad_accum={cfg["training"]["gradient_accumulation_steps"]})')
 
 tmp_cfg = tempfile.NamedTemporaryFile(
     mode='w', suffix='.yaml', dir='configs/training',
