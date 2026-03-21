@@ -17,6 +17,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
+from src.tokenizer.tokenizer import ASSISTANT_TOKEN, USER_TOKEN, SYSTEM_TOKEN
 
 SYSTEM_PROMPT = (
     "You are Yaya, a helpful and friendly AI assistant. "
