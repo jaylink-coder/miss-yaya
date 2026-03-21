@@ -1,6 +1,18 @@
-"""Kaggle runner — tokenize ALL Wikipedia (3B tokens) and train yaya-1B."""
+"""Kaggle runner — tokenize Wikipedia (3B tokens) and train yaya-1B.
 
-import os, sys, glob
+Re-run safe: skips tokenization if data already present (≥2B tokens),
+auto-resumes from latest checkpoint.
+
+Uses mixed multi-domain data if data/processed/mixed/ is available,
+otherwise falls back to Wikipedia-only.
+"""
+
+import glob
+import os
+import sys
+import tempfile
+import time
+
 import numpy as np
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -13,59 +25,94 @@ WIKI_DIR       = '/kaggle/input/notebooks/takashisomeya/wikipedia-plaintext-2023
 CHECKPOINT_DIR = '/kaggle/working/yaya-checkpoints-1b'
 TRAIN_DIR      = 'data/processed/wikipedia/train'
 EVAL_DIR       = 'data/processed/wikipedia/eval'
+MIXED_DIR      = 'data/processed/mixed'
 MAX_TRAIN_TOKENS = 3_000_000_000   # 3B tokens — full Wikipedia
 EVAL_TOKENS      =     5_000_000   # 5M eval tokens
-CHUNK            = 2_000_000       # write 2M tokens at a time
+CHUNK            = 2_000_000       # 2M token write chunks
+MIN_TOKENS       = 2_000_000_000   # require 2B tokens before calling tokenization done
 
 os.makedirs(TRAIN_DIR, exist_ok=True)
 os.makedirs(EVAL_DIR,  exist_ok=True)
+os.makedirs(CHECKPOINT_DIR, exist_ok=True)
 
-# ── 1. Tokenize ────────────────────────────────────────────────────────────────
+
+# ── 0. VRAM + dtype check ──────────────────────────────────────────────────────
+import torch
+if torch.cuda.is_available():
+    props      = torch.cuda.get_device_properties(0)
+    vram_gb    = props.total_memory / 1e9
+    n_gpus     = torch.cuda.device_count()
+    capability = props.major * 10 + props.minor   # e.g. 75 for T4, 80 for A100
+    # bfloat16 requires Ampere (8.0+); T4 is compute 7.5 — float16 only
+    DTYPE = 'bfloat16' if capability >= 80 else 'float16'
+    print(f'GPU:   {props.name}  VRAM: {vram_gb:.1f}GB × {n_gpus}')
+    print(f'Compute capability: {props.major}.{props.minor}  → using {DTYPE}')
+    total_vram = vram_gb * n_gpus
+    if total_vram < 14:
+        print(f'WARNING: Only {total_vram:.0f}GB total VRAM. May OOM with 1B model.')
+    else:
+        print(f'Total VRAM: {total_vram:.0f}GB — OK for 1B with 8-bit Adam')
+else:
+    print('WARNING: No GPU found. Training will be extremely slow.')
+    DTYPE = 'float32'
+
+
+# ── 1. Tokenize Wikipedia ──────────────────────────────────────────────────────
 train_path = os.path.join(TRAIN_DIR, 'shard_00000.bin')
 eval_path  = os.path.join(EVAL_DIR,  'eval.bin')
 
-# Skip tokenization only if we have at least 2B tokens (4GB file — uint16)
-MIN_TOKENS = 2_000_000_000
+_needs_tokenize = True
+
 if os.path.exists(train_path):
     size = os.path.getsize(train_path)
     tokens_on_disk = size // 2
-    if size > MIN_TOKENS * 2:
-        print(f'\n[1/2] Tokenization already done: {tokens_on_disk/1e9:.2f}B tokens on disk. Skipping.')
+    if size > MIN_TOKENS * 2:   # uint16: bytes = tokens × 2
+        print(f'\n[1/2] Wikipedia already tokenized: {tokens_on_disk/1e9:.2f}B tokens — skipping.')
+        _needs_tokenize = False
     else:
-        print(f'\n[1/2] Found undersized shard ({tokens_on_disk/1e6:.0f}M tokens — need 2B+). Deleting and re-tokenizing...')
+        print(f'\n[1/2] Undersized shard ({tokens_on_disk/1e6:.0f}M tokens, need 2B+) — re-tokenizing...')
         for f in glob.glob(os.path.join(TRAIN_DIR, '*.bin')):
             os.remove(f)
         if os.path.exists(eval_path):
             os.remove(eval_path)
 
-if not os.path.exists(train_path) or os.path.getsize(train_path) <= MIN_TOKENS * 2:
-    print('\n[1/2] Tokenizing ALL Wikipedia (this takes ~60 minutes)...')
+if _needs_tokenize:
+    print('\n[1/2] Tokenizing Wikipedia (~60 min on T4)...')
+    t0 = time.time()
+
     from src.tokenizer.tokenizer import YayaTokenizer
     import pandas as pd
 
     tokenizer = YayaTokenizer('data/tokenizer/yaya_tokenizer.model')
     print(f'  Vocab size: {tokenizer.vocab_size}')
 
+    # Accept any *.parquet files in the wiki dir
     parquet_files = sorted([
         os.path.join(WIKI_DIR, f)
         for f in os.listdir(WIKI_DIR)
-        if f.endswith('.parquet') and len(f) == 9
+        if f.endswith('.parquet')
     ])
-    print(f'  Found {len(parquet_files)} parquet files (~10.9M articles)')
+    if not parquet_files:
+        print(f'ERROR: No .parquet files found in {WIKI_DIR}')
+        print('  Add the Kaggle Wikipedia dataset to this notebook.')
+        sys.exit(1)
+    print(f'  Found {len(parquet_files)} parquet files')
 
     total_train = 0
     total_eval  = 0
     chunk_buf   = []
     done        = False
+    last_report = time.time()
 
     ft = open(train_path, 'wb')
     fe = open(eval_path,  'wb')
 
     try:
         for pfile in parquet_files:
-            if done: break
-            letter = os.path.basename(pfile)
-            print(f'  Processing {letter}...', flush=True)
+            if done:
+                break
+            fname = os.path.basename(pfile)
+            print(f'  {fname}...', flush=True)
             df = pd.read_parquet(pfile, columns=['text'])
 
             for row in df.itertuples(index=False):
@@ -89,9 +136,17 @@ if not os.path.exists(train_path) or os.path.getsize(train_path) <= MIN_TOKENS *
                     done = True
                     break
 
-            gb = total_train / 1e9
-            print(f'    train {gb:.2f}B | eval {total_eval/1e6:.0f}M tokens', flush=True)
+            # Progress + ETA
+            elapsed = time.time() - t0
+            pct = min(total_train / MAX_TRAIN_TOKENS, 1.0)
+            eta = (elapsed / max(pct, 1e-6)) * (1 - pct) / 60 if pct > 0 else 0
+            print(
+                f'    train {total_train/1e9:.2f}B | eval {total_eval/1e6:.0f}M'
+                f' | {elapsed/60:.0f}min elapsed | ~{eta:.0f}min remaining',
+                flush=True,
+            )
 
+        # Flush remaining
         if chunk_buf:
             arr = np.array(chunk_buf, dtype=np.uint16)
             arr.tofile(ft)
@@ -100,28 +155,61 @@ if not os.path.exists(train_path) or os.path.getsize(train_path) <= MIN_TOKENS *
         ft.close()
         fe.close()
 
-    print(f'\n  Train: {total_train/1e9:.2f}B tokens')
+    elapsed = time.time() - t0
+    print(f'\n  Tokenization done in {elapsed/60:.1f} min')
+    print(f'  Train: {total_train/1e9:.2f}B tokens')
     print(f'  Eval:  {total_eval/1e6:.0f}M tokens')
 
-# ── 2. Train ───────────────────────────────────────────────────────────────────
+
+# ── 2. Choose training data ────────────────────────────────────────────────────
+# Prefer mixed multi-domain data if mix-pretrain-data was run
+mixed_shards = glob.glob(os.path.join(MIXED_DIR, '*.bin'))
+if mixed_shards:
+    total_mixed_tokens = sum(os.path.getsize(f) for f in mixed_shards) // 2
+    print(f'\n  Using mixed multi-domain data: {len(mixed_shards)} shards, '
+          f'{total_mixed_tokens/1e9:.2f}B tokens')
+    active_train_dir = MIXED_DIR
+else:
+    print(f'\n  Using Wikipedia data (run make mix-pretrain-data for multi-domain)')
+    active_train_dir = TRAIN_DIR
+
+
+# ── 3. Train ───────────────────────────────────────────────────────────────────
 print('\n[2/2] Starting yaya-1B training...')
 import yaml
 
+# Write a temp config so we don't mutate the committed train_1b.yaml
 with open('configs/training/train_1b.yaml') as f:
     cfg = yaml.safe_load(f)
+
 cfg['checkpointing']['save_dir'] = CHECKPOINT_DIR
-cfg['data']['train_data'] = TRAIN_DIR
-cfg['data']['eval_data']  = EVAL_DIR
-with open('configs/training/train_1b.yaml', 'w') as f:
-    yaml.dump(cfg, f)
+cfg['data']['train_data']        = active_train_dir
+cfg['data']['eval_data']         = EVAL_DIR
+cfg['data']['num_workers']       = 0        # Kaggle Jupyter: forked workers hang
+cfg['training']['dtype']         = DTYPE    # auto-detected above
 
-ckpts  = sorted(glob.glob(f'{CHECKPOINT_DIR}/checkpoint-*'))
-resume = f'--resume {ckpts[-1]}' if ckpts else ''
-print(f'  Resuming from: {ckpts[-1]}' if resume else '  Starting from scratch')
-
-os.system(
-    f'WANDB_DISABLED=true WANDB_MODE=disabled python scripts/train.py '
-    f'--model_config configs/model/yaya_1b.yaml '
-    f'--train_config configs/training/train_1b.yaml '
-    f'{resume}'
+tmp_cfg = tempfile.NamedTemporaryFile(
+    mode='w', suffix='.yaml', dir='configs/training',
+    prefix='_kaggle_run_', delete=False
 )
+yaml.dump(cfg, tmp_cfg)
+tmp_cfg.close()
+tmp_cfg_path = tmp_cfg.name
+
+try:
+    ckpts  = sorted(glob.glob(f'{CHECKPOINT_DIR}/checkpoint-*'))
+    resume = f'--resume {ckpts[-1]}' if ckpts else ''
+    print(f'  Resuming from: {ckpts[-1]}' if resume else '  Starting from scratch')
+    print(f'  Train data:    {active_train_dir}')
+    print(f'  Checkpoints:   {CHECKPOINT_DIR}')
+
+    ret = os.system(
+        f'WANDB_DISABLED=true WANDB_MODE=disabled python scripts/train.py '
+        f'--model_config configs/model/yaya_1b.yaml '
+        f'--train_config {tmp_cfg_path} '
+        f'{resume}'
+    )
+    if ret != 0:
+        print(f'\nERROR: train.py exited with code {ret}')
+finally:
+    os.unlink(tmp_cfg_path)
