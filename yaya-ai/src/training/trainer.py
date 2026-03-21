@@ -213,9 +213,18 @@ class Trainer:
             if self.global_step >= self.config.max_steps:
                 break
 
+            # Heartbeat: confirm data loading and GPU transfer are working
+            if batch_idx == 0 and self.epoch == 1 and is_main_process():
+                print(f"[Epoch 1, batch 0] Data loaded OK. Moving to {self.device}...",
+                      flush=True)
+
             # Move batch to device
             batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
                      for k, v in batch.items()}
+
+            if batch_idx == 0 and self.epoch == 1 and is_main_process():
+                print(f"[Epoch 1, batch 0] On device. Running forward pass...",
+                      flush=True)
 
             # Forward pass with mixed precision
             with torch.autocast(
