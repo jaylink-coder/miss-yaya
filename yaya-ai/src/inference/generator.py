@@ -44,18 +44,42 @@ class TextGenerator:
         self,
         prompt: str,
         config: Optional[GenerationConfig] = None,
+        *,
+        max_new_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        top_k: Optional[int] = None,
+        do_sample: Optional[bool] = None,
     ) -> str:
         """Generate text from a prompt.
 
         Args:
             prompt: Input text prompt.
-            config: Generation configuration.
+            config: Generation configuration. If not provided, defaults are used.
+            max_new_tokens: Override config.max_new_tokens.
+            temperature: Override config.temperature.
+            top_p: Override config.top_p.
+            top_k: Override config.top_k.
+            do_sample: Override config.do_sample.
 
         Returns:
             Generated text (prompt + continuation).
         """
         if config is None:
             config = GenerationConfig()
+        # Apply any per-call overrides without mutating the original config
+        overrides = {
+            k: v for k, v in [
+                ("max_new_tokens", max_new_tokens),
+                ("temperature", temperature),
+                ("top_p", top_p),
+                ("top_k", top_k),
+                ("do_sample", do_sample),
+            ] if v is not None
+        }
+        if overrides:
+            import dataclasses
+            config = dataclasses.replace(config, **overrides)
 
         # Tokenize prompt
         input_ids = self.tokenizer.encode(prompt, add_bos=True)
