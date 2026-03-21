@@ -1,0 +1,46 @@
+# SFT Configuration — Yaya-1B (Kaggle T4 x2)
+# Run after pretraining to teach instruction following
+# Lower LR than pretrain (2e-5 vs 3e-4), shorter context for memory
+
+seed: 42
+
+training:
+  per_device_batch_size: 2       # Small batch — 1B model on T4
+  gradient_accumulation_steps: 16  # Effective batch = 32 sequences
+  learning_rate: 2.0e-5          # 15x lower than pretrain LR
+  weight_decay: 0.0              # No weight decay for SFT
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 100
+  min_lr_ratio: 0.0
+  max_steps: 3000                # ~100K examples × 1 epoch at batch 32
+  max_seq_length: 1024           # Shorter context saves VRAM during SFT
+  dtype: bfloat16
+
+checkpointing:
+  save_steps: 500
+  save_dir: checkpoints/yaya-1b-sft
+  keep_last_n: 2
+
+logging:
+  log_steps: 10
+  wandb_project: null
+  wandb_run_name: null
+
+eval:
+  eval_steps: 500
+  eval_samples: 50
+
+data:
+  train_data: data/sft/yaya_instruct.jsonl
+  eval_data: data/sft/yaya_instruct.jsonl
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 0
+
+distributed:
+  strategy: none
+  gradient_checkpointing: true   # Essential for 1B on T4
+  cpu_offload: false
