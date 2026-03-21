@@ -175,14 +175,21 @@ class InstructionDataset(Dataset):
         else:
             files = sorted(Path(data_path).glob("*.jsonl"))
 
+        skipped = 0
         for filepath in files:
             with open(filepath, "r", encoding="utf-8") as f:
-                for line in f:
+                for lineno, line in enumerate(f, 1):
                     line = line.strip()
-                    if line:
+                    if not line:
+                        continue
+                    try:
                         self.samples.append(json.loads(line))
+                    except json.JSONDecodeError as e:
+                        skipped += 1
+                        print(f"  Warning: skipping malformed JSON in {filepath}:{lineno} — {e}")
 
-        print(f"InstructionDataset loaded: {len(self.samples):,} samples from {len(files)} files")
+        print(f"InstructionDataset loaded: {len(self.samples):,} samples from {len(files)} files"
+              + (f" ({skipped} skipped)" if skipped else ""))
 
     def __len__(self) -> int:
         return len(self.samples)
@@ -197,18 +204,35 @@ class InstructionDataset(Dataset):
         sample = self.samples[idx]
         messages = sample.get("messages", [])
 
-        # Format chat and tokenize
-        formatted_text = self.tokenizer.format_chat(messages)
-        token_ids = self.tokenizer.encode(formatted_text, add_bos=True, add_eos=True)
+        # Build token ids and labels with proper assistant-only masking.
+        # System and user turns contribute to context but NOT to the loss (-100).
+        token_ids: List[int] = []
+        label_ids: List[int] = []
+
+        for msg in messages:
+            role = msg.get("role", "")
+            content = msg.get("content", "")
+            # Encode this turn (with its role marker baked in via format_chat style)
+            turn_text = self.tokenizer.format_chat([msg])
+            turn_tokens = self.tokenizer.encode(turn_text, add_bos=False, add_eos=False)
+            token_ids.extend(turn_tokens)
+            if role == "assistant":
+                label_ids.extend(turn_tokens)
+            else:
+                label_ids.extend([-100] * len(turn_tokens))
+
+        # Add BOS at start, EOS at end
+        bos = self.tokenizer.bos_id
+        eos = self.tokenizer.eos_id
+        token_ids = [bos] + token_ids + [eos]
+        label_ids = [-100] + label_ids + [eos]  # EOS counted in loss
 
         # Truncate to max length
         token_ids = token_ids[: self.max_seq_length]
+        label_ids = label_ids[: self.max_seq_length]
 
-        # Create labels (mask non-assistant tokens with -100)
-        # For simplicity, we use full sequence as labels here.
-        # A production implementation would mask system/user turns.
         input_ids = torch.tensor(token_ids[:-1], dtype=torch.long)
-        labels = torch.tensor(token_ids[1:], dtype=torch.long)
+        labels = torch.tensor(label_ids[1:], dtype=torch.long)
 
         # Pad if needed
         pad_len = self.max_seq_length - 1 - len(input_ids)

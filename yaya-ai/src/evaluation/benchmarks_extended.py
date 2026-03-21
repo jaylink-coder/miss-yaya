@@ -211,21 +211,16 @@ class GSM8KBenchmark(BenchmarkRunner):
             if gold_answer is None:
                 continue
 
-            # Generate solution
+            # Generate solution — feed full accumulated sequence each step
             prompt = f"Question: {question}\nLet's solve this step by step.\n"
-            tokens = tokenizer.encode(prompt, add_bos=True)
-            input_ids = torch.tensor([tokens], device=device)
-
-            # Simple greedy generation (limited tokens)
-            generated = list(tokens)
+            generated = tokenizer.encode(prompt, add_bos=True)
             for _ in range(256):
+                input_ids = torch.tensor([generated], device=device)
                 outputs = model(input_ids=input_ids)
-                next_token = outputs["logits"][:, -1, :].argmax(dim=-1)
-                next_id = next_token.item()
+                next_id = outputs["logits"][0, -1, :].argmax(dim=-1).item()
                 generated.append(next_id)
                 if next_id == tokenizer.eos_id:
                     break
-                input_ids = next_token.unsqueeze(0)
 
             response = tokenizer.decode(generated)
             predicted_answer = self._extract_answer(response)
@@ -278,19 +273,15 @@ class HumanEvalBenchmark(BenchmarkRunner):
             if not prompt:
                 continue
 
-            # Generate completion
-            tokens = tokenizer.encode(prompt, add_bos=True)
-            input_ids = torch.tensor([tokens], device=device)
-
-            generated = list(tokens)
+            # Generate completion — feed full accumulated sequence each step
+            generated = tokenizer.encode(prompt, add_bos=True)
             for _ in range(512):
+                input_ids = torch.tensor([generated], device=device)
                 outputs = model(input_ids=input_ids)
-                next_token = outputs["logits"][:, -1, :].argmax(dim=-1)
-                next_id = next_token.item()
+                next_id = outputs["logits"][0, -1, :].argmax(dim=-1).item()
                 generated.append(next_id)
                 if next_id == tokenizer.eos_id:
                     break
-                input_ids = next_token.unsqueeze(0)
 
             response = tokenizer.decode(generated)
             # Extract just the completion after the prompt

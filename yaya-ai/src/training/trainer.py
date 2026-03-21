@@ -123,6 +123,10 @@ class Trainer:
         # Mixed precision
         self.use_amp = config.dtype in ("bfloat16", "float16")
         self.amp_dtype = torch.bfloat16 if config.dtype == "bfloat16" else torch.float16
+        # GradScaler is only needed for float16 — bfloat16 has enough range and doesn't need it
+        self.scaler = torch.cuda.amp.GradScaler(
+            enabled=(self.use_amp and self.amp_dtype == torch.float16)
+        )
 
         # Training state
         self.global_step = 0
@@ -222,24 +226,26 @@ class Trainer:
                 # Scale loss for gradient accumulation
                 loss = loss / self.config.gradient_accumulation_steps
 
-            # Backward pass
-            loss.backward()
+            # Backward pass — scaler is a no-op when disabled (bfloat16 or fp32)
+            self.scaler.scale(loss).backward()
             accumulation_loss += loss.item()
 
             # Optimizer step (after accumulation)
             is_accumulation_step = (batch_idx + 1) % self.config.gradient_accumulation_steps == 0
 
             if is_accumulation_step:
-                # Gradient clipping
+                # Gradient clipping — must unscale first so clip sees true gradient norms
                 grad_norm = None
                 if self.config.max_grad_norm > 0:
+                    self.scaler.unscale_(self.optimizer)
                     grad_norm = torch.nn.utils.clip_grad_norm_(
                         self.model.parameters(),
                         self.config.max_grad_norm,
                     ).item()
 
-                # Optimizer step
-                self.optimizer.step()
+                # Optimizer step + scaler update
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
                 self.scheduler.step()
                 self.optimizer.zero_grad(set_to_none=True)
 

@@ -77,12 +77,19 @@ class YayaTokenizer:
         """Build mapping from special token strings to their IDs."""
         self.special_token_to_id = {}
         self.id_to_special_token = {}
+        missing = []
 
         for token in SPECIAL_TOKENS_LIST:
             token_id = self.sp_model.PieceToId(token)
             if token_id != self.sp_model.unk_id():
                 self.special_token_to_id[token] = token_id
                 self.id_to_special_token[token_id] = token
+            else:
+                missing.append(token)
+
+        if missing:
+            print(f"Warning: {len(missing)} special tokens not in vocab: {missing}"
+                  "\n  BOS/EOS/PAD fallbacks will be used (0/1/2).")
 
     @property
     def vocab_size(self) -> int:

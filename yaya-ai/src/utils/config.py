@@ -102,14 +102,34 @@ def load_model_config(path: str) -> ModelConfig:
     vision_raw = raw.get("vision", {})
     vision_cfg = VisionConfig(**vision_raw) if vision_raw else VisionConfig()
 
+    hidden_size = arch.get("hidden_size", 2048)
+    num_heads = arch.get("num_attention_heads", 16)
+    num_kv_heads = arch.get("num_key_value_heads", 4)
+
+    # Validate architecture consistency
+    if hidden_size % num_heads != 0:
+        raise ValueError(
+            f"hidden_size ({hidden_size}) must be divisible by "
+            f"num_attention_heads ({num_heads})"
+        )
+    if num_heads % num_kv_heads != 0:
+        raise ValueError(
+            f"num_attention_heads ({num_heads}) must be divisible by "
+            f"num_key_value_heads ({num_kv_heads}) for GQA"
+        )
+
+    dtype = raw.get("dtype", "bfloat16")
+    if dtype not in ("float32", "float16", "bfloat16"):
+        raise ValueError(f"Unsupported dtype: {dtype!r}. Use float32, float16, or bfloat16.")
+
     return ModelConfig(
         model_name=raw.get("model_name", "yaya"),
         vocab_size=arch.get("vocab_size", 64000),
-        hidden_size=arch.get("hidden_size", 2048),
+        hidden_size=hidden_size,
         intermediate_size=arch.get("intermediate_size", 5632),
         num_hidden_layers=arch.get("num_hidden_layers", 24),
-        num_attention_heads=arch.get("num_attention_heads", 16),
-        num_key_value_heads=arch.get("num_key_value_heads", 4),
+        num_attention_heads=num_heads,
+        num_key_value_heads=num_kv_heads,
         max_position_embeddings=arch.get("max_position_embeddings", 4096),
         rope_theta=arch.get("rope_theta", 10000.0),
         rms_norm_eps=arch.get("rms_norm_eps", 1e-5),
@@ -119,7 +139,7 @@ def load_model_config(path: str) -> ModelConfig:
         attention_bias=arch.get("attention_bias", False),
         mlp_bias=arch.get("mlp_bias", False),
         initializer_range=raw.get("initializer_range", 0.02),
-        dtype=raw.get("dtype", "bfloat16"),
+        dtype=dtype,
         vision=vision_cfg,
     )
 
