@@ -58,7 +58,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model_config", required=True)
     parser.add_argument("--sft_checkpoint", required=True)
-    parser.add_argument("--dpo_data", default="data/sft/dpo_pairs.jsonl")
+    parser.add_argument("--dpo_data", default="data/sft/yaya_dpo_train.jsonl")
     parser.add_argument("--save_dir", default="checkpoints/yaya-dpo")
     parser.add_argument("--lr", type=float, default=5e-7)
     parser.add_argument("--max_steps", type=int, default=1000)
