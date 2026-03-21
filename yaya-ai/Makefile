@@ -103,6 +103,18 @@ dataset-stats:
 	python -c "from src.data.shard_mixer import DatasetStatsReporter; DatasetStatsReporter('data/processed/shards').print_report()"
 
 # SFT (Supervised Fine-Tuning)
+sft-1b:
+	python scripts/train_sft.py \
+		--model_config configs/model/yaya_1b.yaml \
+		--train_config configs/training/sft_1b.yaml \
+		--pretrain_checkpoint checkpoints/yaya-1b/latest
+
+sft-1b-2gpu:
+	torchrun --nproc_per_node=2 scripts/train_sft.py \
+		--model_config configs/model/yaya_1b.yaml \
+		--train_config configs/training/sft_1b.yaml \
+		--pretrain_checkpoint checkpoints/yaya-1b/latest
+
 sft-1.5b:
 	torchrun --nproc_per_node=8 scripts/train.py \
 		--model_config configs/model/yaya_1_5b.yaml \
@@ -110,6 +122,12 @@ sft-1.5b:
 		--resume checkpoints/yaya-1.5b/latest
 
 # DPO (Alignment)
+align-dpo-1b:
+	python scripts/align_dpo_hf.py \
+		--model_path outputs/yaya-1b-sft-merged \
+		--data_dir data/sft \
+		--output_dir outputs/yaya-1b-dpo
+
 dpo-1.5b:
 	python scripts/train_dpo.py \
 		--model_config configs/model/yaya_1_5b.yaml \
