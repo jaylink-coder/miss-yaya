@@ -12,7 +12,7 @@ training:
   lr_scheduler: cosine
   warmup_steps: 50
   min_lr_ratio: 0.0
-  max_steps: 1200
+  max_steps: 1300
   max_seq_length: 256
   dtype: float32
 
