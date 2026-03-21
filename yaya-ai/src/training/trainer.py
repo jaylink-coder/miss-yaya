@@ -148,6 +148,8 @@ class Trainer:
                          If None, tries to auto-resume from latest.
         """
         # Try to resume from checkpoint
+        # Determine which checkpoint will be loaded (for EMA path resolution)
+        _ckpt_path = resume_from or self.checkpoint_manager.get_latest_checkpoint()
         metadata = self.checkpoint_manager.load(
             self.unwrapped_model,
             self.optimizer,
@@ -156,6 +158,12 @@ class Trainer:
         )
         self.global_step = metadata.get("step", 0)
         self.epoch = metadata.get("epoch", 0)
+
+        # Restore EMA shadow weights if a checkpoint exists
+        if self.ema is not None and _ckpt_path is not None:
+            ema_path = os.path.join(_ckpt_path, "ema.pt")
+            if os.path.exists(ema_path):
+                self.ema.load(ema_path)
 
         # Log model info
         if is_main_process():
