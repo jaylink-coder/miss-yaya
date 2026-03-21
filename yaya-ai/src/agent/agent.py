@@ -7,6 +7,7 @@ from typing import Any, Callable, Dict, List, Optional
 from src.tools import TOOL_MAP, ToolResult
 from src.agent.tools import ToolCall, ToolRegistry, create_default_registry
 from src.agent.chat_template import TOOL_CALL_OPEN, TOOL_CALL_CLOSE
+from src.tokenizer.tokenizer import ASSISTANT_TOKEN, USER_TOKEN, SYSTEM_TOKEN
 
 TOOL_CALL_PATTERN = re.compile(r'<\|tool\|>(.*?):(.*?)<\|/tool\|>', re.DOTALL)
 
