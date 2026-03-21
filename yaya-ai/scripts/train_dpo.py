@@ -7,7 +7,7 @@ from torch.utils.data import Dataset, DataLoader
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.utils.config import load_model_config
 from src.model.yaya_model import YayaForCausalLM
-from src.tokenizer.tokenizer import YayaTokenizer
+from src.tokenizer.tokenizer import YayaTokenizer, USER_TOKEN, ASSISTANT_TOKEN
 from src.training.checkpointing import CheckpointManager
 
 BETA = 0.1
