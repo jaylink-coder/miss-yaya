@@ -93,7 +93,8 @@ class TrainingLogger:
         # Log at specified intervals
         if step % self.log_steps == 0 and self.is_main:
             elapsed = time.time() - self._step_start_time
-            tokens_per_sec = tokens_per_step * self.log_steps / max(elapsed, 1e-6)
+            n_steps = len(self._metrics["loss"])
+            tokens_per_sec = tokens_per_step * n_steps / max(elapsed, 1e-6)
 
             # Compute averages
             avg_loss = sum(self._metrics["loss"]) / len(self._metrics["loss"])
