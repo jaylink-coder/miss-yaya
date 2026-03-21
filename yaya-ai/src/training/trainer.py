@@ -199,7 +199,7 @@ class Trainer:
 
         # Final save
         if is_main_process():
-            self.checkpoint_manager.save(
+            final_ckpt = self.checkpoint_manager.save(
                 self.unwrapped_model,
                 self.optimizer,
                 self.scheduler,
@@ -207,6 +207,8 @@ class Trainer:
                 epoch=self.epoch,
                 loss=0.0,
             )
+            if self.ema is not None:
+                self.ema.save(os.path.join(final_ckpt, "ema.pt"))
             print(f"\nTraining complete at step {self.global_step}")
 
         self.logger.finish()
