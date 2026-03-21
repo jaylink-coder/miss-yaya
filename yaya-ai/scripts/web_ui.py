@@ -27,7 +27,7 @@ SYSTEM_PROMPT = (
 def load_model(model_config_path, checkpoint_path, device):
     from src.utils.config import load_model_config
     from src.model.yaya_model import YayaForCausalLM
-    from src.tokenizer.tokenizer import YayaTokenizer
+    from src.tokenizer.tokenizer import YayaTokenizer, ASSISTANT_TOKEN, USER_TOKEN, SYSTEM_TOKEN
     from src.inference.generator import TextGenerator
     from src.training.checkpointing import CheckpointManager
 
