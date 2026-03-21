@@ -19,6 +19,7 @@
         eval-quick eval-full-hf eval-interactive \
         deploy deploy-quantized \
         pipeline-full clean \
+        validate-sft-data validate-sft-data-verbose \
         sft dpo export agent rag safety
 
 # Installation
