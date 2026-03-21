@@ -58,7 +58,8 @@ if torch.cuda.is_available():
     cfg['training']['dtype'] = 'bfloat16' if cc >= 80 else 'float16'
 
 cfg['checkpointing']['save_dir'] = SFT_CKPT_DIR
-cfg['data']['num_workers'] = 0   # Kaggle Jupyter: forked workers hang
+cfg['data']['num_workers']       = 0   # Kaggle Jupyter: forked workers hang
+cfg['logging']['log_steps']      = 1   # Log every step so progress is visible
 
 # Write temp config — never mutate the committed sft_1b.yaml
 tmp = tempfile.NamedTemporaryFile(
