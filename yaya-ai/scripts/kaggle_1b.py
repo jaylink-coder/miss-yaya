@@ -213,8 +213,12 @@ try:
     print(f'  Train data:    {active_train_dir}')
     print(f'  Checkpoints:   {CHECKPOINT_DIR}')
 
+    launcher = (
+        f'torchrun --nproc_per_node={n_gpus} --master_port=29500'
+        if n_gpus > 1 else 'python'
+    )
     ret = os.system(
-        f'WANDB_DISABLED=true WANDB_MODE=disabled python scripts/train.py '
+        f'WANDB_DISABLED=true WANDB_MODE=disabled {launcher} scripts/train.py '
         f'--model_config configs/model/yaya_1b.yaml '
         f'--train_config {tmp_cfg_path} '
         f'{resume}'
