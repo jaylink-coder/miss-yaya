@@ -54,8 +54,9 @@ def quantize_tensor_int8(
         min_val = tensor.min()
         max_val = tensor.max()
         scale = (max_val - min_val) / 255.0
-        zero_point = torch.clamp(torch.round(-min_val / scale), 0, 255).to(torch.int8)
-        quantized = torch.clamp(torch.round(tensor / scale) + zero_point, 0, 255).to(torch.int8)
+        # zero_point lives in [0, 255] — use int32 to avoid int8 overflow
+        zero_point = torch.clamp(torch.round(-min_val / scale), 0, 255).to(torch.int32)
+        quantized = torch.clamp(torch.round(tensor / scale) + zero_point, 0, 255).to(torch.uint8)
         return {"quantized": quantized, "scale": scale, "zero_point": zero_point}
 
 
