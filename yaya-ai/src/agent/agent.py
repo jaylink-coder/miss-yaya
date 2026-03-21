@@ -188,16 +188,16 @@ class YayaAgent:
         accumulated = ''
 
         for _ in range(self.max_iter):
-            prompt = self.tokenizer.format_chat(history) + '<|assistant|>\n' + accumulated
+            prompt = self.tokenizer.format_chat(history) + ASSISTANT_TOKEN + '\n' + accumulated
             generated = self.generator.generate(prompt, max_new_tokens=max_new_tokens,
                                                 temperature=temperature, top_p=0.9)
-            if '<|assistant|>' in generated:
-                new_text = generated.split('<|assistant|>')[-1]
+            if ASSISTANT_TOKEN in generated:
+                new_text = generated.split(ASSISTANT_TOKEN)[-1]
             elif prompt in generated:
                 new_text = generated[len(prompt):]
             else:
                 new_text = generated
-            for stop in ['<|user|>', '<|system|>', '</s>']:
+            for stop in [USER_TOKEN, SYSTEM_TOKEN, '</s>']:
                 new_text = new_text.split(stop)[0]
             accumulated += new_text
             tool_calls = self._extract_tool_calls(accumulated)
