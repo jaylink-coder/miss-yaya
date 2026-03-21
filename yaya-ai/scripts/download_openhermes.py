@@ -78,20 +78,29 @@ def main():
         print("ERROR: datasets not installed. Run: pip install datasets")
         return
 
-    ds = load_dataset("teknium/OpenHermes-2.5", split="train", streaming=False)
-    print(f"Total examples in OpenHermes: {len(ds):,}", flush=True)
+    # Stream the dataset — stops after collecting max_examples good examples
+    # instead of downloading all ~1M rows (~1GB) first.
+    ds = load_dataset("teknium/OpenHermes-2.5", split="train", streaming=True)
 
-    # Convert all examples
-    print("Converting to Yaya format...", flush=True)
+    print("Converting to Yaya format (streaming)...", flush=True)
     converted = []
     skipped = 0
+    seen = 0
 
     for item in ds:
+        seen += 1
         ex = convert_example(item)
         if ex is None:
             skipped += 1
-            continue
-        converted.append(ex)
+        else:
+            converted.append(ex)
+
+        if seen % 50_000 == 0:
+            print(f"  Scanned {seen:,} | Kept {len(converted):,} | Skipped {skipped:,}", flush=True)
+
+        # Collect 3× target so we have a good shuffle pool, then stop
+        if len(converted) >= args.max_examples * 3:
+            break
 
     print(f"Converted: {len(converted):,}  Skipped: {skipped:,}", flush=True)
 
