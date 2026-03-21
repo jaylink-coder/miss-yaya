@@ -209,11 +209,16 @@ class InstructionDataset(Dataset):
         token_ids: List[int] = []
         label_ids: List[int] = []
 
-        for msg in messages:
+        for i, msg in enumerate(messages):
             role = msg.get("role", "")
             content = msg.get("content", "")
-            # Encode this turn (with its role marker baked in via format_chat style)
+            # Encode this turn with its role marker.
+            # format_chat joins turns with "\n", so add the separator after each
+            # non-last turn to match what format_chat(all_messages) produces
+            # (avoids train/inference mismatch at turn boundaries).
             turn_text = self.tokenizer.format_chat([msg])
+            if i < len(messages) - 1:
+                turn_text += "\n"
             turn_tokens = self.tokenizer.encode(turn_text, add_bos=False, add_eos=False)
             token_ids.extend(turn_tokens)
             if role == "assistant":
