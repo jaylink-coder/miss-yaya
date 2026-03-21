@@ -92,6 +92,11 @@ class TrainingConfig:
     distributed_strategy: str = "deepspeed_zero2"
     cpu_offload: bool = False
 
+    # Advanced training
+    grad_noise_eta: float = 0.0       # Gradient noise (0 = off; try 0.01 to escape minima)
+    layer_lr_decay: float = 1.0       # Layer-wise LR decay (1.0 = off; try 0.9 for fine-tune)
+    ema_decay: float = 0.0            # EMA weight decay (0 = off; try 0.9999 for eval)
+
 
 def load_model_config(path: str) -> ModelConfig:
     """Load model config from YAML file."""
@@ -187,4 +192,7 @@ def load_training_config(path: str) -> TrainingConfig:
         num_workers=data.get("num_workers", 4),
         distributed_strategy=dist.get("strategy", "deepspeed_zero2"),
         cpu_offload=dist.get("cpu_offload", False),
+        grad_noise_eta=training.get("grad_noise_eta", 0.0),
+        layer_lr_decay=training.get("layer_lr_decay", 1.0),
+        ema_decay=training.get("ema_decay", 0.0),
     )

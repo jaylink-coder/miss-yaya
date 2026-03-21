@@ -20,6 +20,7 @@ def create_optimizer(
     beta2: float = 0.95,
     epsilon: float = 1e-8,
     use_8bit: bool = True,
+    layer_lr_decay: float = 1.0,
 ) -> AdamW:
     """Create AdamW optimizer with weight decay applied selectively.
 
@@ -28,45 +29,93 @@ def create_optimizer(
     - LayerNorm / RMSNorm weights
     - Embedding weights
 
-    This follows standard practice from GPT/LLaMA training.
+    Layer-wise LR decay (LLRD):
+        When layer_lr_decay < 1.0, deeper layers get a smaller LR.
+        Layer i of N total gets LR * decay^(N - i).
+        This stabilises early layers (learned general features)
+        while letting upper layers adapt faster — crucial for fine-tuning.
+        Set layer_lr_decay=1.0 (default) for pretraining (all layers equal).
 
     Args:
         model: The model to optimize.
-        learning_rate: Peak learning rate.
+        learning_rate: Peak learning rate for the top layer.
         weight_decay: Weight decay coefficient.
         beta1: AdamW beta1.
         beta2: AdamW beta2.
         epsilon: AdamW epsilon.
+        use_8bit: Use 8-bit Adam if bitsandbytes is available.
+        layer_lr_decay: Per-layer LR multiplier (1.0 = disabled, 0.9 = typical).
 
     Returns:
         Configured AdamW optimizer.
     """
-    # Separate parameters into decay and no-decay groups
-    decay_params = []
-    no_decay_params = []
+    no_decay_names = {"bias", "layernorm", "norm", "embedding"}
 
-    for name, param in model.named_parameters():
-        if not param.requires_grad:
-            continue
+    if layer_lr_decay < 1.0:
+        # ── Layer-wise LR decay ──────────────────────────────────────────────
+        # Assign each parameter to a depth bucket, then scale its LR.
+        param_groups = []
+        num_layers = getattr(model, 'config', None)
+        num_layers = (
+            num_layers.num_hidden_layers if num_layers else
+            sum(1 for n, _ in model.named_parameters() if ".layers." in n or ".h." in n)
+        )
+        if num_layers == 0:
+            num_layers = 12  # safe fallback
 
-        # No weight decay for biases, norms, and embeddings
-        if any(nd in name for nd in ["bias", "layernorm", "norm", "embedding"]):
-            no_decay_params.append(param)
-        elif param.dim() < 2:
-            # Scalars and 1D tensors (biases, norm weights)
-            no_decay_params.append(param)
-        else:
-            decay_params.append(param)
+        depth_cache: dict = {}
+        for name, param in model.named_parameters():
+            if not param.requires_grad:
+                continue
+            # Parse layer index from parameter name
+            import re as _re
+            m = _re.search(r'\.(?:layers|h|blocks)\.(\d+)\.', name)
+            depth = int(m.group(1)) if m else (num_layers if "lm_head" in name else 0)
+            depth_cache[name] = depth
 
-    param_groups = [
-        {"params": decay_params, "weight_decay": weight_decay},
-        {"params": no_decay_params, "weight_decay": 0.0},
-    ]
+        # Build one param group per (depth, no_decay) combination
+        groups: dict = {}
+        for name, param in model.named_parameters():
+            if not param.requires_grad:
+                continue
+            depth = depth_cache[name]
+            is_no_decay = any(nd in name for nd in no_decay_names) or param.dim() < 2
+            key = (depth, is_no_decay)
+            if key not in groups:
+                scale = layer_lr_decay ** (num_layers - depth)
+                groups[key] = {
+                    "params": [],
+                    "lr": learning_rate * scale,
+                    "weight_decay": 0.0 if is_no_decay else weight_decay,
+                }
+            groups[key]["params"].append(param)
 
-    # Log parameter counts
-    num_decay = sum(p.numel() for p in decay_params)
-    num_no_decay = sum(p.numel() for p in no_decay_params)
-    print(f"Optimizer: {num_decay:,} params with decay, {num_no_decay:,} without")
+        param_groups = list(groups.values())
+        num_decay   = sum(p.numel() for g in param_groups for p in g["params"] if g["weight_decay"] > 0)
+        num_nodecay = sum(p.numel() for g in param_groups for p in g["params"] if g["weight_decay"] == 0)
+        print(f"Optimizer (LLRD decay={layer_lr_decay}): "
+              f"{num_decay:,} params with decay, {num_nodecay:,} without, "
+              f"{len(param_groups)} LR groups")
+    else:
+        # ── Standard flat LR ────────────────────────────────────────────────
+        decay_params = []
+        no_decay_params = []
+
+        for name, param in model.named_parameters():
+            if not param.requires_grad:
+                continue
+            if any(nd in name for nd in no_decay_names) or param.dim() < 2:
+                no_decay_params.append(param)
+            else:
+                decay_params.append(param)
+
+        param_groups = [
+            {"params": decay_params,    "weight_decay": weight_decay},
+            {"params": no_decay_params, "weight_decay": 0.0},
+        ]
+        num_decay   = sum(p.numel() for p in decay_params)
+        num_nodecay = sum(p.numel() for p in no_decay_params)
+        print(f"Optimizer: {num_decay:,} params with decay, {num_nodecay:,} without")
 
     # Use 8-bit Adam if available — cuts optimizer memory from 8GB to 2GB,
     # essential for 1B+ models on 16GB GPUs like T4

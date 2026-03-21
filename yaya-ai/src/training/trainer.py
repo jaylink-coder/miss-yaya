@@ -21,6 +21,7 @@ from torch.utils.data import DataLoader
 from src.utils.config import ModelConfig, TrainingConfig
 from src.model.yaya_model import YayaForCausalLM
 from src.training.optimizer import create_optimizer, create_scheduler
+from src.training.ema import EMA
 from src.training.checkpointing import CheckpointManager
 from src.training.logging_utils import TrainingLogger
 from src.training.distributed import (
@@ -127,6 +128,12 @@ class Trainer:
         self.scaler = torch.cuda.amp.GradScaler(
             enabled=(self.use_amp and self.amp_dtype == torch.float16)
         )
+
+        # EMA (Exponential Moving Average) weights — optional, improves eval generalization
+        self.ema: Optional[EMA] = None
+        if getattr(config, "ema_decay", 0.0) > 0:
+            self.ema = EMA(self.unwrapped_model, decay=config.ema_decay)
+            print(f"EMA enabled (decay={config.ema_decay})")
 
         # Training state
         self.global_step = 0
@@ -238,6 +245,17 @@ class Trainer:
                 grad_norm = None
                 if self.config.max_grad_norm > 0:
                     self.scaler.unscale_(self.optimizer)
+
+                    # Optional gradient noise injection (Neelakantan et al. 2015)
+                    # Adds Gaussian noise scaled by η/(1+t)^0.55, helping escape
+                    # sharp local minima. Only active when grad_noise_eta > 0.
+                    if getattr(self.config, "grad_noise_eta", 0.0) > 0:
+                        eta = self.config.grad_noise_eta
+                        std = (eta / (1 + self.global_step) ** 0.55) ** 0.5
+                        for p in self.model.parameters():
+                            if p.grad is not None:
+                                p.grad.add_(torch.randn_like(p.grad) * std)
+
                     grad_norm = torch.nn.utils.clip_grad_norm_(
                         self.model.parameters(),
                         self.config.max_grad_norm,
@@ -248,6 +266,10 @@ class Trainer:
                 self.scaler.update()
                 self.scheduler.step()
                 self.optimizer.zero_grad(set_to_none=True)
+
+                # Update EMA shadow weights
+                if self.ema is not None:
+                    self.ema.update()
 
                 self.global_step += 1
 
@@ -296,7 +318,11 @@ class Trainer:
 
     @torch.no_grad()
     def _evaluate(self):
-        """Run evaluation on the eval dataset."""
+        """Run evaluation on the eval dataset.
+        Uses EMA weights if available — EMA model typically has lower eval loss.
+        """
+        if self.ema is not None:
+            self.ema.apply_shadow()
         self.model.eval()
         total_loss = 0.0
         num_batches = 0
@@ -349,5 +375,9 @@ class Trainer:
                 loss=avg_loss,
                 extra_state={"best_eval_loss": avg_loss},
             )
+
+        # Restore original weights after EMA eval
+        if self.ema is not None:
+            self.ema.restore()
 
         self.model.train()
