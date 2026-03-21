@@ -4,61 +4,107 @@ import torch.nn as nn
 
 
 class PatchEmbedding(nn.Module):
-    def __init__(self, image_size=224, patch_size=16, in_channels=3, embed_dim=768):
+    def __init__(self, image_size=224, patch_size=16, in_channels=3, embed_dim=768,
+                 *, hidden_size=None):
         super().__init__()
+        dim = hidden_size if hidden_size is not None else embed_dim
         self.num_patches = (image_size // patch_size) ** 2
-        self.projection  = nn.Conv2d(in_channels, embed_dim, kernel_size=patch_size, stride=patch_size)
-        self.cls_token   = nn.Parameter(torch.zeros(1, 1, embed_dim))
-        self.pos_embed   = nn.Parameter(torch.zeros(1, self.num_patches + 1, embed_dim))
+        self.projection  = nn.Conv2d(in_channels, dim, kernel_size=patch_size, stride=patch_size)
+        self.pos_embed   = nn.Parameter(torch.zeros(1, self.num_patches, dim))
         nn.init.trunc_normal_(self.pos_embed, std=0.02)
-        nn.init.trunc_normal_(self.cls_token, std=0.02)
 
     def forward(self, x):
         B = x.shape[0]
         x = self.projection(x).flatten(2).transpose(1, 2)
-        cls = self.cls_token.expand(B, -1, -1)
-        x = torch.cat([cls, x], dim=1) + self.pos_embed
+        x = x + self.pos_embed
         return x
 
 
-class VisionBlock(nn.Module):
-    def __init__(self, dim, heads, mlp_ratio=4.0):
+class VisionAttention(nn.Module):
+    def __init__(self, hidden_size=768, num_heads=12):
         super().__init__()
-        self.norm1 = nn.LayerNorm(dim)
-        self.attn  = nn.MultiheadAttention(dim, heads, batch_first=True)
-        self.norm2 = nn.LayerNorm(dim)
-        mlp_dim    = int(dim * mlp_ratio)
-        self.mlp   = nn.Sequential(nn.Linear(dim, mlp_dim), nn.GELU(), nn.Linear(mlp_dim, dim))
+        self.attn = nn.MultiheadAttention(hidden_size, num_heads, batch_first=True)
 
     def forward(self, x):
-        n = self.norm1(x)
-        a, _ = self.attn(n, n, n)
-        x = x + a
-        return x + self.mlp(self.norm2(x))
+        out, _ = self.attn(x, x, x)
+        return out
 
 
-class YayaVisionEncoder(nn.Module):
-    """
-    Converts images to visual token embeddings for Yaya's language model.
-    Output: (batch, num_visual_tokens, language_hidden_size)
-    These tokens are prepended to the text sequence.
-    """
-    def __init__(self, image_size=224, patch_size=16, vision_dim=768,
-                 vision_layers=12, vision_heads=12, language_dim=768, num_visual_tokens=64):
+class VisionMLP(nn.Module):
+    def __init__(self, hidden_size=768, intermediate_size=3072):
         super().__init__()
-        self.patch_embed     = PatchEmbedding(image_size, patch_size, 3, vision_dim)
-        self.transformer     = nn.Sequential(*[VisionBlock(vision_dim, vision_heads) for _ in range(vision_layers)])
-        self.norm            = nn.LayerNorm(vision_dim)
-        self.num_visual_tokens = num_visual_tokens
-        self.pool            = nn.AdaptiveAvgPool1d(num_visual_tokens)
-        self.projection      = nn.Linear(vision_dim, language_dim)
+        self.fc1 = nn.Linear(hidden_size, intermediate_size)
+        self.act = nn.GELU()
+        self.fc2 = nn.Linear(intermediate_size, hidden_size)
+
+    def forward(self, x):
+        return self.fc2(self.act(self.fc1(x)))
+
+
+class VisionTransformerBlock(nn.Module):
+    def __init__(self, hidden_size=768, num_heads=12, mlp_ratio=4.0,
+                 *, intermediate_size=None):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(hidden_size)
+        self.attn  = VisionAttention(hidden_size, num_heads)
+        self.norm2 = nn.LayerNorm(hidden_size)
+        mlp_dim = intermediate_size or int(hidden_size * mlp_ratio)
+        self.mlp   = VisionMLP(hidden_size, mlp_dim)
+
+    def forward(self, x):
+        x = x + self.attn(self.norm1(x))
+        x = x + self.mlp(self.norm2(x))
+        return x
+
+
+# Alias for backward compatibility
+VisionBlock = VisionTransformerBlock
+
+
+class VisionEncoder(nn.Module):
+    """Converts images to visual token embeddings for Yaya's language model.
+
+    Accepts either a VisionConfig dataclass or explicit keyword arguments.
+    Output: (batch, num_patches, vision_hidden_size)
+    """
+
+    def __init__(self, config=None, *, image_size=224, patch_size=16, vision_dim=768,
+                 vision_layers=12, vision_heads=12, language_dim=None, num_visual_tokens=None):
+        super().__init__()
+        if config is not None:
+            image_size = getattr(config, "image_size", image_size)
+            patch_size = getattr(config, "patch_size", patch_size)
+            vision_dim = getattr(config, "vision_hidden_size", vision_dim)
+            vision_layers = getattr(config, "vision_layers", vision_layers)
+            vision_heads = getattr(config, "vision_heads", vision_heads)
+
+        self.patch_embed = PatchEmbedding(image_size, patch_size, 3, vision_dim)
+        self.blocks = nn.Sequential(
+            *[VisionTransformerBlock(vision_dim, vision_heads) for _ in range(vision_layers)]
+        )
+        self.norm = nn.LayerNorm(vision_dim)
+
+        # Optional projection to language dim and pooling
+        self._project = None
+        self._pool = None
+        if language_dim is not None and language_dim != vision_dim:
+            self._project = nn.Linear(vision_dim, language_dim)
+        if num_visual_tokens is not None:
+            self._pool = nn.AdaptiveAvgPool1d(num_visual_tokens)
 
     def forward(self, images):
         x = self.patch_embed(images)
-        x = self.transformer(x)
+        x = self.blocks(x)
         x = self.norm(x)
-        x = self.pool(x.transpose(1, 2)).transpose(1, 2)
-        return self.projection(x)
+        if self._pool is not None:
+            x = self._pool(x.transpose(1, 2)).transpose(1, 2)
+        if self._project is not None:
+            x = self._project(x)
+        return x
+
+
+# Backward-compatible alias
+YayaVisionEncoder = VisionEncoder
 
 
 def preprocess_image(image_path, image_size=224):

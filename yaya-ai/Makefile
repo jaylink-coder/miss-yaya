@@ -1,4 +1,5 @@
-.PHONY: install install-dev test lint format clean train serve sft dpo export agent rag safety
+.PHONY: install install-dev install-hf test lint format clean train serve sft dpo export agent rag safety \
+       gen-data finetune finetune-qlora align-dpo eval-quick eval-full-hf deploy
 
 # Installation
 install:
@@ -49,6 +50,16 @@ prepare-data:
 		--input_dir data/raw/text \
 		--output_dir data/processed/train \
 		--tokenizer_path data/tokenizer/yaya_tokenizer.model
+
+train-1b:
+	python scripts/train.py \
+		--model_config configs/model/yaya_1b.yaml \
+		--train_config configs/training/train_1b.yaml
+
+train-1b-2gpu:
+	torchrun --nproc_per_node=2 scripts/train.py \
+		--model_config configs/model/yaya_1b.yaml \
+		--train_config configs/training/train_1b.yaml
 
 train-1.5b:
 	torchrun --nproc_per_node=8 scripts/train.py \
@@ -177,6 +188,95 @@ test-serving:
 
 serve-production:
 	python -c "from src.serving.production_server import ProductionServer; from src.serving.middleware import ServerConfig; s = ProductionServer(ServerConfig(port=8000)); print(s.health_check())"
+
+# ── HuggingFace Fine-Tuning Pipeline ────────────────────────────────────────
+install-hf:
+	pip install -r requirements-hf.txt
+
+# Download OpenHermes 2.5 SFT data (100K examples) and merge with yaya_instruct.jsonl
+download-openhermes:
+	python scripts/download_openhermes.py --max_examples 100000
+
+# Download pretrain data into data/raw/ domain dirs
+download-pretrain-data:
+	python scripts/download_pretrain_data.py --all
+
+download-pretrain-data-quick:
+	python scripts/download_pretrain_data.py --all --max_examples 50000
+
+# Tokenize per-domain + mix into final training shards (data/processed/mixed/)
+mix-pretrain-data:
+	python scripts/mix_pretrain_data.py
+
+# Kaggle/Colab budget: cap at 3B tokens total
+mix-pretrain-data-3b:
+	python scripts/mix_pretrain_data.py --total_tokens 3000000000
+
+# Preview what would be mixed without writing
+mix-pretrain-data-dry:
+	python scripts/mix_pretrain_data.py --dry_run
+
+# Full pretrain data pipeline: download → mix → train
+pretrain-pipeline: download-pretrain-data mix-pretrain-data train-1b
+
+# Step 1: Generate training data
+gen-data:
+	python scripts/generate_training_data.py --sft_count 200 --dpo_count 100
+
+gen-data-large:
+	python scripts/generate_training_data.py --sft_count 2000 --dpo_count 500
+
+# Step 2: Fine-tune (LoRA on Qwen 2.5 1.5B by default)
+finetune:
+	python scripts/finetune_hf.py \
+		--base_model Qwen/Qwen2.5-1.5B-Instruct \
+		--data_dir data/sft \
+		--output_dir outputs/yaya-sft \
+		--method lora --epochs 3
+
+finetune-full:
+	python scripts/finetune_hf.py \
+		--base_model Qwen/Qwen2.5-1.5B-Instruct \
+		--data_dir data/sft \
+		--output_dir outputs/yaya-sft \
+		--method full --epochs 3
+
+finetune-qlora:
+	python scripts/finetune_hf.py \
+		--base_model Qwen/Qwen2.5-1.5B-Instruct \
+		--data_dir data/sft \
+		--output_dir outputs/yaya-sft \
+		--method qlora --epochs 3
+
+# Step 3: DPO alignment
+align-dpo:
+	python scripts/align_dpo_hf.py \
+		--model_path outputs/yaya-sft-merged \
+		--data_dir data/sft \
+		--output_dir outputs/yaya-dpo
+
+# Step 4: Evaluate
+eval-quick:
+	python scripts/eval_model.py --model_path outputs/yaya-sft --quick
+
+eval-full-hf:
+	python scripts/eval_model.py \
+		--model_path outputs/yaya-dpo \
+		--benchmarks mmlu,hellaswag,arc_easy \
+		--output outputs/eval_results.json
+
+eval-interactive:
+	python scripts/eval_model.py --model_path outputs/yaya-dpo --interactive
+
+# Step 5: Deploy
+deploy:
+	python scripts/deploy_model.py --model_path outputs/yaya-dpo --port 8000
+
+deploy-quantized:
+	python scripts/deploy_model.py --model_path outputs/yaya-dpo --port 8000 --quantize int4
+
+# Full pipeline (generate data -> finetune -> align -> evaluate)
+pipeline-full: gen-data finetune align-dpo eval-quick
 
 # Cleanup
 clean:
