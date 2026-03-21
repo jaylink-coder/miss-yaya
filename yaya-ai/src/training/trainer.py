@@ -311,6 +311,7 @@ class Trainer:
                     tokens_per_step=tokens_per_step,
                 )
 
+                self.last_train_loss = accumulation_loss
                 accumulation_loss = 0.0
 
                 # Evaluate
