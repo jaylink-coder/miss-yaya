@@ -100,8 +100,8 @@ class Evaluator:
         available = {
             "mmlu": MMLUBenchmark,
             "hellaswag": HellaSwagBenchmark,
-            "arc_challenge": lambda dp: ARCBenchmark(dp, split="challenge"),
-            "arc_easy": lambda dp: ARCBenchmark(dp, split="easy"),
+            "arc_challenge": lambda data_path: ARCBenchmark(data_path, split="challenge"),
+            "arc_easy": lambda data_path: ARCBenchmark(data_path, split="easy"),
             "truthfulqa": TruthfulQABenchmark,
             "gsm8k": GSM8KBenchmark,
             "humaneval": HumanEvalBenchmark,
