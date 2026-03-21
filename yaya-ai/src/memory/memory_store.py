@@ -54,8 +54,9 @@ class MemoryStore:
 
     def remember(self, content: str, category: str = 'general', source: str = 'conversation'):
         """Save a new memory."""
+        next_id = (max(m['id'] for m in self.memories) + 1) if self.memories else 0
         memory = {
-            'id':        len(self.memories),
+            'id':        next_id,
             'content':   content,
             'category':  category,
             'source':    source,
