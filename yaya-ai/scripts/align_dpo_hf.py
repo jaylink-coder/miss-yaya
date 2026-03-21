@@ -170,7 +170,6 @@ def main():
         )
 
     # ── DPO Training ───────────────────────────────────────────────────────────
-    from transformers import TrainingArguments
     from trl import DPOTrainer, DPOConfig
 
     print(f"\nDPO Training config:")
