@@ -140,6 +140,7 @@ class Trainer:
         self.global_step = 0
         self.epoch = 0
         self.best_eval_loss = float("inf")
+        self.last_train_loss = 0.0
 
     def train(self, resume_from: Optional[str] = None):
         """Run the full training loop.
