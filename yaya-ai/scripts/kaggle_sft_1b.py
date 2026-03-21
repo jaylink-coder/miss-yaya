@@ -91,8 +91,12 @@ else:
     print(f'  Starting SFT from pretrain checkpoint.')
 
 try:
+    launcher = (
+        f'torchrun --nproc_per_node={n_gpus} --master_port=29500'
+        if n_gpus > 1 else 'python'
+    )
     ret = os.system(
-        f'WANDB_DISABLED=true WANDB_MODE=disabled python scripts/train_sft.py '
+        f'WANDB_DISABLED=true WANDB_MODE=disabled {launcher} scripts/train_sft.py '
         f'--model_config configs/model/yaya_1b.yaml '
         f'--train_config {tmp_path} '
         f'{pretrain_flag} {resume_flag}'
