@@ -17,7 +17,6 @@ os.chdir(REPO_ROOT)
 
 PRETRAIN_CKPT_DIR = '/kaggle/working/yaya-checkpoints-1b'
 SFT_CKPT_DIR      = '/kaggle/working/yaya-sft-1b-checkpoints'
-SFT_DATA_PATH     = 'data/sft/yaya_instruct.jsonl'
 
 # ── 1. Check pretrain checkpoint ───────────────────────────────────────────────
 print('\n[1/3] Looking for pretrain checkpoint...')
