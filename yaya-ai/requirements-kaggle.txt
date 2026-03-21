@@ -1,0 +1,19 @@
+# Kaggle T4 requirements for Yaya training
+# Run: pip install -q -r requirements-kaggle.txt
+
+# Core training dependencies
+sentencepiece>=0.1.99       # BPE tokenizer
+datasets>=2.14.0            # HuggingFace datasets (Wikipedia download)
+pyyaml>=6.0                 # Config loading
+
+# Memory optimization — REQUIRED for 1B model on 16GB T4
+bitsandbytes>=0.41.0        # 8-bit AdamW: cuts optimizer from 8GB to 2GB
+
+# SFT/DPO/fine-tuning (needed for phase 2 onwards)
+transformers>=4.40.0        # HuggingFace transformers
+accelerate>=0.27.0          # Training utilities
+peft>=0.10.0                # LoRA / QLoRA
+trl>=0.8.0                  # DPOTrainer, SFTTrainer
+
+# Evaluation
+# lm-eval>=0.4.0            # Uncomment for MMLU/HellaSwag benchmarks (heavy install)
