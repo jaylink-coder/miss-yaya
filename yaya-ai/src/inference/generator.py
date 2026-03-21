@@ -238,18 +238,38 @@ class TextGenerator:
         self,
         prompt: str,
         config: Optional[GenerationConfig] = None,
+        *,
+        max_new_tokens: Optional[int] = None,
+        temperature: Optional[float] = None,
+        top_p: Optional[float] = None,
+        top_k: Optional[int] = None,
     ):
         """Generator that yields tokens one at a time for streaming.
 
         Args:
             prompt: Input text prompt.
             config: Generation configuration.
+            max_new_tokens: Override config.max_new_tokens.
+            temperature: Override config.temperature.
+            top_p: Override config.top_p.
+            top_k: Override config.top_k.
 
         Yields:
             Individual generated token strings.
         """
         if config is None:
             config = GenerationConfig()
+        overrides = {
+            k: v for k, v in [
+                ("max_new_tokens", max_new_tokens),
+                ("temperature", temperature),
+                ("top_p", top_p),
+                ("top_k", top_k),
+            ] if v is not None
+        }
+        if overrides:
+            import dataclasses
+            config = dataclasses.replace(config, **overrides)
 
         input_ids = self.tokenizer.encode(prompt, add_bos=True)
         input_tensor = torch.tensor([input_ids], dtype=torch.long, device=self.device)
