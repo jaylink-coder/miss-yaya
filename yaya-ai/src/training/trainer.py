@@ -334,7 +334,7 @@ class Trainer:
                         self.scheduler,
                         step=self.global_step,
                         epoch=self.epoch,
-                        loss=accumulation_loss,
+                        loss=self.last_train_loss,
                     )
                     if self.ema is not None:
                         self.ema.save(os.path.join(ckpt_dir, "ema.pt"))
