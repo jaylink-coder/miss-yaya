@@ -389,13 +389,15 @@ class Trainer:
         # Track best model
         if avg_loss < self.best_eval_loss and is_main_process():
             self.best_eval_loss = avg_loss
-            self.checkpoint_manager.save(
+            best_ckpt = self.checkpoint_manager.save(
                 self.unwrapped_model,
                 step=self.global_step,
                 epoch=self.epoch,
                 loss=avg_loss,
                 extra_state={"best_eval_loss": avg_loss},
             )
+            if self.ema is not None:
+                self.ema.save(os.path.join(best_ckpt, "ema.pt"))
 
         # Restore original weights after EMA eval
         if self.ema is not None:
