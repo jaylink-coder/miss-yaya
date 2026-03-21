@@ -24,8 +24,9 @@ os.makedirs(EVAL_DIR,  exist_ok=True)
 train_path = os.path.join(TRAIN_DIR, 'shard_00000.bin')
 eval_path  = os.path.join(EVAL_DIR,  'eval.bin')
 
-# Skip tokenization if already done
-if os.path.exists(train_path) and os.path.getsize(train_path) > 100_000_000:
+# Skip tokenization only if we have at least 2B tokens (4GB file — uint16)
+MIN_TOKENS = 2_000_000_000
+if os.path.exists(train_path) and os.path.getsize(train_path) > MIN_TOKENS * 2:
     tokens_on_disk = os.path.getsize(train_path) // 2
     print(f'\n[1/2] Tokenization already done: {tokens_on_disk/1e9:.2f}B tokens on disk. Skipping.')
 else:
