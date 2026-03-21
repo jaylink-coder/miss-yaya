@@ -53,7 +53,7 @@ def evaluate(model, tokenizer, generator, use_chat_format: bool = False):
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user",   "content": prompt},
             ]
-            full_prompt = tokenizer.format_chat(messages) + "<|assistant|>\n"
+            full_prompt = tokenizer.format_chat(messages) + ASSISTANT_TOKEN + "\n"
         else:
             full_prompt = prompt
 
@@ -62,15 +62,14 @@ def evaluate(model, tokenizer, generator, use_chat_format: bool = False):
             config=GenerationConfig(max_new_tokens=100, temperature=0.8, top_p=0.9),
         )
 
-        # Strip everything up to and including <|assistant|>
-        tag = "<|assistant|>"
-        if tag in response:
-            response = response.split(tag)[-1]
+        # Strip everything up to and including the assistant token
+        if ASSISTANT_TOKEN in response:
+            response = response.split(ASSISTANT_TOKEN)[-1]
         elif full_prompt in response:
             response = response[len(full_prompt):]
 
         # Clean up any trailing chat tags
-        for end_tag in ["<|user|>", "<|system|>", "</s>"]:
+        for end_tag in [USER_TOKEN, SYSTEM_TOKEN, "</s>"]:
             response = response.split(end_tag)[0]
 
         response = response.strip()
