@@ -122,6 +122,13 @@ build-dataset-test:
 dataset-stats:
 	python -c "from src.data.shard_mixer import DatasetStatsReporter; DatasetStatsReporter('data/processed/shards').print_report()"
 
+# Validate SFT data before training
+validate-sft-data:
+	python scripts/validate_sft_data.py
+
+validate-sft-data-verbose:
+	python scripts/validate_sft_data.py --verbose
+
 # SFT (Supervised Fine-Tuning)
 sft-1b:
 	python scripts/train_sft.py \
