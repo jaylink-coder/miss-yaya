@@ -392,6 +392,8 @@ class Trainer:
             self.best_eval_loss = avg_loss
             best_ckpt = self.checkpoint_manager.save(
                 self.unwrapped_model,
+                self.optimizer,
+                self.scheduler,
                 step=self.global_step,
                 epoch=self.epoch,
                 loss=avg_loss,
