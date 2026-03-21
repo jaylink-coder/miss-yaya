@@ -134,10 +134,11 @@ def create_app(generator: TextGenerator, model_name: str = "yaya") -> "FastAPI":
         if not request.messages:
             raise HTTPException(status_code=400, detail="messages is required")
 
-        # Format chat messages into prompt
+        # Format chat messages into prompt, then open the assistant turn
+        # so the model knows to generate an assistant response.
         prompt = generator.tokenizer.format_chat(
             [{"role": m.role, "content": m.content} for m in request.messages]
-        )
+        ) + "\n" + ASSISTANT_TOKEN + "\n"
 
         config = GenerationConfig(
             max_new_tokens=request.max_tokens,
