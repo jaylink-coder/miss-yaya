@@ -1,5 +1,25 @@
-.PHONY: install install-dev install-hf test lint format clean train serve sft dpo export agent rag safety \
-       gen-data finetune finetune-qlora align-dpo eval-quick eval-full-hf deploy
+.PHONY: install install-dev install-flash install-hf \
+        test test-model test-data test-inference test-cov test-vision test-training test-all \
+        test-agent test-rag test-safety test-serving \
+        lint format typecheck \
+        train-tokenizer prepare-data \
+        train-1b train-1b-2gpu train-1.5b train-7b \
+        sft-1b sft-1b-2gpu sft-1.5b \
+        align-dpo-1b align-dpo dpo-1.5b \
+        evaluate evaluate-full \
+        serve serve-production generate \
+        build-dataset build-dataset-test dataset-stats \
+        export-safetensors export-onnx export-gguf \
+        setup docker-build docker-train docker-serve \
+        generate-tool-data \
+        download-openhermes download-pretrain-data download-pretrain-data-quick \
+        mix-pretrain-data mix-pretrain-data-3b mix-pretrain-data-dry pretrain-pipeline \
+        gen-data gen-data-large \
+        finetune finetune-full finetune-qlora \
+        eval-quick eval-full-hf eval-interactive \
+        deploy deploy-quantized \
+        pipeline-full clean \
+        sft dpo export agent rag safety
 
 # Installation
 install:
