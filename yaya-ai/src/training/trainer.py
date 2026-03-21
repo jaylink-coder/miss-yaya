@@ -95,6 +95,7 @@ class Trainer:
             beta1=config.adam_beta1,
             beta2=config.adam_beta2,
             epsilon=config.adam_epsilon,
+            layer_lr_decay=getattr(config, "layer_lr_decay", 1.0),
         )
 
         # Create LR scheduler
