@@ -82,15 +82,6 @@ def tokenize_domain(domain: str, raw_dir: str, shard_dir: str, tokenizer) -> int
     total_tokens = 0
     docs_processed = 0
 
-    def flush_shard():
-        nonlocal shard_idx, total_tokens
-        arr = np.array(buf, dtype=np.uint16)
-        path = os.path.join(shard_dir, f"shard_{shard_idx:05d}.bin")
-        arr.tofile(path)
-        total_tokens += len(arr)
-        shard_idx += 1
-        print(f"    shard_{shard_idx-1:05d}: {len(arr)/1e6:.0f}M tokens", flush=True)
-
     for txt_path in txt_files:
         fname = os.path.basename(txt_path)
         print(f"  [{domain}] Tokenizing {fname}...", flush=True)
