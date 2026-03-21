@@ -61,7 +61,7 @@ def run_gradio(generator, tokenizer, args):
             messages.append({"role": "assistant", "content": bot_msg})
         messages.append({"role": "user", "content": message})
 
-        prompt = tokenizer.format_chat(messages) + "<|assistant|>\n"
+        prompt = tokenizer.format_chat(messages) + ASSISTANT_TOKEN + "\n"
         response = generator.generate(
             prompt,
             max_new_tokens=args.max_tokens,
@@ -69,11 +69,11 @@ def run_gradio(generator, tokenizer, args):
             top_p=args.top_p,
         )
 
-        if "<|assistant|>" in response:
-            response = response.split("<|assistant|>")[-1]
+        if ASSISTANT_TOKEN in response:
+            response = response.split(ASSISTANT_TOKEN)[-1]
         elif prompt in response:
             response = response[len(prompt):]
-        for end_tag in ["<|user|>", "<|system|>", "</s>"]:
+        for end_tag in [USER_TOKEN, SYSTEM_TOKEN, "</s>"]:
             response = response.split(end_tag)[0]
 
         return response.strip()
