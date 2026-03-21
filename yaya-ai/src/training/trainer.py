@@ -325,7 +325,7 @@ class Trainer:
                     and self.global_step % self.config.save_steps == 0
                     and is_main_process()
                 ):
-                    self.checkpoint_manager.save(
+                    ckpt_dir = self.checkpoint_manager.save(
                         self.unwrapped_model,
                         self.optimizer,
                         self.scheduler,
@@ -333,6 +333,8 @@ class Trainer:
                         epoch=self.epoch,
                         loss=accumulation_loss,
                     )
+                    if self.ema is not None:
+                        self.ema.save(os.path.join(ckpt_dir, "ema.pt"))
                     barrier()
 
     @torch.no_grad()
