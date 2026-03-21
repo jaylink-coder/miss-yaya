@@ -104,10 +104,9 @@ def main():
 
     tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
     generator = TextGenerator(model, tokenizer, device=device)
-    generator.temperature = args.temperature
-    generator.top_p = args.top_p
 
-    evaluate(model, tokenizer, generator, use_chat_format=args.chat)
+    evaluate(model, tokenizer, generator, use_chat_format=args.chat,
+             temperature=args.temperature, top_p=args.top_p)
 
 
 if __name__ == "__main__":
