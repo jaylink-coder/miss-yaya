@@ -192,7 +192,7 @@ cfg['logging']['log_steps']                   = 1        # log every optimizer s
 # With n_gpus GPUs via DDP, effective batch = per_device_batch × n_gpus × grad_accum.
 # Halve grad_accum per extra GPU so effective batch stays at 32 seqs (65K tokens/step).
 cfg['training']['gradient_accumulation_steps'] = max(1, 32 // max(n_gpus, 1))
-cfg['checkpointing']['keep_last_n']            = 1   # ~10GB/ckpt; Kaggle /working is 20GB
+cfg['checkpointing']['keep_last_n']            = 2   # keep 2 checkpoints — fallback if latest is corrupt
 
 # Enable DDP when more than one GPU is available
 if n_gpus > 1:
