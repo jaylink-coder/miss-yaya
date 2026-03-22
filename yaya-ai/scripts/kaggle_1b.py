@@ -20,6 +20,7 @@ sys.path.insert(0, REPO_ROOT)
 os.chdir(REPO_ROOT)
 os.environ['WANDB_DISABLED'] = 'true'
 os.environ['WANDB_MODE']     = 'disabled'
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 
 WIKI_DIR       = '/kaggle/input/notebooks/takashisomeya/wikipedia-plaintext-20230801'
 CHECKPOINT_DIR = '/kaggle/working/yaya-checkpoints-1b'
