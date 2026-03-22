@@ -21,7 +21,7 @@ os.chdir(REPO_ROOT)
 os.environ['WANDB_DISABLED'] = 'true'
 os.environ['WANDB_MODE']     = 'disabled'
 
-WIKI_DIR       = '/kaggle/input/wikipedia-plaintext-20230801'
+WIKI_DIR       = '/kaggle/input/notebooks/takashisomeya/wikipedia-plaintext-20230801'
 CHECKPOINT_DIR = '/kaggle/working/yaya-checkpoints-1b'
 TRAIN_DIR      = 'data/processed/wikipedia/train'
 EVAL_DIR       = 'data/processed/wikipedia/eval'
