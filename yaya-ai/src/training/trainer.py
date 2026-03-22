@@ -207,10 +207,10 @@ class Trainer:
             self.epoch += 1
             self._train_epoch()
 
-            if self.global_step >= self.config.max_steps:
+            if self._interrupted or self.global_step >= self.config.max_steps:
                 break
 
-        # Final save
+        # Final save (also covers emergency save on interrupt)
         if is_main_process():
             final_ckpt = self.checkpoint_manager.save(
                 self.unwrapped_model,
