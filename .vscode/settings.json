@@ -1,4 +1,4 @@
 {
-  "python.defaultInterpreterPath": "${workspaceFolder}/yaya-ai/.venv/Scripts/python.exe",
+  "python.defaultInterpreterPath": "c:/Users/USER/Yaya/yaya-ai/.venv/Scripts/python.exe",
   "python.terminal.activateEnvironment": true
 }
