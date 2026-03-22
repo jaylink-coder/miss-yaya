@@ -10,6 +10,7 @@ Handles:
 """
 
 import os
+import signal
 import time
 import math
 from typing import Optional, Dict, Any
