@@ -233,7 +233,7 @@ class Trainer:
         accumulation_loss = 0.0
 
         for batch_idx, batch in enumerate(self.train_dataloader):
-            if self.global_step >= self.config.max_steps:
+            if self.global_step >= self.config.max_steps or self._interrupted:
                 break
 
             # Heartbeat: confirm data loading and GPU transfer are working
