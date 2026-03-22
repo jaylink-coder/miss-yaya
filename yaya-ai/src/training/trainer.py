@@ -151,6 +151,15 @@ class Trainer:
             resume_from: Path to checkpoint to resume from.
                          If None, tries to auto-resume from latest.
         """
+        # Save checkpoint on SIGINT/SIGTERM so training can resume after interruption
+        def _handle_signal(signum, frame):
+            if is_main_process():
+                print(f"\nSignal {signum} received — saving emergency checkpoint at step {self.global_step}...", flush=True)
+            self._interrupted = True
+
+        signal.signal(signal.SIGINT, _handle_signal)
+        signal.signal(signal.SIGTERM, _handle_signal)
+
         # Try to resume from checkpoint
         # Determine which checkpoint will be loaded (for EMA path resolution)
         _ckpt_path = resume_from or self.checkpoint_manager.get_latest_checkpoint()
