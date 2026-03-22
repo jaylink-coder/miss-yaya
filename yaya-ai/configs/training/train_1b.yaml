@@ -20,7 +20,7 @@ training:
   dtype: float16                 # T4 does not support bfloat16 natively
 
 checkpointing:
-  save_steps: 500               # ~7h on single T4, ~3.5h with 2 GPUs — guarantees a save per session
+  save_steps: 100               # save frequently — avoids losing progress on network interruption
   save_dir: checkpoints/yaya-1b
   keep_last_n: 3
 
