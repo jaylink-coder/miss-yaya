@@ -42,17 +42,16 @@ import torch
 if torch.cuda.is_available():
     props      = torch.cuda.get_device_properties(0)
     vram_gb    = props.total_memory / 1e9
-    n_gpus     = torch.cuda.device_count()
     capability = props.major * 10 + props.minor   # e.g. 75 for T4, 80 for A100
     # bfloat16 requires Ampere (8.0+); T4 is compute 7.5 — float16 only
     DTYPE = 'bfloat16' if capability >= 80 else 'float16'
-    print(f'GPU:   {props.name}  VRAM: {vram_gb:.1f}GB × {n_gpus}')
+    # DDP on T4 OOMs with 1B model — each GPU still holds the full model + NCCL buffers.
+    # Single GPU avoids that overhead; gradient checkpointing fits 1B in 15.6GB.
+    n_gpus = 1
+    print(f'GPU:   {props.name}  VRAM: {vram_gb:.1f}GB (using 1 GPU — DDP OOMs with 1B on T4)')
     print(f'Compute capability: {props.major}.{props.minor}  → using {DTYPE}')
-    total_vram = vram_gb * n_gpus
-    if total_vram < 14:
-        print(f'WARNING: Only {total_vram:.0f}GB total VRAM. May OOM with 1B model.')
-    else:
-        print(f'Total VRAM: {total_vram:.0f}GB — OK for 1B with 8-bit Adam')
+    if vram_gb < 14:
+        print(f'WARNING: Only {vram_gb:.0f}GB VRAM. May OOM with 1B model.')
 else:
     print('WARNING: No GPU found. Training will be extremely slow.')
     DTYPE = 'float32'
