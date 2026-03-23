@@ -24,6 +24,7 @@ from src.tokenizer.tokenizer import YayaTokenizer, ASSISTANT_TOKEN, USER_TOKEN, 
 from src.inference.generator import TextGenerator
 from src.training.checkpointing import CheckpointManager
 from src.memory.memory_store import MemoryStore
+from scripts.continuous_learn import log_conversation
 
 SYSTEM_PROMPT = (
     "You are Yaya, a helpful and friendly AI assistant. "
