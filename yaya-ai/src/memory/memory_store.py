@@ -19,12 +19,28 @@ def _cosine_similarity(a: list, b: list) -> float:
     return dot / (norm_a * norm_b)
 
 
-def _simple_embed(text: str) -> list:
-    """Lightweight bag-of-words embedding — no external dependencies."""
+def _simple_embed(text: str) -> tuple:
+    """
+    Word + character-trigram embedding for better semantic matching.
+    Words handle exact matches; trigrams handle morphological variants
+    (e.g. 'coding' and 'code' share trigrams like 'cod', 'odi').
+    No external dependencies.
+    """
     text = text.lower()
     words = text.split()
-    vocab = sorted(set(words))
-    vec = [words.count(w) for w in vocab]
+
+    # Word-level features (weighted 2x)
+    word_features = [f"w:{w}" for w in words]
+
+    # Character trigram features from each word
+    trigram_features = []
+    for w in words:
+        if len(w) >= 3:
+            trigram_features += [f"t:{w[i:i+3]}" for i in range(len(w) - 2)]
+
+    all_features = word_features * 2 + trigram_features  # words weighted higher
+    vocab = sorted(set(all_features))
+    vec = [all_features.count(f) for f in vocab]
     norm = math.sqrt(sum(x * x for x in vec)) or 1.0
     return [x / norm for x in vec], vocab
 
