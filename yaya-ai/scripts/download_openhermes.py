@@ -165,8 +165,8 @@ def main():
         if scanned % 50_000 == 0:
             print(f"  Scanned {scanned:,} | Kept {len(new_examples):,} | Skipped {skipped:,}", flush=True)
 
-        # Collect 3× target for a good shuffle pool, then stop
-        if len(new_examples) >= args.max_examples * 3:
+        # Stop as soon as we have enough — shuffle handles randomness
+        if len(new_examples) >= args.max_examples:
             break
 
     print(f"  Total scanned: {scanned:,} | Converted: {len(new_examples):,} | Skipped: {skipped:,}", flush=True)
