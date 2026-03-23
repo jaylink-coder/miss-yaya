@@ -167,9 +167,9 @@ def main():
     scanned = len(new_examples) + skipped
     print(f"  Total scanned: {scanned:,} | Converted: {len(new_examples):,} | Skipped: {skipped:,}", flush=True)
 
-    # ── Step 3: shuffle + select top N ──
+    # ── Step 3: shuffle + cap at max_examples ──
     random.shuffle(new_examples)
-    selected = new_examples
+    selected = new_examples[:args.max_examples]
     selected_hashes = {h for h, _ in selected}
     print(f"\nSelected {len(selected):,} OpenHermes examples after shuffle.", flush=True)
 
