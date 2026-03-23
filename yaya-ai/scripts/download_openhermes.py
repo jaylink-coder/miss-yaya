@@ -173,7 +173,7 @@ def main():
 
     # ── Step 3: shuffle + select top N ──
     random.shuffle(new_examples)
-    selected = new_examples[:args.max_examples]
+    selected = new_examples
     selected_hashes = {h for h, _ in selected}
     print(f"\nSelected {len(selected):,} OpenHermes examples after shuffle.", flush=True)
 
