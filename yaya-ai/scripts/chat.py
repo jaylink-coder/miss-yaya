@@ -49,6 +49,7 @@ def main():
     parser.add_argument("--temperature",   type=float, default=0.8)
     parser.add_argument("--top_p",         type=float, default=0.9)
     parser.add_argument("--memory_path",   type=str,   default='data/memory/yaya_memory.json')
+    parser.add_argument("--conv_log",      type=str,   default='data/memory/conversations.jsonl')
     args = parser.parse_args()
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
