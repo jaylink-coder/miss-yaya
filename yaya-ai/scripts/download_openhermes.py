@@ -139,22 +139,24 @@ def main():
     print(f"  Existing examples: {len(existing_pairs):,}", flush=True)
 
     # ── Step 2: download fresh OpenHermes ──
-    print("\nDownloading OpenHermes 2.5 from HuggingFace (streaming)...", flush=True)
+    print("\nDownloading OpenHermes 2.5 from HuggingFace...", flush=True)
     try:
         from datasets import load_dataset
     except ImportError:
         print("ERROR: datasets not installed. Run: pip install datasets")
         return
 
-    ds = load_dataset("teknium/OpenHermes-2.5", split="train", streaming=True)
+    # Fetch a slice via parquet (parallel downloads, much faster than streaming).
+    # Extra 50K buffer absorbs quality-filter skips.
+    fetch = args.max_examples + 50_000
+    print(f"Fetching {fetch:,} rows (parquet slice)...", flush=True)
+    ds = load_dataset("teknium/OpenHermes-2.5", split=f"train[:{fetch}]")
 
     print(f"Converting + quality filtering (target: {args.max_examples:,})...", flush=True)
     new_examples: list[tuple[str, dict]] = []
     skipped = 0
-    scanned = 0
 
     for item in ds:
-        scanned += 1
         ex = convert_example(item)
         if ex is None:
             skipped += 1
@@ -162,13 +164,7 @@ def main():
             h = _first_user_hash(ex["messages"])
             new_examples.append((h, ex))
 
-        if scanned % 50_000 == 0:
-            print(f"  Scanned {scanned:,} | Kept {len(new_examples):,} | Skipped {skipped:,}", flush=True)
-
-        # Stop as soon as we have enough — shuffle handles randomness
-        if len(new_examples) >= args.max_examples:
-            break
-
+    scanned = len(new_examples) + skipped
     print(f"  Total scanned: {scanned:,} | Converted: {len(new_examples):,} | Skipped: {skipped:,}", flush=True)
 
     # ── Step 3: shuffle + select top N ──
