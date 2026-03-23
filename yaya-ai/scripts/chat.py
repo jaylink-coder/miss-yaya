@@ -144,6 +144,9 @@ def main():
 
         print(f"Yaya: {response}\n")
 
+        # Log exchange for continuous learning
+        log_conversation(user_input, response, log_path=args.conv_log)
+
         # Update conversation history
         conversation.append({"role": "user",      "content": user_input})
         conversation.append({"role": "assistant", "content": response})
