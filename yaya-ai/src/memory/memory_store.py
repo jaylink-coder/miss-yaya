@@ -130,20 +130,47 @@ class MemoryStore:
 
     def extract_from_message(self, message: str) -> Optional[str]:
         """
-        Detect if a user message contains memorable information
-        like name, preferences, or important facts.
+        Detect if a user message contains memorable information.
+
+        Saves broadly: any first-person declarative statement, explicit
+        facts, preferences, or identity info — not just fixed trigger phrases.
+        Skips questions, commands, and very short messages.
         """
-        msg = message.lower().strip()
-        triggers = [
-            'my name is', 'i am called', 'call me',
-            'i like', 'i love', 'i hate', 'i prefer',
-            'i work', 'i live', 'i am from', 'i study',
+        msg = message.strip()
+        msg_lower = msg.lower()
+        words = msg_lower.split()
+
+        # Too short to be worth remembering
+        if len(words) < 4:
+            return None
+
+        # Pure questions — not facts about the user
+        if msg.endswith('?') and not any(t in msg_lower for t in ('remember', 'forget', 'note that')):
+            return None
+
+        # Explicit memory requests — always save
+        explicit = [
             'remember that', 'remember this', 'please remember',
-            'do not forget', 'keep in mind',
+            'do not forget', 'keep in mind', 'note that',
         ]
-        for trigger in triggers:
-            if trigger in msg:
-                return message  # worth remembering
+        for trigger in explicit:
+            if trigger in msg_lower:
+                return msg
+
+        # First-person declarative statements — save broadly
+        first_person = [
+            'i am', "i'm", 'i was', 'i have', "i've", 'i do', "i don't",
+            'i like', 'i love', 'i hate', 'i enjoy', 'i prefer', 'i want',
+            'i need', 'i think', 'i believe', 'i feel', 'i know',
+            'i work', 'i live', 'i study', 'i build', 'i use', 'i run',
+            'my name', 'my job', 'my goal', 'my project', 'my team',
+            'i am called', 'call me', 'i am from', 'i come from',
+            'we are', 'we have', 'we use', 'we build',
+        ]
+        for trigger in first_person:
+            if trigger in msg_lower:
+                return msg
+
         return None
 
     def __len__(self):
