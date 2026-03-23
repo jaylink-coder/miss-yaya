@@ -324,6 +324,27 @@ deploy-quantized:
 # Full pipeline (generate data -> finetune -> align -> evaluate)
 pipeline-full: gen-data finetune align-dpo eval-quick
 
+# Continuous learning: harvest conversations → filter → retrain SFT
+learn-tiny:
+	python scripts/continuous_learn.py \
+		--conversations data/memory/conversations.jsonl \
+		--output data/sft/yaya_instruct.jsonl \
+		--min_quality 0.6
+	python scripts/train_sft.py \
+		--model_config configs/model/yaya_tiny.yaml \
+		--train_config configs/training/sft_tiny.yaml \
+		--pretrain_checkpoint checkpoints/yaya-tiny/checkpoint-00010000
+
+learn-125m:
+	python scripts/continuous_learn.py \
+		--conversations data/memory/conversations.jsonl \
+		--output data/sft/yaya_instruct.jsonl \
+		--min_quality 0.6
+	python scripts/train_sft.py \
+		--model_config configs/model/yaya_125m.yaml \
+		--train_config configs/training/sft_125m.yaml \
+		--pretrain_checkpoint checkpoints/yaya-125m/latest
+
 # Cleanup
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
