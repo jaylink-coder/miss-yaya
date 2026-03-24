@@ -22,7 +22,7 @@ After the run:
                  --checkpoint checkpoints/yaya-125m-sft/checkpoint-XXXXXXXX
 """
 
-import os, sys, glob, yaml, subprocess, numpy as np
+import os, sys, glob, yaml, subprocess, shutil, numpy as np
 
 REPO_ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRETRAIN_DIR   = '/kaggle/working/yaya-pretrain-checkpoints'
@@ -36,10 +36,26 @@ TOKENIZER_PATH = 'data/tokenizer/yaya_tokenizer.model'
 sys.path.insert(0, REPO_ROOT)
 os.chdir(REPO_ROOT)
 
-os.environ['WANDB_DISABLED'] = 'true'
-os.environ['WANDB_MODE']     = 'disabled'
-os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
-os.environ['PYTHONIOENCODING'] = 'utf-8'
+# ── Redirect ALL HuggingFace caches to /kaggle/working (20 GB) ────────────────
+# By default HF writes to /root/.cache which is on a tiny 5-8 GB partition.
+HF_CACHE = '/kaggle/working/hf_cache'
+os.makedirs(HF_CACHE, exist_ok=True)
+os.environ['HF_HOME']                  = HF_CACHE
+os.environ['HF_DATASETS_CACHE']        = HF_CACHE
+os.environ['TRANSFORMERS_CACHE']       = HF_CACHE
+os.environ['HUGGINGFACE_HUB_CACHE']    = HF_CACHE
+
+os.environ['WANDB_DISABLED']           = 'true'
+os.environ['WANDB_MODE']               = 'disabled'
+os.environ['PYTORCH_CUDA_ALLOC_CONF']  = 'expandable_segments:True'
+os.environ['PYTHONIOENCODING']         = 'utf-8'
+
+def disk_free_gb(path='/kaggle/working'):
+    st = shutil.disk_usage(path)
+    return st.free / 1e9
+
+def print_disk():
+    print(f'  Disk free: {disk_free_gb():.1f} GB  (/kaggle/working)')
 
 # Load HF token from Kaggle Secrets (add HF_TOKEN via Settings → Secrets)
 if not os.environ.get('HF_TOKEN'):
