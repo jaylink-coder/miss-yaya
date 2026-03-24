@@ -225,6 +225,12 @@ class Trainer:
             if os.path.exists(ema_path):
                 self.ema.load(ema_path)
 
+        # Restore EWC Fisher state if a checkpoint exists
+        if self.ewc is not None and _ckpt_path is not None:
+            ewc_path = os.path.join(_ckpt_path, "ewc.pt")
+            if os.path.exists(ewc_path):
+                self.ewc.load(ewc_path)
+
         # Log model info
         if is_main_process():
             summary = self.unwrapped_model.generate_summary()
