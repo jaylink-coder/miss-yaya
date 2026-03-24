@@ -134,6 +134,12 @@ class CheckpointManager:
             print("No checkpoint found. Starting from scratch.")
             return {"step": 0, "epoch": 0, "loss": float("inf")}
 
+        # Verify checkpoint directory actually exists (catches unmounted Drive, bad paths, etc.)
+        if not os.path.isdir(checkpoint_path):
+            print(f"WARNING: Checkpoint path does not exist: {checkpoint_path}")
+            print("Starting from scratch.")
+            return {"step": 0, "epoch": 0, "loss": float("inf")}
+
         print(f"Loading checkpoint: {checkpoint_path}")
 
         # Load model weights
@@ -141,7 +147,9 @@ class CheckpointManager:
         if os.path.exists(model_path):
             state_dict = torch.load(model_path, map_location=map_location, weights_only=True)
             model.load_state_dict(state_dict)
-            print("  Model weights loaded.")
+            print("  Model weights loaded OK.")
+        else:
+            print(f"  WARNING: model.pt not found at {model_path} — model stays at current init!")
 
         # Load optimizer state
         opt_path = os.path.join(checkpoint_path, "optimizer.pt")
@@ -149,7 +157,9 @@ class CheckpointManager:
             optimizer.load_state_dict(
                 torch.load(opt_path, map_location=map_location, weights_only=True)
             )
-            print("  Optimizer state loaded.")
+            print("  Optimizer state loaded OK.")
+        elif optimizer is not None:
+            print("  WARNING: optimizer.pt not found — optimizer state reset.")
 
         # Load scheduler state
         sched_path = os.path.join(checkpoint_path, "scheduler.pt")
@@ -157,7 +167,9 @@ class CheckpointManager:
             scheduler.load_state_dict(
                 torch.load(sched_path, map_location=map_location, weights_only=True)
             )
-            print("  Scheduler state loaded.")
+            print("  Scheduler state loaded OK.")
+        elif scheduler is not None:
+            print("  WARNING: scheduler.pt not found — scheduler state reset.")
 
         # Load metadata
         meta_path = os.path.join(checkpoint_path, "metadata.json")
@@ -165,8 +177,24 @@ class CheckpointManager:
         if os.path.exists(meta_path):
             with open(meta_path, "r") as f:
                 metadata = json.load(f)
-            print(f"  Resuming from step {metadata.get('step', 0)}")
+            print(f"  Metadata loaded: step={metadata.get('step', 0)}, "
+                  f"epoch={metadata.get('epoch', 0)}, loss={metadata.get('loss', 'n/a')}")
+        else:
+            print(f"  WARNING: metadata.json not found at {meta_path}")
 
+        # Fallback: infer step from checkpoint directory name (e.g. checkpoint-00015008 → 15008)
+        if metadata.get("step", 0) == 0:
+            ckpt_name = os.path.basename(checkpoint_path.rstrip("/\\"))
+            if ckpt_name.startswith("checkpoint-"):
+                try:
+                    inferred_step = int(ckpt_name.split("-")[-1])
+                    if inferred_step > 0:
+                        print(f"  Inferred step {inferred_step} from checkpoint directory name.")
+                        metadata["step"] = inferred_step
+                except ValueError:
+                    pass
+
+        print(f"  Resuming from step {metadata['step']}")
         return metadata
 
     def get_latest_checkpoint(self) -> Optional[str]:
