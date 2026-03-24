@@ -1,129 +1,162 @@
-"""Single-script Kaggle SFT runner — download data, then fine-tune."""
+"""
+Kaggle SFT runner — downloads 100K OpenHermes, then fine-tunes Yaya-125M.
+
+Setup (one-time in Kaggle):
+  1. Add your GitHub repo as a Kaggle dataset or clone it via internet access
+  2. Add HF_TOKEN as a Kaggle Secret (Settings → Secrets)
+  3. Add WANDB_API_KEY as a Kaggle Secret (optional)
+  4. If you have a pretrain checkpoint, upload it as a dataset and set
+     PRETRAIN_CKPT_DATASET below
+
+Re-run safe: auto-resumes SFT from latest checkpoint if one exists.
+"""
 
 import os
 import sys
-import json
 import glob
-import random
+import subprocess
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ── Paths ─────────────────────────────────────────────────────────────────────
+REPO_ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SFT_CKPT_DIR   = '/kaggle/working/yaya-sft-checkpoints'
+SFT_DATA_PATH  = 'data/sft/yaya_instruct.jsonl'
+EVAL_DATA_PATH = 'data/sft/yaya_instruct_eval.jsonl'
+TOKENIZER_PATH = 'data/tokenizer/yaya_tokenizer.model'
+
+# Pretrain checkpoint: look in uploaded Kaggle dataset first, then working dir
+PRETRAIN_CKPT_DATASET = '/kaggle/input/yaya-checkpoints'   # upload checkpoint here
+PRETRAIN_CKPT_WORKING = '/kaggle/working/yaya-checkpoints'
+
 sys.path.insert(0, REPO_ROOT)
 os.chdir(REPO_ROOT)
 
-random.seed(42)
+# Disable W&B unless API key is present
+if not os.environ.get('WANDB_API_KEY'):
+    os.environ['WANDB_DISABLED'] = 'true'
+    os.environ['WANDB_MODE']     = 'disabled'
 
-PRETRAIN_CKPT_DIR = '/kaggle/working/yaya-checkpoints'
-SFT_CKPT_DIR      = '/kaggle/working/yaya-sft-checkpoints'
-SFT_DATA_PATH     = 'data/sft/yaya_instruct.jsonl'
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
+os.environ['PYTHONIOENCODING']        = 'utf-8'
 
-SYSTEM_PROMPT = (
-    "You are Yaya, a helpful and friendly AI assistant. "
-    "You answer questions clearly, tell jokes when asked, and are always honest."
+# ── 0. GPU check ──────────────────────────────────────────────────────────────
+import torch
+
+if torch.cuda.is_available():
+    props   = torch.cuda.get_device_properties(0)
+    vram_gb = props.total_memory / 1e9
+    cap     = props.major * 10 + props.minor
+    DTYPE   = 'bfloat16' if cap >= 80 else 'float16'
+    print(f'GPU:   {props.name}  VRAM: {vram_gb:.1f}GB')
+    print(f'Compute capability: {props.major}.{props.minor}  → {DTYPE}')
+    if vram_gb < 12:
+        print('WARNING: <12GB VRAM — consider reducing batch size or seq length.')
+else:
+    print('WARNING: No GPU found. Training will be very slow.')
+    DTYPE = 'float32'
+
+# ── 1. HF Token ───────────────────────────────────────────────────────────────
+print('\n[1/4] Setting up HuggingFace token...')
+hf_token = os.environ.get('HF_TOKEN', '')
+if not hf_token:
+    # Try Kaggle secrets via kaggle_secrets
+    try:
+        from kaggle_secrets import UserSecretsClient
+        hf_token = UserSecretsClient().get_secret('HF_TOKEN')
+        os.environ['HF_TOKEN'] = hf_token
+        print('  HF_TOKEN loaded from Kaggle secrets.')
+    except Exception:
+        print('  WARNING: No HF_TOKEN found. Downloads may be rate-limited.')
+else:
+    print('  HF_TOKEN already set.')
+
+# ── 2. Download + prepare SFT data ────────────────────────────────────────────
+print('\n[2/4] Preparing SFT data (100K OpenHermes + Yaya-specific)...')
+os.makedirs('data/sft', exist_ok=True)
+
+if os.path.exists(SFT_DATA_PATH):
+    with open(SFT_DATA_PATH) as f:
+        n = sum(1 for l in f if l.strip())
+    print(f'  Existing yaya_instruct.jsonl: {n:,} examples')
+    if n >= 100_000:
+        print('  Dataset already large — skipping download.')
+    else:
+        print(f'  Only {n:,} examples — downloading fresh from OpenHermes...')
+        subprocess.run(
+            [sys.executable, 'scripts/download_openhermes.py', '--max_examples', '100000'],
+            check=True
+        )
+else:
+    print('  No existing data — downloading from OpenHermes...')
+    subprocess.run(
+        [sys.executable, 'scripts/download_openhermes.py', '--max_examples', '100000'],
+        check=True
+    )
+
+# Verify eval file exists (small held-out set)
+if not os.path.exists(EVAL_DATA_PATH):
+    print(f'  WARNING: eval file not found at {EVAL_DATA_PATH}')
+
+# ── 3. Find pretrain checkpoint ───────────────────────────────────────────────
+print('\n[3/4] Locating pretrain checkpoint...')
+
+def find_best_checkpoint(directory: str) -> str | None:
+    ckpts = sorted(glob.glob(f'{directory}/checkpoint-*'))
+    return ckpts[-1] if ckpts else None
+
+pretrain_ckpt = (
+    find_best_checkpoint(PRETRAIN_CKPT_DATASET) or
+    find_best_checkpoint(PRETRAIN_CKPT_WORKING)
 )
 
+if pretrain_ckpt:
+    print(f'  Pretrain checkpoint: {pretrain_ckpt}')
+else:
+    print('  No pretrain checkpoint found — training from random init.')
+    print('  (For best results, upload a pretrain checkpoint as a Kaggle dataset)')
 
-def make_sample(user_msg, assistant_msg):
-    return {
-        "messages": [
-            {"role": "system",    "content": SYSTEM_PROMPT},
-            {"role": "user",      "content": user_msg},
-            {"role": "assistant", "content": assistant_msg},
-        ]
-    }
+# Check for existing SFT checkpoint (auto-resume)
+sft_ckpt = find_best_checkpoint(SFT_CKPT_DIR)
+if sft_ckpt:
+    print(f'  Resuming SFT from: {sft_ckpt}')
 
+os.makedirs(SFT_CKPT_DIR, exist_ok=True)
 
-# ── 1. Load hand-crafted data ─────────────────────────────────────────────────
-print('\n[1/4] Loading hand-crafted SFT examples...')
-samples = []
-if os.path.exists(SFT_DATA_PATH):
-    with open(SFT_DATA_PATH, encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                samples.append(json.loads(line))
-print(f'  Loaded {len(samples)} hand-crafted examples')
-
-# ── 2. Download Alpaca ────────────────────────────────────────────────────────
-print('\n[2/4] Downloading Alpaca (300 examples)...')
-try:
-    from datasets import load_dataset
-    ds = load_dataset('tatsu-lab/alpaca', split='train')
-    added = 0
-    for row in ds:
-        instruction = row.get('instruction', '').strip()
-        inp         = row.get('input', '').strip()
-        output      = row.get('output', '').strip()
-        if not instruction or not output:
-            continue
-        user_msg = f'{instruction}\n\n{inp}' if inp else instruction
-        samples.append(make_sample(user_msg, output))
-        added += 1
-        if added >= 300:
-            break
-    print(f'  Got {added} Alpaca examples')
-except Exception as e:
-    print(f'  Alpaca download failed: {e}')
-
-# ── 3. Download Dolly ─────────────────────────────────────────────────────────
-print('\n[3/4] Downloading Dolly (200 examples)...')
-try:
-    ds = load_dataset('databricks/databricks-dolly-15k', split='train')
-    added = 0
-    for row in ds:
-        instruction = row.get('instruction', '').strip()
-        context     = row.get('context', '').strip()
-        response    = row.get('response', '').strip()
-        if not instruction or not response:
-            continue
-        user_msg = f'{instruction}\n\nContext: {context}' if context else instruction
-        samples.append(make_sample(user_msg, response))
-        added += 1
-        if added >= 200:
-            break
-    print(f'  Got {added} Dolly examples')
-except Exception as e:
-    print(f'  Dolly download failed: {e}')
-
-# Deduplicate and shuffle
-seen, deduped = set(), []
-for s in samples:
-    key = s['messages'][1]['content'][:80]
-    if key not in seen:
-        seen.add(key)
-        deduped.append(s)
-random.shuffle(deduped)
-
-os.makedirs('data/sft', exist_ok=True)
-with open(SFT_DATA_PATH, 'w', encoding='utf-8') as f:
-    for s in deduped:
-        f.write(json.dumps(s, ensure_ascii=False) + '\n')
-print(f'  Total SFT examples: {len(deduped)}')
-
-# ── 4. Run SFT ────────────────────────────────────────────────────────────────
+# ── 4. Patch config for Kaggle paths + dtype ──────────────────────────────────
 print('\n[4/4] Starting SFT training...')
 
-ckpts = sorted(glob.glob(f'{PRETRAIN_CKPT_DIR}/checkpoint-*'))
-if not ckpts:
-    print(f'ERROR: No pretrain checkpoint found in {PRETRAIN_CKPT_DIR}')
-    sys.exit(1)
-
-best_ckpt = ckpts[-1]
-print(f'  Using pretrain checkpoint: {best_ckpt}')
-
 import yaml
+
 with open('configs/training/sft_125m.yaml') as f:
     cfg = yaml.safe_load(f)
+
 cfg['checkpointing']['save_dir'] = SFT_CKPT_DIR
+cfg['training']['dtype']         = DTYPE
+cfg['data']['train_data']        = SFT_DATA_PATH
+cfg['data']['eval_data']         = EVAL_DATA_PATH
+cfg['data']['tokenizer_path']    = TOKENIZER_PATH
+
+# Enable gradient checkpointing on low-VRAM GPUs (saves ~30% VRAM)
+if torch.cuda.is_available() and vram_gb < 14:
+    cfg['distributed']['gradient_checkpointing'] = True
+    print(f'  Gradient checkpointing enabled (<14GB VRAM).')
+
 with open('configs/training/sft_125m.yaml', 'w') as f:
-    yaml.dump(cfg, f)
+    yaml.dump(cfg, f, default_flow_style=False)
 
-sft_ckpts = sorted(glob.glob(f'{SFT_CKPT_DIR}/checkpoint-*'))
-resume = f'--resume {sft_ckpts[-1]}' if sft_ckpts else ''
-pretrain_flag = '' if resume else f'--pretrain_checkpoint {best_ckpt}'
+# Build training command
+cmd = [
+    sys.executable, 'scripts/train_sft.py',
+    '--model_config', 'configs/model/yaya_125m.yaml',
+    '--train_config', 'configs/training/sft_125m.yaml',
+]
 
-os.system(
-    f'python scripts/train_sft.py '
-    f'--model_config configs/model/yaya_125m.yaml '
-    f'--train_config configs/training/sft_125m.yaml '
-    f'{pretrain_flag} {resume}'
-)
+if sft_ckpt:
+    cmd += ['--resume', sft_ckpt]
+elif pretrain_ckpt:
+    cmd += ['--pretrain_checkpoint', pretrain_ckpt]
+
+print(f'  Command: {" ".join(cmd)}')
+print()
+
+result = subprocess.run(cmd)
+sys.exit(result.returncode)
