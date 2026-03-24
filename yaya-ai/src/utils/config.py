@@ -232,4 +232,10 @@ def load_training_config(path: str) -> TrainingConfig:
         grad_noise_eta=training.get("grad_noise_eta", 0.0),
         layer_lr_decay=training.get("layer_lr_decay", 1.0),
         ema_decay=training.get("ema_decay", 0.0),
+        lora_rank=training.get("lora_rank", 0),
+        lora_alpha=training.get("lora_alpha", 32.0),
+        lora_dropout=training.get("lora_dropout", 0.05),
+        lora_target_modules=training.get("lora_target_modules", "q_proj,k_proj,v_proj,o_proj"),
+        ewc_lambda=training.get("ewc_lambda", 0.0),
+        ewc_fisher_samples=training.get("ewc_fisher_samples", 200),
     )
