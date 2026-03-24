@@ -169,6 +169,28 @@ class Trainer:
         self.last_train_loss = 0.0
         self._interrupted = False
 
+    def compute_ewc_fisher(self, dataloader=None) -> None:
+        """Compute the EWC Fisher Information matrix on the reference task.
+
+        Call this AFTER initial training (Phase 1) and BEFORE starting
+        fine-tuning on new data (Phase 2).  Uses the training dataloader
+        by default, or a custom dataloader if provided.
+
+        Example workflow:
+            trainer.train()                          # Phase 1
+            trainer.compute_ewc_fisher()             # Anchor current weights
+            # Now swap in new train_dataloader and call trainer.train() again
+        """
+        if self.ewc is None:
+            print("WARNING: EWC not enabled (ewc_lambda=0). Skipping Fisher computation.")
+            return
+        dl = dataloader or self.train_dataloader
+        self.ewc.compute_fisher(
+            dl,
+            num_samples=getattr(self.config, "ewc_fisher_samples", 200),
+            device=self.device,
+        )
+
     def train(self, resume_from: Optional[str] = None):
         """Run the full training loop.
 
