@@ -141,16 +141,16 @@ else:
     print('\n[2/2] Starting pretraining (5 000 steps)...')
     with open('configs/training/train_125m.yaml') as f:
         cfg = yaml.safe_load(f)
-    cfg['checkpointing']['save_dir'] = PRETRAIN_DIR
-    cfg['data']['train_data']        = TRAIN_DATA_DIR
-    cfg['data']['eval_data']         = EVAL_DATA_DIR
-    cfg['training']['max_steps']     = 5000
-    cfg['training']['dtype']         = DTYPE
-    cfg['data']['num_workers']       = 2
+    cfg['checkpointing']['save_dir']     = PRETRAIN_DIR
+    cfg['checkpointing']['keep_last_n']  = 1          # only keep final checkpoint
+    cfg['data']['train_data']            = TRAIN_DATA_DIR
+    cfg['data']['eval_data']             = EVAL_DATA_DIR
+    cfg['training']['max_steps']         = 5000
+    cfg['training']['dtype']             = DTYPE
+    cfg['data']['num_workers']           = 2
     with open('configs/training/train_125m.yaml', 'w') as f:
         yaml.dump(cfg, f, default_flow_style=False)
 
-    resume_arg = ''
     result = subprocess.run([
         sys.executable, 'scripts/train.py',
         '--model_config', 'configs/model/yaya_125m.yaml',
@@ -163,6 +163,13 @@ else:
     existing_pretrain = sorted(glob.glob(f'{PRETRAIN_DIR}/checkpoint-*'))
     pretrain_ckpt = existing_pretrain[-1] if existing_pretrain else None
     print(f'  Pretraining done. Best checkpoint: {pretrain_ckpt}')
+
+    # Free disk: delete tokenized data and HF cache — no longer needed
+    print('  Cleaning up tokenized data and HF cache to free space...')
+    shutil.rmtree(TRAIN_DATA_DIR, ignore_errors=True)
+    shutil.rmtree(EVAL_DATA_DIR,  ignore_errors=True)
+    shutil.rmtree(HF_CACHE, ignore_errors=True)
+    print_disk()
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PHASE 2: SFT
