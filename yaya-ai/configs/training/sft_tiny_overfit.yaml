@@ -21,7 +21,7 @@ training:
   warmup_steps: 200
   min_lr_ratio: 0.05                 # don't decay to zero — keep plasticity
   max_steps: 50000
-  max_seq_length: 128                # shorter = faster; Q&A fits in 128 tokens
+  max_seq_length: 384                # full answers fit (p95=357 tokens, only 2/236 truncated)
   dtype: float32
 
 checkpointing:
