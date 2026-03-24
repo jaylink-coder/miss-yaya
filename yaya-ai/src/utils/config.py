@@ -39,6 +39,27 @@ class ModelConfig:
     dtype: str = "bfloat16"
     vision: VisionConfig = field(default_factory=VisionConfig)
 
+    # MoE (Mixture-of-Experts) — opt-in, disabled by default
+    moe_enabled: bool = False
+    moe_num_experts: int = 8
+    moe_top_k: int = 2
+    moe_layers: str = "alternate"          # "all", "alternate", or "0,2,4,..."
+    moe_load_balance_coeff: float = 0.01
+    moe_router_jitter: float = 0.01
+
+    def is_moe_layer(self, layer_idx: int) -> bool:
+        if not self.moe_enabled:
+            return False
+        if self.moe_layers == "all":
+            return True
+        if self.moe_layers == "alternate":
+            return layer_idx % 2 == 1
+        try:
+            indices = {int(x.strip()) for x in self.moe_layers.split(",")}
+            return layer_idx in indices
+        except ValueError:
+            return False
+
     @property
     def head_dim(self) -> int:
         return self.hidden_size // self.num_attention_heads
