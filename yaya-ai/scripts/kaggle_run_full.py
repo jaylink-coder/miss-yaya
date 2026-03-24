@@ -94,8 +94,9 @@ if existing_pretrain:
     print('  Skipping pretraining phase.')
     pretrain_ckpt = existing_pretrain[-1]
 else:
-    # Download and tokenize
-    print('\n[1/2] Downloading OpenWebText (streaming, ~50M tokens)...')
+    # Download and tokenize — use Wikipedia (simple/20220301.en): ~100M tokens,
+    # only ~1GB download vs 38GB for OpenWebText. Streams so no full download needed.
+    print('\n[1/2] Streaming Wikipedia for tokenization (~30M tokens)...')
     from datasets import load_dataset
     from src.tokenizer.tokenizer import YayaTokenizer
 
@@ -103,12 +104,12 @@ else:
     os.makedirs(TRAIN_DATA_DIR, exist_ok=True)
     os.makedirs(EVAL_DATA_DIR,  exist_ok=True)
 
-    ds = load_dataset('openwebtext', split='train', streaming=True)
+    ds = load_dataset('wikimedia/wikipedia', '20220301.en', split='train', streaming=True, trust_remote_code=True)
 
     train_path = os.path.join(TRAIN_DATA_DIR, 'shard_00000.bin')
     eval_path  = os.path.join(EVAL_DATA_DIR,  'eval.bin')
-    MAX_TRAIN  = 50_000_000
-    MAX_EVAL   = 500_000
+    MAX_TRAIN  = 30_000_000   # 30M tokens — fits easily in 20GB
+    MAX_EVAL   =    300_000
     total_train = total_eval = 0
     chunk = []
     CHUNK = 500_000
