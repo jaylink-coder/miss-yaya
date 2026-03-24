@@ -4689,3 +4689,196 @@ Depends on dimension valued. Four strong candidates:
 **Rating: 9.0/10**
 
 ---
+
+### Q396 — Linguistics
+**What is the Sapir-Whorf hypothesis and how strong is the evidence for it?**
+
+The strong version (linguistic determinism): language determines thought. Mostly rejected.
+
+The weak version (linguistic relativity): language *influences* thought. Real evidence:
+
+**Colour terms**: Russian has goluboy/siniy (light/dark blue). Russian speakers distinguish shades faster near that boundary.
+
+**Spatial reasoning**: Guugu Yimithirr and Kuuk Thaayorre use absolute cardinal directions (N/S/E/W), not left/right. Speakers outperform English speakers on dead-reckoning.
+
+**Number**: Pirahã has only 'few' and 'many.' Speakers struggle with exact quantity tasks.
+
+**Counterfactuals**: Languages with clear counterfactual grammar affect causal reasoning tasks (Au 1983).
+
+**Conclusion**: you're not trapped by your language — translation works, new concepts can be learned. But lexicalisation makes patterns more salient and automatic. Effect is real but modest.
+
+**Rating: 8.5/10**
+
+---
+
+### Q397 — History
+**What caused the collapse of the Bronze Age around 1200 BCE?**
+
+One of history's great mysteries: nearly every eastern Mediterranean civilisation collapsed within ~50 years. Mycenaean Greece, Hittite Empire, Ugarit, Canaan, Egyptian New Kingdom weakened.
+
+**Proposed causes:**
+1. **Sea Peoples invasions** — Egyptian records show waves of migrants. Likely a symptom, not cause.
+2. **Drought/climate change** — Pollen studies and grain records from Ugarit show multi-decade drought from ~1200 BCE. Starvation, state failure, migration, raids.
+3. **Earthquakes** — Destruction layers at Mycenae, Tiryns. But not all sites.
+4. **Systems collapse** (Eric Cline, 1177 B.C.): Bronze Age trade was deeply interdependent — tin from Afghanistan, copper from Cyprus, grain from Egypt. One shock cascaded.
+5. **Internal revolts** — Linear B tablets at Pylos show defensive preparations and reduced rations before destruction.
+
+**Consensus**: multicausal. Drought stressed food, weakened states, Sea Peoples applied the final blow. Interconnectedness amplified fragility.
+
+**Rating: 9.0/10**
+
+---
+
+### Q398 — Computer Science
+**What is a hash function and why does cryptographic hashing matter?**
+
+A hash function maps arbitrary-length input to fixed-length output.
+
+**Cryptographic hash** requires:
+1. **Preimage resistance**: given H(x), can't find x.
+2. **Second preimage resistance**: given x, can't find x' where H(x')=H(x).
+3. **Collision resistance**: can't find any x, x' where H(x)=H(x').
+4. **Avalanche effect**: one bit change flips ~50% of output bits.
+
+**Why it matters:**
+- Passwords: store H(password), not password. Bcrypt/Argon2 add deliberate slowness.
+- Digital signatures: sign H(document) — if hash is unforgeable, signature is too.
+- Integrity: SHA-256 confirms file wasn't tampered with.
+- Blockchain: each block contains H(previous block) — tamper-evident chain.
+
+**Broken**: MD5 and SHA-1 have known collisions. Use SHA-256 or SHA-3.
+
+**Rating: 9.0/10**
+
+---
+
+### Q399 — Philosophy
+**What is the problem of induction, and has it been solved?**
+
+David Hume (1739): we observe the sun rising every day and conclude it will rise tomorrow. But what justifies that inference? Past regularities don't logically entail future ones.
+
+The problem: induction can't be justified by logic (that's deduction) or by past success (circular).
+
+**Attempted solutions:**
+1. **Pragmatic** (Reichenbach): if nature is uniform, induction works; if not, no method works. Nothing lost by trying.
+2. **Falsificationism** (Popper): eliminate induction. Science = bold conjectures + deductive attempts to falsify. Problem: doesn't explain why to trust unfalsified theories.
+3. **Bayesian**: induction is probabilistic updating. Rational degrees of belief, not certainty. Problem: priors need justification.
+4. **Dissolution** (Wittgenstein): 'justified belief' just means what it means in practice.
+
+**Consensus**: not solved. Popper dominant in philosophy of science; Bayesian inference dominates practice. Hume's raw problem remains open.
+
+**Rating: 9.0/10**
+
+---
+
+### Q400 — Biology
+**How does CRISPR-Cas9 actually work at the molecular level?**
+
+CRISPR is a bacterial immune system repurposed as a gene editor.
+
+**Mechanism:**
+1. **Guide RNA (gRNA)**: 20-nucleotide sequence matching target DNA, binds to Cas9.
+2. **PAM sequence**: Cas9 requires NGG adjacent to target (SpCas9). Without PAM, no cut.
+3. **Scanning**: gRNA-Cas9 complex scans DNA for complementary sequence next to PAM.
+4. **Unwinding**: Cas9 unwinds double helix locally for strand invasion.
+5. **Cleavage**: Two nuclease domains (RuvC + HNH) each cut one strand — blunt double-strand break.
+
+**Repair pathways:**
+- **NHEJ**: fast, error-prone; creates indels, disrupts gene. Used to knock out genes.
+- **HDR**: if template supplied, copies it in for precise editing. Less efficient.
+
+**Applications**: sickle cell (cured in trials), cancer immunotherapy, crop improvement, diagnostics (SHERLOCK/DETECTR).
+
+**Safety**: off-target cuts remain a concern. Base editors and prime editors reduce this.
+
+**Rating: 9.5/10**
+
+---
+
+### Q401 — Physics
+**What is quantum entanglement and does it allow faster-than-light communication?**
+
+Quantum entanglement: two particles interact such that their states can't be described independently. Measuring one instantly determines correlated properties of the other, regardless of distance.
+
+Bell theorem (1964) proved no local hidden variable theory can reproduce the correlations. Bell tests (Aspect 1982, Zeilinger 2022 Nobel) confirm non-locality.
+
+No FTL communication (no-communication theorem): you get a random result when you measure. Correlations only become apparent by comparing results over classical channels. You cannot encode a message.
+
+What entanglement enables: QKD (eavesdroppers disturb state detectably), quantum teleportation (needs classical channel), quantum computing (entangled qubits as resource).
+
+Summary: correlations are real and instantaneous, but transmit no usable information. Relativity is safe.
+
+**Rating: 9.0/10**
+
+---
+
+### Q402 — Economics
+**What is the efficient market hypothesis and what are its limits?**
+
+Fama (1960s): asset prices reflect all available information. Three forms: Weak (past prices); Semi-strong (all public info); Strong (even private info -- clearly false).
+
+Evidence for: most active managers underperform index funds; prices near random walk; rapid absorption of news.
+
+Evidence against: momentum effect, value premium (Fama-French), bubbles (dot-com, 2008, crypto), behavioural finance (Shiller, Thaler -- overconfidence/herding), limits to arbitrage.
+
+Consensus: weak EMH largely holds; semi-strong contested; markets mostly efficient but not perfectly.
+
+**Rating: 9.0/10**
+
+---
+
+### Q403 — Neuroscience
+**What is neuroplasticity and what are its true limits?**
+
+Neuroplasticity: brain changes structure and function in response to experience, learning, injury.
+
+Mechanisms: LTP (Hebb's rule: fire together wire together), structural plasticity (axons/dendrites), neurogenesis (adult hippocampus), cortical remapping (Merzenich, Ramachandran).
+
+Demonstrated: London taxi drivers enlarged hippocampus (Maguire 2000); blind individuals use visual cortex for touch/sound; stroke recovery via neighbouring regions.
+
+True limits: critical periods (language, vision -- miss them = harder recovery); plasticity declines with age (never to zero); CNS regrowth inhibited (NogoA, myelin-associated glycoprotein).
+
+Myth: brain training apps and 10% brain use claims wildly overstate it.
+
+**Rating: 9.0/10**
+
+---
+
+### Q404 — Mathematics
+**What is Goedel's incompleteness theorem and why does it matter?**
+
+Goedel (1931) proved two theorems:
+
+First: Any consistent formal system powerful enough to express arithmetic contains true statements unprovable within that system.
+
+Second: Such a system cannot prove its own consistency.
+
+Proof idea: Goedel constructed statement G saying 'this statement is not provable'. If provable, it is false (inconsistent). If unprovable, it is true (incomplete). He used Goedel numbering to encode formulas as integers, turning self-reference into arithmetic.
+
+What it means: NOT that maths is broken. YES: every sufficiently powerful system has blind spots; consistency cannot be proved from within.
+
+Why it matters: kills Hilbert programme; linked to Turing halting problem (undecidability = incompleteness); epistemology: formal systems cannot fully capture mathematical truth.
+
+**Rating: 9.5/10**
+
+---
+
+### Q405 — Geography
+**Why do civilisations tend to develop along rivers?**
+
+Rivers solve fundamental constraints of pre-industrial civilisation simultaneously:
+1. Fresh water: drinking, irrigation
+2. Agriculture: floodplains deposit silt annually (Nile, Tigris-Euphrates, Indus, Yellow River)
+3. Transport: water ~10x cheaper than land; every river city is a trade node
+4. Communication and control: control the river, control the region
+5. Defence: rivers as natural moats
+
+Great river civilisations: Mesopotamia (Tigris-Euphrates), Egypt (Nile), Indus Valley, China (Yellow River = Huang He).
+
+Limits: catastrophic flooding (Yellow River -- China's Sorrow), disease (malaria, cholera), can be diverted by enemies.
+
+Modern shift: railways/roads broke river monopoly but major cities still follow river geography.
+
+**Rating: 8.5/10**
+
+---

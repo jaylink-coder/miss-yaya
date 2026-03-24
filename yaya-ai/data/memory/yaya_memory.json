@@ -726,5 +726,75 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-24T15:10:14.130349"
+  },
+  {
+    "id": 104,
+    "content": "Q396 Sapir-Whorf: weak linguistic relativity confirmed (colour, spatial, number); strong determinism rejected",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:37:26.691416"
+  },
+  {
+    "id": 105,
+    "content": "Q397 Bronze Age Collapse ~1200 BCE: multicausal — drought, Sea Peoples, systems collapse (Cline 1177 BC), earthquakes, revolts",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:37:26.720629"
+  },
+  {
+    "id": 106,
+    "content": "Q398 Cryptographic hashing: preimage/collision resistance, avalanche effect; SHA-256 ok; MD5/SHA-1 broken",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:37:26.741577"
+  },
+  {
+    "id": 107,
+    "content": "Q399 Problem of induction (Hume 1739): can't be justified without circularity; Popper falsification, Bayesian updating, still open",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:37:26.757769"
+  },
+  {
+    "id": 108,
+    "content": "Q400 CRISPR-Cas9: gRNA+PAM targets, Cas9 cuts both strands; NHEJ=knockout, HDR=precise edit; base/prime editors improving",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:37:26.785949"
+  },
+  {
+    "id": 109,
+    "content": "Q401 Quantum entanglement: real non-local correlations (Bell tests), no FTL signal (no-communication theorem); enables QKD, teleportation",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:41:36.732247"
+  },
+  {
+    "id": 110,
+    "content": "Q402 EMH: weak holds, semi-strong contested; momentum/value anomalies; Shiller/Thaler behavioural critique; bubbles exist",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:41:36.761945"
+  },
+  {
+    "id": 111,
+    "content": "Q403 Neuroplasticity: LTP/remapping/neurogenesis; taxi drivers hippocampus, stroke recovery; limits: critical periods, age, CNS inhibitors",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:41:36.787239"
+  },
+  {
+    "id": 112,
+    "content": "Q404 Goedel incompleteness 1931: true unprovable statements in any consistent system; kills Hilbert programme; linked to halting problem",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:41:36.812018"
+  },
+  {
+    "id": 113,
+    "content": "Q405 River civilisations: water/silt/transport(10x cheaper)/control/defence; Nile/Tigris/Indus/Yellow River; modern roads broke monopoly",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T00:41:36.845332"
   }
 ]
