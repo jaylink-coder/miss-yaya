@@ -177,6 +177,12 @@ def load_model_config(path: str) -> ModelConfig:
         initializer_range=raw.get("initializer_range", 0.02),
         dtype=dtype,
         vision=vision_cfg,
+        moe_enabled=arch.get("moe_enabled", False),
+        moe_num_experts=arch.get("moe_num_experts", 8),
+        moe_top_k=arch.get("moe_top_k", 2),
+        moe_layers=arch.get("moe_layers", "alternate"),
+        moe_load_balance_coeff=arch.get("moe_load_balance_coeff", 0.01),
+        moe_router_jitter=arch.get("moe_router_jitter", 0.01),
     )
 
 
