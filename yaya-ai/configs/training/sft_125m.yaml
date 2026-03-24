@@ -30,7 +30,7 @@ logging:
   wandb_run_name: yaya-125m-sft
 
 eval:
-  eval_steps: 500
+  eval_steps: 1000
   eval_samples: 50
 
 data:
