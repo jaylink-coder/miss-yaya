@@ -86,6 +86,7 @@ else:
 print('\n' + '='*60)
 print('PHASE 1: PRETRAINING on OpenWebText')
 print('='*60)
+print_disk()
 
 existing_pretrain = sorted(glob.glob(f'{PRETRAIN_DIR}/checkpoint-*'))
 if existing_pretrain:
