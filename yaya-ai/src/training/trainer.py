@@ -23,6 +23,7 @@ from src.utils.config import ModelConfig, TrainingConfig
 from src.model.yaya_model import YayaForCausalLM
 from src.training.optimizer import create_optimizer, create_scheduler
 from src.training.ema import EMA
+from src.training.ewc import EWC
 from src.training.checkpointing import CheckpointManager
 from src.training.logging_utils import TrainingLogger
 from src.training.distributed import (
