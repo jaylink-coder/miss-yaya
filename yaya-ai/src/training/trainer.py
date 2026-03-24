@@ -155,6 +155,13 @@ class Trainer:
             self.ema = EMA(self.unwrapped_model, decay=config.ema_decay)
             print(f"EMA enabled (decay={config.ema_decay})")
 
+        # EWC — continual learning penalty (Fisher computed separately after calling
+        # trainer.compute_ewc_fisher(dataloader) between training phases)
+        self.ewc: Optional[EWC] = None
+        if getattr(config, "ewc_lambda", 0.0) > 0:
+            self.ewc = EWC(self.unwrapped_model, lambda_ewc=config.ewc_lambda)
+            print(f"EWC enabled (lambda={config.ewc_lambda}, fisher_samples={config.ewc_fisher_samples})")
+
         # Training state
         self.global_step = 0
         self.epoch = 0
