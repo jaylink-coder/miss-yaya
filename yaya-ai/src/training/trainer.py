@@ -80,6 +80,23 @@ class Trainer:
         if config.gradient_checkpointing and hasattr(self.model, "model"):
             self.model.model.enable_gradient_checkpointing()
 
+        # LoRA — inject adapters and freeze base weights BEFORE DDP wrapping
+        # and BEFORE optimizer creation so the optimizer only sees adapter params.
+        self.lora_enabled = getattr(config, "lora_rank", 0) > 0
+        if self.lora_enabled:
+            from src.model.lora import inject_lora, LoRAConfig
+            target_modules = [
+                m.strip()
+                for m in getattr(config, "lora_target_modules", "q_proj,k_proj,v_proj,o_proj").split(",")
+            ]
+            lora_cfg = LoRAConfig(
+                rank=config.lora_rank,
+                alpha=config.lora_alpha,
+                dropout=config.lora_dropout,
+                target_modules=target_modules,
+            )
+            inject_lora(self.model, lora_cfg)
+
         # Wrap model for distributed training
         if self.world_size > 1:
             self.model = wrap_model_ddp(self.model, self.local_rank)
