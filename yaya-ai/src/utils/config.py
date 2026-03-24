@@ -118,6 +118,16 @@ class TrainingConfig:
     layer_lr_decay: float = 1.0       # Layer-wise LR decay (1.0 = off; try 0.9 for fine-tune)
     ema_decay: float = 0.0            # EMA weight decay (0 = off; try 0.9999 for eval)
 
+    # LoRA — parameter-efficient fine-tuning (0 = disabled)
+    lora_rank: int = 0
+    lora_alpha: float = 32.0
+    lora_dropout: float = 0.05
+    lora_target_modules: str = "q_proj,k_proj,v_proj,o_proj"
+
+    # EWC — continual learning / catastrophic forgetting prevention (0 = disabled)
+    ewc_lambda: float = 0.0
+    ewc_fisher_samples: int = 200
+
 
 def load_model_config(path: str) -> ModelConfig:
     """Load model config from YAML file."""
