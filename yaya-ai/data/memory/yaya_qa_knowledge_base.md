@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 84
+Total entries: 94
 
 ---
 
@@ -171,3 +171,23 @@ Total entries: 84
 **[82]** Q429 Vaccines: antigen -> clonal expansion -> affinity maturation -> memory B/T cells; live attenuated strongest; mRNA (no DNA alteration); boosters because titres wane
 
 **[83]** Q430 Free will: hard determinism (illusion) vs compatibilism (dominant, Dennett — real agency in causal chain) vs libertarian (indeterminism); Libet experiment critiqued
+
+**[84]** Q431 Neutron stars: inverse beta decay, ~20km diameter, ~10^17 kg/m^3; pulsars (Bell Burnell 1967); GW170817 merger = kilonova = r-process heavy elements (gold)
+
+**[85]** Q432 Dunning-Kruger (1999): low-skill overestimate, expert underestimate; statistical artifact critique (regression to mean); effect real but smaller than popular narrative; domain-specific
+
+**[86]** Q433 Roman Empire fall (476 CE): military overextension, political instability, currency debasement, barbarian pressure (Huns displaced Goths); Heather vs Ward-Perkins vs Brown
+
+**[87]** Q434 GPS: trilateration from 4 satellites (3 position + 1 time correction); 3-5m standard accuracy; relativity corrections required (+38 microseconds/day without = 10km/day drift)
+
+**[88]** Q435 Epigenetics: DNA methylation + histone code + ncRNA; same DNA, different cells; Dutch Hunger Winter transgenerational effects; reset at fertilisation; not Lamarckism
+
+**[89]** Q436 Prime distribution: PNT pi(x)~x/ln(x) (1896); twin primes (Zhang 2013 gap<70M); Goldbach unproven; RSA encryption relies on prime factoring hardness
+
+**[90]** Q437 Eyewitness memory (Loftus): reconstructive not reproductive; misinformation effect (smashed vs hit); 70% wrongful convictions involve misidentification; confidence unreliable
+
+**[91]** Q438 Heat vs temperature: temperature = average KE/molecule; heat = energy transfer; water high specific heat (4200 J/kg*K) moderates climate; metal feels cold = conducts heat away
+
+**[92]** Q439 Structural racism vs individual racism: systemic disparities without individual intent; redlining, sentencing disparities, algorithm bias, wealth gap; audit studies confirm
+
+**[93]** Q440 Nitrogen cycle: N2 (triple bond) fixed by Rhizobium + Haber-Bosch (feeds 50% of humanity); nitrification, assimilation, denitrification; excess N = eutrophication

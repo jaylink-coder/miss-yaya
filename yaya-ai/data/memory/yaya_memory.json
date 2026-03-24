@@ -586,5 +586,75 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-24T15:03:59.811741"
+  },
+  {
+    "id": 84,
+    "content": "Q431 Neutron stars: inverse beta decay, ~20km diameter, ~10^17 kg/m^3; pulsars (Bell Burnell 1967); GW170817 merger = kilonova = r-process heavy elements (gold)",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:05:35.676812"
+  },
+  {
+    "id": 85,
+    "content": "Q432 Dunning-Kruger (1999): low-skill overestimate, expert underestimate; statistical artifact critique (regression to mean); effect real but smaller than popular narrative; domain-specific",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:05:35.715996"
+  },
+  {
+    "id": 86,
+    "content": "Q433 Roman Empire fall (476 CE): military overextension, political instability, currency debasement, barbarian pressure (Huns displaced Goths); Heather vs Ward-Perkins vs Brown",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:05:35.750336"
+  },
+  {
+    "id": 87,
+    "content": "Q434 GPS: trilateration from 4 satellites (3 position + 1 time correction); 3-5m standard accuracy; relativity corrections required (+38 microseconds/day without = 10km/day drift)",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:05:35.783794"
+  },
+  {
+    "id": 88,
+    "content": "Q435 Epigenetics: DNA methylation + histone code + ncRNA; same DNA, different cells; Dutch Hunger Winter transgenerational effects; reset at fertilisation; not Lamarckism",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:05:35.816960"
+  },
+  {
+    "id": 89,
+    "content": "Q436 Prime distribution: PNT pi(x)~x/ln(x) (1896); twin primes (Zhang 2013 gap<70M); Goldbach unproven; RSA encryption relies on prime factoring hardness",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:07:04.389944"
+  },
+  {
+    "id": 90,
+    "content": "Q437 Eyewitness memory (Loftus): reconstructive not reproductive; misinformation effect (smashed vs hit); 70% wrongful convictions involve misidentification; confidence unreliable",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:07:04.421675"
+  },
+  {
+    "id": 91,
+    "content": "Q438 Heat vs temperature: temperature = average KE/molecule; heat = energy transfer; water high specific heat (4200 J/kg*K) moderates climate; metal feels cold = conducts heat away",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:07:04.450183"
+  },
+  {
+    "id": 92,
+    "content": "Q439 Structural racism vs individual racism: systemic disparities without individual intent; redlining, sentencing disparities, algorithm bias, wealth gap; audit studies confirm",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:07:04.493888"
+  },
+  {
+    "id": 93,
+    "content": "Q440 Nitrogen cycle: N2 (triple bond) fixed by Rhizobium + Haber-Bosch (feeds 50% of humanity); nitrification, assimilation, denitrification; excess N = eutrophication",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:07:04.542569"
   }
 ]

@@ -4271,3 +4271,204 @@ Are our choices genuinely ours, or determined by prior causes?
 **Rating: 9.5/10**
 
 ---
+
+### Q431 — Astronomy
+**What are neutron stars and how do they form?**
+
+Massive star (8-20 solar masses) core collapses. If core mass 1.4-3 solar masses, electron degeneracy fails. Protons + electrons merge (inverse beta decay) -> neutron star.
+
+**Properties:**
+- Diameter ~20km; mass ~1.4-2 solar masses; density ~10^17 kg/m^3 (teaspoon ~10M tonnes)
+- Escape velocity ~0.6c; magnetic fields up to 10^15 gauss (magnetars)
+- Spin: conservation of angular momentum; radius shrinks 100x -> spin increases 10,000x -> hundreds of rotations/second
+
+**Types:**
+- Pulsars: radio beam lighthouses; first discovered by Bell Burnell (1967); millisecond pulsars rival atomic clocks
+- Magnetars: extremely strong magnetic fields; starquake gamma-ray flares
+
+**Neutron star mergers (GW170817, 2017)**: first gravitational wave + electromagnetic detection. Kilonova: r-process nucleosynthesis produces gold, platinum, uranium. Primary source of heavy elements.
+
+**Rating: 9.5/10**
+
+---
+
+### Q432 — Psychology
+**What is the Dunning-Kruger effect, and is it as universal as people think?**
+
+Kruger & Dunning (1999): people with limited knowledge overestimate competence; experts underestimate relative ability (task seems easy to them too).
+
+**Original study**: bottom quartile performers on logic/grammar/humour overestimated by ~50 percentile points.
+
+**Replication and critique:**
+- Basic finding replicates
+- Statistical artifact critique (Gignac & Zajenkowski 2020): DK pattern can emerge from mathematical regression to the mean in ANY self-report + performance dataset, even if people perfectly track ability. Floor/ceiling effects.
+- Effect is real but smaller than popular 'stupid people are confidently wrong' narrative
+
+**What it captures:**
+- Metacognition is hard (knowing what you don't know requires knowing what you don't know)
+- Novices use wrong framework to evaluate own performance
+- Domain-specific: expert engineer may still have DK in social skills
+
+**Rating: 8.5/10**
+
+---
+
+### Q433 — History
+**Why did the Roman Empire fall?**
+
+Western Empire fell 476 CE (Romulus Augustulus deposed). Eastern Empire (Byzantium) lasted to 1453. No single cause:
+
+**Military/political:** overextended borders; Germanic foederati with divided loyalty; political instability (50 emperors in 50 years, 235-284 CE); military power to make/unmake emperors.
+
+**Economic:** currency debasement -> inflation; tax burden drove avoidance; declining long-distance trade.
+
+**External pressures:** Huns from east displaced Germanic tribes westward (Goths, Vandals, Franks); Sassanid Persia contested east.
+
+**Historiographical positions:**
+- Heather: military pressure primary; Rome healthy until external shocks overwhelmed it
+- Ward-Perkins: real material decline (pottery, literacy, building quality collapse)
+- Brown: 'transformation' not collapse — Roman culture merged with Germanic and Christian
+
+**What didn't fall**: Eastern Empire thrived. Fall was primarily western.
+
+**Rating: 9.0/10**
+
+---
+
+### Q434 — Technology
+**How does GPS actually work?**
+
+24-32 satellites at ~20,200km; 6 orbital planes; each completes 2 orbits/day.
+
+**Core principle: trilateration via time signals.**
+Satellite broadcasts position + precise time. Receiver measures signal travel time. Distance = c * time. 3 satellites -> 3 spheres -> intersection. Cheap receiver clock -> 4th satellite to solve 4 unknowns (x, y, z, time error).
+
+**Accuracy:**
+- Standard GPS: 3-5m
+- Differential GPS (ground stations): <1m
+- RTK (real-time kinematic, surveying): centimetre-level
+- Ionospheric delay corrected by dual frequency (L1/L2)
+
+**Relativity corrections (built in):**
+- Weaker gravity: satellites' clocks run faster +45 microseconds/day (GR)
+- High velocity: clocks run slower -7 microseconds/day (SR)
+- Net: +38 microseconds/day. Without correction: GPS drifts ~10km/day. Einstein's corrections are in the system.
+
+**Rating: 9.5/10**
+
+---
+
+### Q435 — Biology
+**What is epigenetics and does it challenge our understanding of inheritance?**
+
+Heritable changes in gene expression without DNA sequence changes. Genome = instruction manual; epigenome = which instructions are read.
+
+**Mechanisms:**
+1. DNA methylation: CH3 groups on cytosines at CpG sites; methylated promoters silence genes
+2. Histone modification: DNA wrapped around histones; acetylation opens chromatin (more expression); methylation activates or represses; the 'histone code'
+3. Non-coding RNA (miRNA, lncRNA): regulate mRNA stability and translation
+
+**Why it matters:** differentiation (same DNA, different cells), cancer (tumour suppressors silenced), environment response (stress, diet, smoking alter marks).
+
+**Transgenerational inheritance:** Dutch Hunger Winter (1944-45) — children of starved mothers had higher obesity/diabetes decades later. But methylation largely RESET at fertilisation (epigenetic reprogramming). Transgenerational inheritance in mammals limited and debated.
+
+Does NOT validate Lamarck — mechanisms are different from direct inheritance of acquired characteristics.
+
+**Rating: 9.5/10**
+
+---
+
+### Q436 — Mathematics
+**What is a prime number, and what do we know about their distribution?**
+
+A prime: natural number > 1 with no divisors other than 1 and itself. Euclid (~300 BCE): infinitely many.
+
+Fundamental Theorem of Arithmetic: every integer > 1 is prime or unique product of primes.
+
+**Prime Number Theorem** (Hadamard + de la Vallee Poussin, 1896): pi(x) ~ x/ln(x). Primes become sparser. Better: pi(x) ~ Li(x) = integral of 1/ln(t) from 2 to x.
+
+**Open problems:**
+- Twin prime conjecture: infinitely many pairs (p, p+2)? Zhang 2013: proved infinitely many pairs gap < 70M (Polymath reduced to 246)
+- Goldbach (1742): every even integer > 2 = sum of two primes. Verified to 4*10^18, unproven
+- Mersenne primes: 2^p - 1. Largest known (2024): 2^136,279,841 - 1 (~41M digits)
+
+**Practical importance**: RSA encryption relies on difficulty of factoring large numbers.
+
+**Rating: 9.0/10**
+
+---
+
+### Q437 — Psychology
+**How reliable is eyewitness testimony, and what does the research say?**
+
+Memory is reconstructive, not reproductive (Loftus). We rebuild memories each time, subject to suggestion.
+
+**Key experiments:**
+- Misinformation effect (Loftus 1974): 'smashed vs hit vs contacted' car crash video. 'Smashed' group: 32% reported broken glass that wasn't there.
+- Lost in the mall (1995): planted false memory of childhood event. ~25% came to believe and elaborate it.
+
+**Courtroom impact**: Innocence Project DNA exonerations — eyewitness misidentification in ~70% of wrongful convictions. Witness confidence is NOT correlated with accuracy.
+
+**Why malleable**: each recall reconstructs using schemas, expectations, emotions; post-event information integrates into memory.
+
+**What helps**: sequential lineups, blind administration, record initial statement, open questions first.
+
+**Rating: 9.5/10**
+
+---
+
+### Q438 — Physics
+**What is the difference between heat and temperature?**
+
+**Temperature**: average kinetic energy per molecule. Measured in Kelvin/Celsius/Fahrenheit.
+
+**Heat**: *transfer* of thermal energy between objects due to temperature difference. Heat is a process, not a property. Pool at same temperature as coffee mug: pool contains far more thermal energy.
+
+**Specific heat capacity**: energy per kg per degree change. Water: ~4,200 J/kg*K (high — moderates climate). Iron: ~450 J/kg*K (heats/cools fast).
+
+**Zeroth Law**: if A equilibrates with B, and B with C, then A with C.
+
+**Why metal feels colder than wood at same temperature**: metal conducts heat away faster (high thermal conductivity). Same temperature, different heat flow.
+
+**Water vs air at 100C**: water burns much more — higher thermal mass + latent heat of condensation deliver more energy per contact.
+
+**Rating: 9.0/10**
+
+---
+
+### Q439 — Sociology
+**What is structural racism, and how does it differ from individual racism?**
+
+**Individual racism**: prejudice and discriminatory acts by identifiable individuals. Overt bias.
+
+**Structural racism**: racial disparities from systems, policies, norms — even without individual racist intent.
+
+**Examples:**
+1. Redlining (1930s HOLC): Black neighbourhoods marked hazardous, denied mortgages. Compounding disinvestment; formerly redlined areas still show lower values, worse schools, higher poverty 90 years later.
+2. Crack/powder cocaine sentencing (100:1 ratio to 2010): identical drug, racially disparate impact, no individual intent needed.
+3. Hiring algorithms: Amazon's CV screener (abandoned 2018) downranked women — trained on biased historical data.
+4. Wealth gap: Black families ~8% of white family net worth — compounded effect of slavery, Jim Crow, redlining.
+
+**Evidence**: audit studies (identical CVs with Black vs white names) consistently find measurable hiring discrimination.
+
+**Rating: 9.0/10**
+
+---
+
+### Q440 — Ecology
+**What is the nitrogen cycle and why is it essential for life?**
+
+N2 = 78% of atmosphere, but most organisms can't use N2 (triple bond N=N, 945 kJ/mol). Life needs reactive N (NH3, NO3-, organic N).
+
+**Nitrogen cycle:**
+1. Fixation: N2 -> NH3 by free-living bacteria (Azotobacter), symbiotic bacteria in legume roots (Rhizobium), lightning, and Haber-Bosch process (N2 + H2 -> NH3, high T/pressure/Fe; feeds ~50% of humanity)
+2. Nitrification: NH3 -> NO2- -> NO3- (Nitrosomonas, Nitrobacter)
+3. Assimilation: plants absorb NO3- or NH4+, incorporate into amino acids/proteins/DNA
+4. Ammonification: decomposers break organic N -> NH3
+5. Denitrification: bacteria (Pseudomonas) convert NO3- -> N2 in anaerobic conditions
+
+**Limiting nutrient**: N limits most ecosystems. Excess (fertilisers) -> eutrophication -> algal blooms -> oxygen depletion -> dead zones (Gulf of Mexico). Haber also weaponised N (chlorine, phosgene).
+
+**Rating: 9.0/10**
+
+---
