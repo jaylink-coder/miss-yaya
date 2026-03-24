@@ -17,7 +17,7 @@ training:
   dtype: float32
 
 checkpointing:
-  save_steps: 500
+  save_steps: 1000
   save_dir: checkpoints/yaya-tiny-sft
   keep_last_n: 2
 
