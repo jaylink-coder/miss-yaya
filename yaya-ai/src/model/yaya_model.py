@@ -240,7 +240,7 @@ class YayaForCausalLM(nn.Module):
             Dict with keys: 'loss' (if labels), 'logits', 'past_key_values' (if use_cache)
         """
         # Get hidden states from base model
-        hidden_states, present_key_values = self.model(
+        hidden_states, present_key_values, moe_aux_loss = self.model(
             input_ids=input_ids,
             attention_mask=attention_mask,
             position_ids=position_ids,
@@ -262,10 +262,15 @@ class YayaForCausalLM(nn.Module):
                 labels.view(-1),
                 ignore_index=-100,  # Ignore padding tokens in loss
             )
+            # Add MoE load-balance auxiliary loss when MoE layers are active
+            if moe_aux_loss is not None:
+                loss = loss + self.config.moe_load_balance_coeff * moe_aux_loss
 
         output = {"logits": logits}
         if loss is not None:
             output["loss"] = loss
+        if moe_aux_loss is not None:
+            output["moe_aux_loss"] = moe_aux_loss
         if use_cache:
             output["past_key_values"] = present_key_values
 
