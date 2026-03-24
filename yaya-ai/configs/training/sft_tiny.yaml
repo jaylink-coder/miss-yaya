@@ -18,7 +18,7 @@ training:
 
 checkpointing:
   save_steps: 1000
-  save_dir: checkpoints/yaya-tiny-sft
+  save_dir: checkpoints/yaya-tiny-sft-v2
   keep_last_n: 2
 
 logging:
