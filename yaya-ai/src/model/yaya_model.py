@@ -61,7 +61,7 @@ class YayaModel(nn.Module):
         past_key_values: Optional[List[Tuple[torch.Tensor, torch.Tensor]]] = None,
         use_cache: bool = False,
         inputs_embeds: Optional[torch.Tensor] = None,
-    ) -> Tuple[torch.Tensor, Optional[List[Tuple[torch.Tensor, torch.Tensor]]]]:
+    ) -> Tuple[torch.Tensor, Optional[List[Tuple[torch.Tensor, torch.Tensor]]], Optional[torch.Tensor]]:
         """Forward pass through the base model.
 
         Args:
@@ -73,7 +73,7 @@ class YayaModel(nn.Module):
             inputs_embeds: Pre-computed embeddings (used for multimodal input)
 
         Returns:
-            Tuple of (hidden_states [batch, seq_len, hidden_size], optional KV caches)
+            Tuple of (hidden_states, optional KV caches, optional MoE aux loss)
         """
         # Get embeddings
         if inputs_embeds is None:
@@ -99,21 +99,27 @@ class YayaModel(nn.Module):
 
         # Pass through transformer layers
         all_present_key_values = [] if use_cache else None
+        total_moe_aux_loss: Optional[torch.Tensor] = None
 
         for idx, layer in enumerate(self.layers):
             past_kv = past_key_values[idx] if past_key_values is not None else None
 
             if self.gradient_checkpointing and self.training:
-                hidden_states, present_kv = self._gradient_checkpointing_forward(
+                hidden_states, present_kv, aux_loss = self._gradient_checkpointing_forward(
                     layer, hidden_states, causal_mask, position_ids, past_kv, use_cache
                 )
             else:
-                hidden_states, present_kv = layer(
+                hidden_states, present_kv, aux_loss = layer(
                     hidden_states=hidden_states,
                     attention_mask=causal_mask,
                     position_ids=position_ids,
                     past_key_value=past_kv,
                     use_cache=use_cache,
+                )
+
+            if aux_loss is not None:
+                total_moe_aux_loss = (
+                    aux_loss if total_moe_aux_loss is None else total_moe_aux_loss + aux_loss
                 )
 
             if use_cache:
@@ -122,7 +128,7 @@ class YayaModel(nn.Module):
         # Final normalization
         hidden_states = self.norm(hidden_states)
 
-        return hidden_states, all_present_key_values
+        return hidden_states, all_present_key_values, total_moe_aux_loss
 
     def _gradient_checkpointing_forward(self, layer, *args):
         """Wrap layer forward in gradient checkpointing."""
