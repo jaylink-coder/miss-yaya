@@ -177,6 +177,7 @@ else:
 print('\n' + '='*60)
 print('PHASE 2: SFT on Q&A + OpenHermes')
 print('='*60)
+print_disk()
 
 # Create small eval split from SFT data if eval file missing
 if not os.path.exists(EVAL_DATA_PATH):
