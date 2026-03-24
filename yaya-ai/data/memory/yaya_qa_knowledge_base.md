@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 94
+Total entries: 104
 
 ---
 
@@ -191,3 +191,23 @@ Total entries: 94
 **[92]** Q439 Structural racism vs individual racism: systemic disparities without individual intent; redlining, sentencing disparities, algorithm bias, wealth gap; audit studies confirm
 
 **[93]** Q440 Nitrogen cycle: N2 (triple bond) fixed by Rhizobium + Haber-Bosch (feeds 50% of humanity); nitrification, assimilation, denitrification; excess N = eutrophication
+
+**[94]** Q441 Antibiotic resistance: Darwinian selection + horizontal gene transfer (plasmids); efflux pumps, beta-lactamases, target modification; 1.27M deaths/year; 10M/year by 2050
+
+**[95]** Q442 Magna Carta (1215): barons limited King John; Cl. 39 due process; immediately annulled by Pope; later became symbol of rule of law; influenced 5th Amendment, habeas corpus
+
+**[96]** Q442 Machine learning vs traditional programming: algorithm finds rules from data; supervised/unsupervised/RL; universal approximation; LLMs = transformers at scale; can't reason causally
+
+**[97]** Q444 Ship of Theseus (Plutarch): identity over time; spatiotemporal continuity vs composition vs function vs four-dimensionalism; Parfit: identity may be empty, psychological continuity matters
+
+**[98]** Q445 Music emotion: expectation/violation (dopamine at resolution); nucleus accumbens + opioids; emotional contagion (mimics speech prosody); autobiographical memory; motor entrainment
+
+**[99]** Q446 Language acquisition: poverty of stimulus; Chomsky UG vs Tomasello usage-based; Genie critical period; statistical learning, joint attention, motherese
+
+**[100]** Q447 Photoelectric effect (Einstein 1905): frequency not intensity determines electron energy; E=hv; established wave-particle duality; foundation of quantum mechanics; Nobel 1921
+
+**[101]** Q448 Social mobility: Great Gatsby Curve (inequality->lower mobility); Chetty: ZIP code/neighbourhood at <13 key; school quality, social networks; Great Gatsby Curve
+
+**[102]** Q449 Li-ion battery: anode (graphite intercalation) / cathode (LiCoO2) / Li salt electrolyte; limited by anode capacity (Si expands), dead weight; Li-air 11,680 Wh/kg theoretical
+
+**[103]** Q450 Most important invention: language (meta-invention), writing (3100 BCE, externalising memory), printing press (key multiplier, 1450), scientific method; printing press may win

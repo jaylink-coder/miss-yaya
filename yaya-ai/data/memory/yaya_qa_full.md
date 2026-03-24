@@ -4472,3 +4472,220 @@ N2 = 78% of atmosphere, but most organisms can't use N2 (triple bond N=N, 945 kJ
 **Rating: 9.0/10**
 
 ---
+
+### Q441 — Medicine
+**What is antibiotic resistance and how does it develop?**
+
+Antibiotics target cell wall (penicillin), protein synthesis (tetracycline), DNA replication (fluoroquinolones), or membranes. Resistance = survival.
+
+**Darwinian mechanism:**
+1. Rare resistant mutants in population
+2. Antibiotic kills susceptible bacteria, resistant survive
+3. Resistant reproduce (bacteria: 20 min/generation, ~500 generations/week)
+4. Horizontal gene transfer: resistance genes spread on plasmids across species (MRSA: mecA gene)
+
+**Mechanisms:** efflux pumps (expel antibiotic), enzyme degradation (beta-lactamases cleave penicillin ring), target modification, reduced permeability.
+
+**Scale**: AMR kills ~1.27M/year directly; WHO projects 10M/year by 2050 without action.
+
+**Drivers**: unnecessary prescriptions, livestock use, incomplete courses, broad-spectrum overuse.
+
+**Why few new antibiotics**: 10-15yr development; brief low-cost use = poor financial incentive vs lifelong drugs.
+
+**Rating: 9.5/10**
+
+---
+
+### Q442 — History
+**What was the significance of the Magna Carta?**
+
+June 1215: English barons forced King John to sign. Originally limited royal power in narrow feudal ways — mostly barons' rights, not ordinary people.
+
+**Key clauses**: Cl. 39 — no free man imprisoned without lawful judgment of peers ('due process'); Cl. 40 — no selling/denying justice.
+
+**At the time**: John got Pope Innocent III to annul it immediately. Civil war resumed. Most clauses dropped by 1217.
+
+**Why it mattered more later**: 17th century — Coke and Selden used it against Stuart prerogatives. It became a *symbol*: king is under the law. American founders invoked it; 5th Amendment due process draws on Cl. 39.
+
+**What it didn't do**: 'free man' in 1215 = barons and knights, not 90% who were serfs. Didn't protect women.
+
+**Lasting principle**: rule of law over arbitrary power -> constitutional government, habeas corpus, human rights.
+
+**Rating: 9.0/10**
+
+---
+
+### Q443 — Computer Science
+**What is machine learning and how is it different from traditional programming?**
+
+**Traditional programming**: programmer writes explicit rules. Input + rules -> output. Brittle; can't generalise.
+
+**Machine learning**: provide data + correct answers; algorithm finds the rules. Input + labels -> model -> generalises to new data.
+
+**Core paradigms:**
+1. Supervised learning: labelled data (x, y) -> learn f(x)=y; classification, regression
+2. Unsupervised: unlabelled data; find structure; clustering, dimensionality reduction (PCA, t-SNE)
+3. Reinforcement learning: agent + rewards -> policy; AlphaGo, robotics
+
+**Why it works**: neural networks approximate arbitrarily complex functions (universal approximation theorem); deep learning learns hierarchical features automatically.
+
+**What it can't do (yet)**: causal reasoning, robust out-of-distribution generalisation, reliable explainability.
+
+**Scale**: LLMs (GPT, Claude) = transformers on trillions of tokens; emergent capabilities at scale.
+
+**Rating: 9.0/10**
+
+---
+
+### Q444 — Philosophy
+**What is the ship of Theseus paradox, and what is it really asking?**
+
+Plutarch (~100 CE): every plank of Theseus's ship replaced over time. Still the same ship?
+
+**Hobbes extension**: original planks collected and reassembled. Two ships claim to be the original. Which is it?
+
+**What it's really asking**: principle of identity over time — what makes X at T1 the 'same' as Y at T2?
+
+**Theories:**
+1. Spatiotemporal continuity: repaired ship has unbroken causal chain — same ship
+2. Compositional identity: original planks = original ship
+3. Functional/social: the one people use and call it is the ship
+4. Four-dimensionalism: objects extended through time; 'same' selects different time-slices
+
+**Real applications**: personal identity (we replace all atoms every ~7 years), corporate identity, legal identity of nations.
+
+**Parfit** (*Reasons and Persons*): personal identity is not what matters — psychological continuity is what matters; 'same' may be an empty question.
+
+**Rating: 9.5/10**
+
+---
+
+### Q445 — Music
+**Why does music make us emotional?**
+
+Multiple converging mechanisms:
+
+1. **Expectation/violation** (Meyer 1956, Huron 2006): music is temporal prediction. Correct resolution = dopaminergic reward. Surprise + resolution = stronger reward. Chills = surprising resolution.
+
+2. **Neurobiology**: music activates nucleus accumbens + VTA (same as food/sex). Salimpoor 2011 fMRI: dopamine at peak emotional moments. Naltrexone reduces musical pleasure.
+
+3. **Emotional contagion**: music mimics prosody of emotional speech. Fast/high = happy; slow/descending = sad. We 'catch' the emotion.
+
+4. **Autobiographical memory**: music powerfully linked to memories via conditioning. Retrieves not just memory but its emotion.
+
+5. **Physical entrainment**: rhythm entrains motor cortex + cerebellum. Involuntary foot-tapping. Bodily coupling has emotional valence.
+
+6. **Universal tendencies**: minor keys, slow tempo, dissonance produce sad/tense responses cross-culturally.
+
+**Mystery of sad music pleasure**: safe simulation, hormonal empathy reward, artistic resolution — distinct emotion from actual grief.
+
+**Rating: 9.5/10**
+
+---
+
+### Q446 — Linguistics
+**How do children acquire language so rapidly?**
+
+First words ~12 months, two-word phrases ~18-24 months, complex sentences by 3-4 years — from imperfect, fragmented input.
+
+**Poverty of the stimulus**: children overgeneralise rules ('goed', 'mouses') but never make wrong rule errors. Acquire structure-dependent rules without examples of errors.
+
+**Theories:**
+1. Nativism (Chomsky): innate Universal Grammar — language acquisition device constrains possible grammars
+2. Usage-based (Tomasello): no special faculty; general learning + pattern recognition + social attention
+3. Constructivist: some innate predispositions + general learning applied to input
+
+**Critical period**: Genie (no language exposure to age 13): never acquired normal grammar. Left hemisphere lateralisation stronger in early childhood.
+
+**Mechanisms**: statistical learning (8-month-olds track syllable transition probabilities), joint attention, motherese (simplified grammar + exaggerated prosody).
+
+**Rating: 9.0/10**
+
+---
+
+### Q447 — Physics
+**What is the photoelectric effect, and why did it matter for quantum mechanics?**
+
+Light hits metal -> electrons ejected, BUT only above a threshold frequency. Below threshold: no electrons regardless of intensity.
+
+**Classical prediction**: intensity drives ejection. WRONG.
+**Observation**: energy of each electron depends only on FREQUENCY, not intensity. Intensity only affects number of electrons.
+
+**Einstein's explanation (1905, Nobel 1921)**: light comes as photons with energy E = hv. To eject electron, photon must have hv >= work function (Phi). KE = hv - Phi.
+
+**Why it mattered:**
+1. Confirmed Planck's energy quantisation (1900)
+2. Wave-particle duality: light is both
+3. Led to quantum mechanics: Bohr (1913), Heisenberg (1925), Schrodinger (1926)
+4. Technology: photovoltaics, CCDs, photomultipliers
+
+**Rating: 9.5/10**
+
+---
+
+### Q448 — Sociology
+**What is social mobility and what actually predicts it?**
+
+Movement between socioeconomic strata. Intergenerational (parent to child) vs intragenerational (within lifetime).
+
+**Great Gatsby Curve** (Miles Corak): more income inequality -> LOWER intergenerational mobility. Denmark (low inequality) = high mobility; US, UK = lower.
+
+**Predictors (Chetty et al.):**
+1. Parental income/wealth: strongest predictor; ZIP code of birth major determinant of lifetime earnings
+2. School quality: access to good schools drives mobility
+3. Social capital/networks: who you know, unevenly distributed
+4. Geography: some US counties (Midwest, Salt Lake City) high mobility; parts of Southeast very low
+5. Neighbourhood at age <13: moving to better neighbourhood before 13 significantly improves outcomes (Opportunity Insights)
+
+Absolute mobility (exceeding parents in absolute terms) has historically been high; relative mobility much more constrained.
+
+**Rating: 9.0/10**
+
+---
+
+### Q449 — Chemistry
+**How do batteries work chemically, and what limits their energy density?**
+
+Battery = chemical -> electrical energy via spatially separated redox reactions.
+Anode: oxidation (loses electrons). Cathode: reduction (gains electrons). Electrons flow externally (current); ions flow internally through electrolyte.
+
+**Li-ion battery:**
+- Anode: graphite (Li intercalates during charge)
+- Cathode: LiCoO2/LiFePO4/NMC (Li de-intercalates during charge)
+- Electrolyte: Li salt in organic solvent
+- Discharge: Li+ moves spontaneously to cathode; electrons flow through circuit
+
+**What limits energy density:**
+- Anode capacity: graphite 372 mAh/g; silicon 3,500 mAh/g but 300% volume expansion -> cracking
+- Cathode voltage limited by electrolyte/electrode stability
+- Dead weight: packaging, separator, electrolyte
+- Safety: thermal runaway risk
+
+**Theoretical limits**: Li-ion ~265 Wh/kg practical; Li-sulfur 2,600 Wh/kg; Li-air 11,680 Wh/kg (comparable to gasoline).
+
+**Rating: 9.5/10**
+
+---
+
+### Q450 — General Knowledge
+**What is the most important invention in human history, and why?**
+
+Depends on dimension valued. Four strong candidates:
+
+**Language**: meta-invention enabling all others to accumulate. But may have evolved rather than been invented.
+
+**Writing (~3100 BCE, Mesopotamia)**: first technology for externalising memory. Enables laws, science, literature, accumulating civilisation. Without it, each generation relearns from scratch.
+
+**Printing press (~1450)**: multiplied writing's impact. Ideas at scale. Enabled Reformation, Scientific Revolution, democracy. 500-year acceleration of knowledge.
+
+**Scientific method (~17th century)**: not physical but a process — hypothesis, controlled experiment, replication, peer review. Converts curiosity into reliable knowledge.
+
+**Why printing press may win**: key multiplier. One idea -> millions of lives in years, not centuries. Created the feedback loop: print -> literacy -> scientific culture -> industrial revolution.
+
+**Honourable mentions**: fire, agriculture, germ theory, transistors.
+
+**Meta-point**: no invention stands alone. Cumulative innovation is humanity's real superpower.
+
+**Rating: 9.0/10**
+
+---
