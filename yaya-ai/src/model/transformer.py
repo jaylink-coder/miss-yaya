@@ -70,12 +70,9 @@ class TransformerBlock(nn.Module):
         # Pre-FFN normalization
         self.post_attention_layernorm = RMSNorm(config.hidden_size, eps=config.rms_norm_eps)
 
-        # SwiGLU Feed-Forward Network
-        self.mlp = SwiGLUFeedForward(
-            hidden_size=config.hidden_size,
-            intermediate_size=config.intermediate_size,
-            bias=config.mlp_bias,
-        )
+        # Feed-Forward Network (SwiGLU or MoE depending on config)
+        self.mlp = _build_ffn(config, layer_idx)
+        self.is_moe = config.is_moe_layer(layer_idx)
 
     def forward(
         self,
