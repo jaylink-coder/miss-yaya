@@ -84,7 +84,7 @@ else:
 # PHASE 1: PRETRAIN
 # ─────────────────────────────────────────────────────────────────────────────
 print('\n' + '='*60)
-print('PHASE 1: PRETRAINING on OpenWebText')
+print('PHASE 1: PRETRAINING on Wikipedia')
 print('='*60)
 print_disk()
 
