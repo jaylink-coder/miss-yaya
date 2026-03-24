@@ -81,7 +81,7 @@ class TransformerBlock(nn.Module):
         position_ids: Optional[torch.Tensor] = None,
         past_key_value: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,
         use_cache: bool = False,
-    ) -> Tuple[torch.Tensor, Optional[Tuple[torch.Tensor, torch.Tensor]]]:
+    ) -> Tuple[torch.Tensor, Optional[Tuple[torch.Tensor, torch.Tensor]], Optional[torch.Tensor]]:
         """Forward pass through one transformer block.
 
         Args:
@@ -92,7 +92,7 @@ class TransformerBlock(nn.Module):
             use_cache: Whether to return updated KV cache
 
         Returns:
-            Tuple of (output hidden_states, optional KV cache)
+            Tuple of (output hidden_states, optional KV cache, optional MoE aux loss)
         """
         # 1. Pre-norm + Self-Attention + Residual
         residual = hidden_states
@@ -109,7 +109,13 @@ class TransformerBlock(nn.Module):
         # 2. Pre-norm + FFN + Residual
         residual = hidden_states
         hidden_states = self.post_attention_layernorm(hidden_states)
-        hidden_states = self.mlp(hidden_states)
+
+        moe_aux_loss = None
+        if self.is_moe:
+            hidden_states, moe_aux_loss = self.mlp(hidden_states)
+        else:
+            hidden_states = self.mlp(hidden_states)
+
         hidden_states = residual + hidden_states
 
-        return hidden_states, present_key_value
+        return hidden_states, present_key_value, moe_aux_loss
