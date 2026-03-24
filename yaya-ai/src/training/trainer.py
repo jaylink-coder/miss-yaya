@@ -371,12 +371,16 @@ class Trainer:
 
                 # Log metrics
                 current_lr = self.scheduler.get_last_lr()[0]
+                extra_metrics = {}
+                if "moe_aux_loss" in outputs:
+                    extra_metrics["moe_aux_loss"] = outputs["moe_aux_loss"].item()
                 self.logger.log_step(
                     step=self.global_step,
                     loss=accumulation_loss,
                     learning_rate=current_lr,
                     grad_norm=grad_norm,
                     tokens_per_step=tokens_per_step,
+                    **extra_metrics,
                 )
 
                 self.last_train_loss = accumulation_loss
