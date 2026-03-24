@@ -479,6 +479,8 @@ class Trainer:
             )
             if self.ema is not None:
                 self.ema.save(os.path.join(best_ckpt, "ema.pt"))
+            if self.ewc is not None and self.ewc.fisher:
+                self.ewc.save(os.path.join(best_ckpt, "ewc.pt"))
 
         # Restore original weights after EMA eval
         if self.ema is not None:
