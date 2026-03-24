@@ -116,7 +116,7 @@ else:
 
     with open(train_path, 'wb') as ft, open(eval_path, 'wb') as fe:
         for i, row in enumerate(ds):
-            text = row.get('text', '').strip()
+            text = (row.get('text') or row.get('content') or '').strip()
             if not text:
                 continue
             toks = tokenizer.encode(text)
