@@ -93,6 +93,10 @@ import glob, yaml
 with open('configs/training/train_125m.yaml') as f:
     cfg = yaml.safe_load(f)
 cfg['checkpointing']['save_dir'] = CHECKPOINT_DIR
+# Fix: point data paths to the actual tokenized files created above
+cfg['data']['train_data'] = TRAIN_DIR
+cfg['data']['eval_data']  = EVAL_DIR
+cfg['training']['max_steps'] = 5000   # more pretraining (was 3200)
 with open('configs/training/train_125m.yaml', 'w') as f:
     yaml.dump(cfg, f)
 
