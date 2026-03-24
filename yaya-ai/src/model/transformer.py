@@ -21,6 +21,25 @@ from src.model.normalization import RMSNorm
 from src.utils.config import ModelConfig
 
 
+def _build_ffn(config: ModelConfig, layer_idx: int) -> nn.Module:
+    """Instantiate the correct FFN type for this layer."""
+    if config.is_moe_layer(layer_idx):
+        from src.model.moe import MoEFeedForward
+        return MoEFeedForward(
+            hidden_size=config.hidden_size,
+            intermediate_size=config.intermediate_size,
+            num_experts=config.moe_num_experts,
+            top_k=config.moe_top_k,
+            router_jitter_noise=config.moe_router_jitter,
+            bias=config.mlp_bias,
+        )
+    return SwiGLUFeedForward(
+        hidden_size=config.hidden_size,
+        intermediate_size=config.intermediate_size,
+        bias=config.mlp_bias,
+    )
+
+
 class TransformerBlock(nn.Module):
     """Single transformer decoder block with pre-normalization.
 
