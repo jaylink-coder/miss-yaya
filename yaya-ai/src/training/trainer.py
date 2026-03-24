@@ -275,6 +275,8 @@ class Trainer:
             )
             if self.ema is not None:
                 self.ema.save(os.path.join(final_ckpt, "ema.pt"))
+            if self.ewc is not None and self.ewc.fisher:
+                self.ewc.save(os.path.join(final_ckpt, "ewc.pt"))
             print(f"\nTraining complete at step {self.global_step}")
 
         self.logger.finish()
