@@ -410,6 +410,8 @@ class Trainer:
                     )
                     if self.ema is not None:
                         self.ema.save(os.path.join(ckpt_dir, "ema.pt"))
+                    if self.ewc is not None and self.ewc.fisher:
+                        self.ewc.save(os.path.join(ckpt_dir, "ewc.pt"))
                     barrier()
 
     @torch.no_grad()
