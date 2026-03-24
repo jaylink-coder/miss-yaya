@@ -230,6 +230,13 @@ else:
     print('  WARNING: Starting SFT from random init (no pretrain checkpoint).')
 
 print(f'\n  Command: {" ".join(cmd)}\n')
+
+# Delete pretrain checkpoints now — SFT weights are initialised, don't need them
+if pretrain_ckpt and not sft_ckpts:
+    print('  Removing pretrain checkpoints to free space...')
+    shutil.rmtree(PRETRAIN_DIR, ignore_errors=True)
+    print_disk()
+
 result = subprocess.run(cmd)
 
 if result.returncode == 0:
