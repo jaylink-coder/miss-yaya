@@ -41,6 +41,16 @@ os.environ['WANDB_MODE']     = 'disabled'
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
+# Load HF token from Kaggle Secrets (add HF_TOKEN via Settings → Secrets)
+if not os.environ.get('HF_TOKEN'):
+    try:
+        from kaggle_secrets import UserSecretsClient
+        token = UserSecretsClient().get_secret('HF_TOKEN')
+        os.environ['HF_TOKEN'] = token
+        print('HF_TOKEN loaded from Kaggle Secrets.')
+    except Exception:
+        print('WARNING: No HF_TOKEN found — HuggingFace downloads may be rate-limited.')
+
 import torch
 
 if torch.cuda.is_available():
