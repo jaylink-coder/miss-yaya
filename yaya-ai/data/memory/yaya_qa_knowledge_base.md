@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 104
+Total entries: 114
 
 ---
 
@@ -211,3 +211,23 @@ Total entries: 104
 **[102]** Q449 Li-ion battery: anode (graphite intercalation) / cathode (LiCoO2) / Li salt electrolyte; limited by anode capacity (Si expands), dead weight; Li-air 11,680 Wh/kg theoretical
 
 **[103]** Q450 Most important invention: language (meta-invention), writing (3100 BCE, externalising memory), printing press (key multiplier, 1450), scientific method; printing press may win
+
+**[104]** Q396 Sapir-Whorf: weak linguistic relativity confirmed (colour, spatial, number); strong determinism rejected
+
+**[105]** Q397 Bronze Age Collapse ~1200 BCE: multicausal — drought, Sea Peoples, systems collapse (Cline 1177 BC), earthquakes, revolts
+
+**[106]** Q398 Cryptographic hashing: preimage/collision resistance, avalanche effect; SHA-256 ok; MD5/SHA-1 broken
+
+**[107]** Q399 Problem of induction (Hume 1739): can't be justified without circularity; Popper falsification, Bayesian updating, still open
+
+**[108]** Q400 CRISPR-Cas9: gRNA+PAM targets, Cas9 cuts both strands; NHEJ=knockout, HDR=precise edit; base/prime editors improving
+
+**[109]** Q401 Quantum entanglement: real non-local correlations (Bell tests), no FTL signal (no-communication theorem); enables QKD, teleportation
+
+**[110]** Q402 EMH: weak holds, semi-strong contested; momentum/value anomalies; Shiller/Thaler behavioural critique; bubbles exist
+
+**[111]** Q403 Neuroplasticity: Hebb's rule + LTP (AMPA receptor insertion); cortical remapping (Merzenich monkeys, Maguire taxi drivers, musician maps); neurogenesis in hippocampal dentate gyrus; CIMT for stroke recovery; limits: critical periods (Hubel & Wiesel, Genie), Nogo-A/MAG/perineuronal nets inhibit adult rewiring, age degrades neuromodulator signaling — but plasticity never reaches zero
+
+**[112]** Q404 Goedel incompleteness 1931: true unprovable statements in any consistent system; kills Hilbert programme; linked to halting problem
+
+**[113]** Q405 River civilisations: water/silt/transport(10x cheaper)/control/defence; Nile/Tigris/Indus/Yellow River; modern roads broke monopoly
