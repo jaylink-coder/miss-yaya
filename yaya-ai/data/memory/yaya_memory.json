@@ -334,5 +334,152 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-23T19:25:39.227434"
+  },
+  {
+    "id": 48,
+    "content": "Q0 Test: this is a test entry",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:42:00.303641"
+  },
+  {
+    "id": 49,
+    "content": "Q396 Sapir-Whorf: weak linguistic relativity confirmed (colour, spatial, number); strong determinism rejected",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:42:38.964968"
+  },
+  {
+    "id": 50,
+    "content": "Q397 Bronze Age Collapse ~1200 BCE: multicausal — drought, Sea Peoples, systems collapse (Cline 1177 BC), earthquakes, revolts",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:42:38.995025"
+  },
+  {
+    "id": 51,
+    "content": "Q398 Cryptographic hashing: preimage/collision resistance, avalanche effect; SHA-256 ok; MD5/SHA-1 broken",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:42:39.026796"
+  },
+  {
+    "id": 52,
+    "content": "Q399 Problem of induction (Hume 1739): can't be justified without circularity; Popper falsification, Bayesian updating, still open",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:42:39.051898"
+  },
+  {
+    "id": 53,
+    "content": "Q400 CRISPR-Cas9: gRNA+PAM targets, Cas9 cuts both strands; NHEJ=knockout, HDR=precise edit; base/prime editors improving",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:42:39.076702"
+  },
+  {
+    "id": 54,
+    "content": "Q401 Quantum entanglement: real non-local correlations (Bell violations confirmed); no FTL communication (no-communication theorem); used in QC, cryptography",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:44:06.877225"
+  },
+  {
+    "id": 55,
+    "content": "Q402 Comparative advantage (Ricardo 1817): relative not absolute efficiency; opportunity cost determines specialisation; trade creates winners and losers",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:44:06.911751"
+  },
+  {
+    "id": 56,
+    "content": "Q403 Sleep: NREM/REM cycles; memory consolidation, glymphatic clearance (beta-amyloid), synaptic homeostasis, immune function; deprivation as bad as alcohol",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:44:06.937812"
+  },
+  {
+    "id": 57,
+    "content": "Q404 Riemann Hypothesis: non-trivial zeros of zeta on Re(s)=1/2; controls prime distribution; 1000+ conditional theorems; Millennium Problem",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:44:06.960074"
+  },
+  {
+    "id": 58,
+    "content": "Q405 Social capital (Putnam): bonding/bridging/linking; predicts health, crime, GDP, education; weak ties key (Granovetter); Bourdieu = class reproduction",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:44:06.992177"
+  },
+  {
+    "id": 59,
+    "content": "Q406 Entropy: S=k*ln(W), increases by statistics not physical law; time's arrow; Maxwell's demon resolved by Landauer (information = thermodynamics)",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:45:29.204485"
+  },
+  {
+    "id": 60,
+    "content": "Q407 Cognitive dissonance (Festinger 1957): resolve by changing belief/behaviour/adding cognitions; $1 experiment: low justification -> attitude change; doomsday cult -> more fervent",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:45:29.232227"
+  },
+  {
+    "id": 61,
+    "content": "Q408 Universe age 13.8 Gyr: CMB (Planck), Hubble expansion, oldest stars, radioactive dating — all independent, all agree; H0 tension unresolved",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:45:29.250301"
+  },
+  {
+    "id": 62,
+    "content": "Q409 Common law (precedent, adversarial, UK/US) vs civil law (codes, inquisitorial, France/Europe); hybrids: Louisiana, Quebec, Scotland",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:45:29.265365"
+  },
+  {
+    "id": 63,
+    "content": "Q410 Moore's Law (1965): transistors double ~2yr; slowing since ~2015; Dennard scaling ended; continues via 3D stacking, specialised silicon (GPUs/TPUs), chiplets",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:45:29.308323"
+  },
+  {
+    "id": 64,
+    "content": "Q411 Placebo: real physiological effect (endorphins, dopamine, immune conditioning); open-label works; nocebo = negative expectations cause real harm",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:46:47.680287"
+  },
+  {
+    "id": 65,
+    "content": "Q412 Godel incompleteness (1931): any consistent arithmetic system has true unprovable statements; can't prove own consistency; kills Hilbert's programme",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:46:47.712553"
+  },
+  {
+    "id": 66,
+    "content": "Q413 Greenhouse effect: IR trapped by CO2/H2O/CH4 via molecular vibration; logarithmic forcing; water vapour + ice-albedo positive feedbacks; CO2 280->425 ppm",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:46:47.747153"
+  },
+  {
+    "id": 67,
+    "content": "Q414 Consonance/dissonance: frequency ratios (Pythagoras), beating/roughness (Helmholtz), harmonic series, cultural learning, tonal expectation (Huron)",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:46:47.775860"
+  },
+  {
+    "id": 68,
+    "content": "Q415 Democracy vs republic: direct popular rule vs representative government; US is both; Madison Federalist 10; distinction used politically re: counter-majoritarian institutions",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T14:46:47.806239"
   }
 ]
