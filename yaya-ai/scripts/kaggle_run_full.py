@@ -27,8 +27,8 @@ import os, sys, glob, yaml, subprocess, shutil, numpy as np
 REPO_ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PRETRAIN_DIR   = '/kaggle/working/yaya-pretrain-checkpoints'
 SFT_DIR        = '/kaggle/working/yaya-sft-checkpoints'
-TRAIN_DATA_DIR = 'data/processed/openwebtext/train'
-EVAL_DATA_DIR  = 'data/processed/openwebtext/eval'
+TRAIN_DATA_DIR = 'data/processed/pretrain/train'
+EVAL_DATA_DIR  = 'data/processed/pretrain/eval'
 SFT_DATA_PATH  = 'data/sft/yaya_instruct.jsonl'
 EVAL_DATA_PATH = 'data/sft/yaya_instruct_eval.jsonl'
 TOKENIZER_PATH = 'data/tokenizer/yaya_tokenizer.model'
