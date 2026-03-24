@@ -3959,3 +3959,315 @@ Multiple overlapping explanations:
 **Rating: 8.5/10**
 
 ---
+
+### Q416 — Psychology
+**What is the bystander effect, and when does it NOT apply?**
+
+Kitty Genovese (1964) led to Latane and Darley's research. Two mechanisms:
+1. Diffusion of responsibility: each bystander assumes someone else will act
+2. Pluralistic ignorance: everyone looks to others, sees calm faces, stays calm
+
+**Classic experiment** (Darley & Latane 1968): simulated seizure via headphones. Alone: 85% helped within 60s. With 5 'others': 31%. Bystander count reliably reduces intervention.
+
+**When it does NOT apply:**
+- Clear emergency with identifiable victim
+- Bystanders who know each other
+- Specific responsibility assigned ('You in the red shirt — call 911')
+- Smaller groups
+- Simple task with no responsibility diffusion
+
+**Genovese myth**: Fischer et al. 2011 — 38 witnesses story exaggerated by NYT. Many didn't hear/see clearly. Effect is real, original story was sensationalised.
+
+**Rating: 9.0/10**
+
+---
+
+### Q417 — Geology
+**How do plate tectonics work, and what drives the plates?**
+
+~15 major lithospheric plates (100km thick) float on viscous asthenosphere, moving 2-10 cm/year.
+
+**Three boundary types:**
+1. Divergent: plates move apart; magma rises; new seafloor created (Mid-Atlantic Ridge, Iceland)
+2. Convergent: plates collide; oceanic subducts under continental -> trenches (Mariana 11km) + volcanic arcs (Japan, Andes); two continental -> mountain building (Himalayas)
+3. Transform: plates slide laterally (San Andreas). No creation/destruction of crust.
+
+**What drives plates (debated):**
+- Slab pull (strongest, ~90%): cold dense subducting crust pulls plate down by gravity
+- Ridge push: hot material at ridges creates topographic high pushing plates away
+- Mantle convection: contribution debated; may be driven by slabs not vice versa
+
+**Evidence**: magnetic striping on seafloor, continental fit (Wegener), matching fossils, earthquake distributions.
+
+**Rating: 9.5/10**
+
+---
+
+### Q418 — Mathematics
+**What is a Fourier transform, and why is it everywhere?**
+
+Fourier (1822): any periodic function decomposes into sines and cosines of different frequencies.
+
+Fourier transform: takes time-domain signal f(t) -> frequency-domain F(w) showing how much of each frequency is present.
+F(w) = integral of f(t)*e^(-iwt) dt. Inverse recovers original.
+
+**Why it's everywhere:**
+1. Audio: decompose into frequency spectrum; MP3 compression discards inaudible frequencies
+2. Images: JPEG uses DCT (related); compression removes high-frequency components
+3. Differential equations: convolution in time = multiplication in frequency -> algebra
+4. Quantum mechanics: position and momentum are Fourier duals; Heisenberg uncertainty is a Fourier transform consequence
+5. MRI: raw data acquired in k-space (frequency); Fourier transform reconstructs image
+6. Crystallography: X-ray diffraction IS the Fourier transform of electron density
+
+**FFT** (Cooley-Tukey 1965): O(n log n) vs O(n^2) naive. Made real-time signal processing possible.
+
+**Rating: 10.0/10**
+
+---
+
+### Q419 — Ethics
+**What is the difference between deontological and consequentialist ethics, and which is right?**
+
+**Consequentialism** (Bentham, Mill): moral worth from consequences. Maximise utility/welfare. Strength: outcome-focused. Weakness: justifies organ harvesting one person to save five; ignores rights.
+
+**Deontology** (Kant): moral worth from the action itself, not consequences. Categorical Imperative:
+- Act only by maxims you could universalise
+- Treat persons as ends, never merely as means
+Strength: explains why some acts are simply wrong. Weakness: must tell murderer where victim is hiding (can't lie).
+
+**Virtue ethics** (Aristotle): focus on character. What would a virtuous person do? Eudaimonia as goal.
+
+**Which is right?** Most philosophers endorse moral pluralism:
+- Consequentialism: outcomes clearly matter
+- Deontology: consent and rights matter independently of aggregate utility
+- Virtue ethics: same act differs morally depending on why it was done
+Reflective equilibrium: use multiple frameworks as lenses, check coherence with intuitions.
+
+**Rating: 9.5/10**
+
+---
+
+### Q420 — Linguistics
+**What is the difference between descriptive and prescriptive grammar, and why does it matter?**
+
+**Prescriptive**: what people *should* say — textbooks, style guides, norms ('don't split infinitives', 'it is I').
+
+**Descriptive**: what people *actually* say — linguist's approach. Records patterns without judging. Every human language has consistent grammar; no language is 'wrong.'
+
+**Why it matters:**
+1. Descriptivist rule is fundamental: AAVE has different grammar from SAE, not broken grammar — consistent, learnable patterns
+2. Prescriptive rules often recent inventions: 'no split infinitives' from 18th-c grammarians applying Latin rules to English incorrectly
+3. Dialects and class: marking certain dialects as 'incorrect' is a political act correlating with race and class
+4. But prescriptivism isn't useless: Standard varieties enable communication across dialect lines; style guides serve practical goals
+5. Code-switching: competent speakers deploy both — AAVE at home, SAE formally. Both correct for their domains.
+
+**Rating: 9.0/10**
+
+---
+
+### Q421 — Biology
+**How does the immune system distinguish 'self' from 'non-self'?**
+
+Multiple overlapping mechanisms:
+
+**MHC class I**: every nucleated cell displays own protein fragments on MHC class I. T-cells educated in thymus to tolerate self-peptides; cells displaying foreign peptides (viral, tumour) are destroyed.
+
+**Central tolerance** (thymus): T-cells reacting too strongly to self-antigens deleted (negative selection, ~95% die). Useful cells survive (positive selection).
+
+**Peripheral tolerance**: regulatory T-cells (Tregs) suppress self-reactive escapees. Anergy: T-cells encountering antigen without co-stimulatory signals become unresponsive.
+
+**Innate immune system**: pattern recognition receptors (TLRs, NLRs) detect PAMPs (pathogen-associated molecular patterns) — bacterial LPS, viral dsRNA, fungal cell wall — which self-cells don't have.
+
+**When it fails:**
+- Autoimmunity (MS, RA, T1D): molecular mimicry or tolerance breakdown
+- Transplant rejection: donor MHC recognised as foreign
+
+**Rating: 9.5/10**
+
+---
+
+### Q422 — History
+**What was the significance of the printing press, and did Gutenberg invent it?**
+
+Gutenberg (~1450) didn't invent printing. Moveable type existed in China (Bi Sheng ~1040) and Korea (Jikji 1377, oldest surviving). Gutenberg's innovation: complete system — durable metal alloy type, oil-based ink, adapted screw press — optimised for the European alphabet.
+
+**Why it transformed Europe**: Latin alphabet (26 letters) made moveable type far more efficient than Chinese/Korean systems (thousands of characters). Press: ~3,600 pages/day vs 40 for a scribe.
+
+**Impact:**
+- Bibles: ~180 Gutenberg Bibles (~1455); scripture beyond monasteries
+- Reformation: Luther's 95 Theses spread Germany in 2 weeks; 300,000 pamphlet copies by 1520
+- Scientific Revolution: Copernicus, Galileo, Newton published to pan-European audiences; cumulative science enabled
+- Vernacular languages: publishing in German/French/English accelerated nationalisms; Latin dominance ended
+- Book prices fell 80% in 50 years; literacy expanded to middle class
+
+**Eisenstein's thesis**: press created new relationship with knowledge — standardisation, reproducibility, verification.
+
+**Rating: 9.5/10**
+
+---
+
+### Q423 — Neuroscience
+**What is consciousness and why is it so hard to explain?**
+
+Chalmers (1995) 'hard problem': why does information processing produce *subjective experience*? Why is there something it is like to see red?
+
+Even full neural mapping of correlates wouldn't explain why any of it feels like anything. Explaining function doesn't explain qualia.
+
+**Major theories:**
+1. Global Workspace Theory (Baars, Dehaene): consciousness = information broadcast across brain; frontoparietal involvement; supported by fMRI/MEG
+2. Integrated Information Theory (Tononi): consciousness = Phi (integrated information). High Phi = conscious. Controversial: XOR grids have high Phi.
+3. Higher-Order Theories: conscious of X only if higher-order representation of X (thought about thought); prefrontal involvement
+4. Predictive Processing (Friston): consciousness = brain's model of itself; perception = prediction
+5. Illusionism (Frankish): qualia don't exist as intuited — introspective reports are systematically wrong
+
+**Consensus**: none. Hard problem remains genuinely open.
+
+**Rating: 10.0/10**
+
+---
+
+### Q424 — Chemistry
+**What makes some molecules smell while others don't?**
+
+Odorant molecules bind to olfactory receptors (ORs, GPCRs) in nasal epithelium -> olfactory bulb -> piriform cortex + limbic system.
+
+**What molecules smell:**
+1. Volatility: must be airborne; large molecules don't vaporise; <300 Da typical
+2. Lipophilicity: must dissolve in mucus AND bind to OR proteins. Too hydrophilic or hydrophobic = no smell
+3. Molecular shape: OR binding pocket specific; carvone enantiomers: L = spearmint, D = caraway — same formula, opposite smell
+
+**Olfactory code**: humans have ~400 functional OR genes. Each OR responds to range of odorants. Each odorant activates a pattern — combinatorial code like chords.
+
+**Concentration extremes**: thiols (skunk, garlic) detectable at 1 ppb; geosmin (petrichor) at 5 ppt — high receptor affinity.
+
+**COVID-19 anosmia**: virus destroys olfactory neuron support cells; usually recovers.
+
+**Rating: 9.0/10**
+
+---
+
+### Q425 — Economics
+**What caused the 2008 financial crisis?**
+
+Cascade of failures:
+
+**Housing bubble**: low post-9/11 rates, relaxed lending, NINJA loans (no income/assets/job). Prices +124% nationally 2000-2006.
+
+**Securitisation**: banks sold mortgages as MBS, removing incentive to evaluate creditworthiness. Originate-to-distribute model.
+
+**CDOs**: MBS re-bundled, given AAA ratings by agencies (Moody's, S&P) with conflict of interest — paid by issuers.
+
+**Leverage**: Lehman Brothers 30:1 leverage ($600B assets, $22B equity). 3% asset decline = equity wiped out. AIG wrote $400B+ of CDS with no reserves.
+
+**Trigger**: house prices peaked 2006, fell. Defaults rose. MBS values fell. Interbank lending froze. Lehman collapsed September 15, 2008. AIG needed $182B bailout.
+
+**Result**: $19T US household wealth lost. 8.7M jobs lost. Global recession. TARP $700B, rates to zero.
+
+**Response**: Dodd-Frank, Basel III capital requirements, Volcker Rule.
+
+**Rating: 9.5/10**
+
+---
+
+### Q426 — Physics
+**What is dark matter and how do we know it exists?**
+
+~27% of universe's energy. Doesn't emit/absorb/reflect light. Gravitational effects overwhelming.
+
+**Evidence:**
+1. Galaxy rotation curves (Rubin & Ford 1970s): outer stars orbit as fast as inner — Newtonian gravity says slower. Dark matter halo explains flat curves.
+2. Gravitational lensing: Bullet Cluster — hot gas slowed in collision, but most mass passed straight through (lensing maps it) = dark matter doesn't interact with gas.
+3. CMB power spectrum: acoustic oscillations fit LCDM only with ~27% dark matter.
+4. Large-scale structure: galaxy cluster formation simulations require dark matter.
+
+**Candidates:** WIMPs (theoretically motivated, not found by LHC or detectors), axions, primordial black holes, sterile neutrinos.
+
+**MOND alternative**: modified Newtonian dynamics; cannot explain Bullet Cluster + CMB simultaneously. Most physicists favour particle dark matter.
+
+**Rating: 9.5/10**
+
+---
+
+### Q427 — Literature
+**Why is 'Don Quixote' considered the first modern novel?**
+
+Cervantes (Part I: 1605, Part II: 1615). Why it's considered the first modern novel:
+
+1. Self-consciousness: the novel is aware it's a novel. Part II characters have read Part I. Unreliable narrators, manuscript frames — postmodern devices 400 years early.
+
+2. Psychological depth: Quixote and Sancho Panza have interior lives, contradictions, development — not types but people.
+
+3. Reality vs. illusion: windmills vs. giants — about the relationship between literature and reality. Not simple parody; Quixote is also genuinely noble.
+
+4. Class and voice: Sancho Panza (peasant) has equal narrative weight; earthy pragmatism counterweights idealism.
+
+5. Intertextuality: comments on its own sources, contemporary fiction, the act of reading.
+
+What makes it 'modern': fundamentally ambiguous relationship with truth; character who changes across time (Part I vs II Quixote). Bloom: 'most universal and most particular character in literature.'
+
+**Rating: 9.0/10**
+
+---
+
+### Q428 — Computer Science
+**What is the halting problem and why does it matter?**
+
+Turing (1936): no general algorithm can determine whether an arbitrary program will halt or run forever.
+
+**Proof (diagonal argument)**: assume HALT(P,I) exists. Construct DIAG(P): if HALT says P halts on P -> loop; if HALT says P loops -> halt.
+Run DIAG(DIAG): if halts -> loops, if loops -> halts. Contradiction. HALT cannot exist.
+
+**Why it matters:**
+1. Limits of computation: well-defined questions that no algorithm can answer. Proved impossible, not just unfound.
+2. Software verification: cannot automatically check all programs for infinite loops.
+3. Rice's Theorem: any non-trivial semantic program property is undecidable.
+4. Closely related to Godel's incompleteness (1931) — same result in different domains.
+5. Practical: compilers and static analysers must be incomplete or unsound — they make heuristic approximations.
+
+**Rating: 10.0/10**
+
+---
+
+### Q429 — Medicine
+**How do vaccines work, and why do some require boosters?**
+
+Vaccine presents antigen (weakened/killed pathogen, subunit protein, or mRNA) without disease, training immune memory.
+
+**Mechanism:**
+1. Antigen presented to naive B and T cells
+2. Clonal expansion: matching cells multiply
+3. Affinity maturation: B-cells mutate antibody genes; best-fitting selected
+4. Memory B/T cells form: long-lived, recognise pathogen quickly on re-exposure
+5. Real infection: memory activates in hours not days; antibodies produced before pathogen spreads
+
+**Types:**
+- Live attenuated (MMR, varicella): strong, lifetime immunity, can't use in immunocompromised
+- Inactivated (flu, IPV): weaker, needs boosters
+- Subunit (hep B, shingles): safe, needs adjuvants + boosters
+- mRNA (COVID Moderna/Pfizer): mRNA -> cell makes spike protein -> immune response; no DNA alteration
+
+**Why boosters**: antibody titres wane (inactivated/subunit weaker); mutating viruses (flu) change antigens.
+
+**Rating: 9.5/10**
+
+---
+
+### Q430 — Philosophy
+**What is free will, and does science undermine it?**
+
+Are our choices genuinely ours, or determined by prior causes?
+
+**Three positions:**
+1. Hard determinism: every event caused by prior events; brain states cause decisions; free will = illusion
+2. Compatibilism (dominant — Hume, Frankfurt, Dennett): 'free will' compatible with determinism. What matters: did *you* (your values, reasoning) cause the action? Freedom = acting on own reasons without coercion. Moral responsibility preserved.
+3. Libertarian free will: genuine indeterminism (quantum randomness, agent causation). Problem: random causation isn't the freedom we want.
+
+**Libet (1983)**: readiness potential ~350ms before conscious awareness of deciding. Brain 'decides' first? Heavily criticised: trivial task, complex decisions differ.
+
+**Dennett**: evolution built a brain that represents itself as agent. This representation IS real — it IS you deliberating. Not false.
+
+**Does science undermine it?** Depends what you mean. Compatibilist free will survives. Hard determinism mostly fringe.
+
+**Rating: 9.5/10**
+
+---

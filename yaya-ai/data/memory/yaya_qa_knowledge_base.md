@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 69
+Total entries: 84
 
 ---
 
@@ -141,3 +141,33 @@ Total entries: 69
 **[67]** Q414 Consonance/dissonance: frequency ratios (Pythagoras), beating/roughness (Helmholtz), harmonic series, cultural learning, tonal expectation (Huron)
 
 **[68]** Q415 Democracy vs republic: direct popular rule vs representative government; US is both; Madison Federalist 10; distinction used politically re: counter-majoritarian institutions
+
+**[69]** Q416 Bystander effect: diffusion of responsibility + pluralistic ignorance; Darley & Latane 1968; overridden by specific assignment, small groups, known bystanders
+
+**[70]** Q417 Plate tectonics: divergent/convergent/transform boundaries; slab pull main driver (~90%); ridge push + mantle convection also; evidence: magnetic striping, fossils
+
+**[71]** Q418 Fourier transform: time->frequency domain; FFT O(n log n); ubiquitous in audio/images/QM (position-momentum duality)/MRI/crystallography
+
+**[72]** Q419 Deontology (Kant: actions intrinsically right/wrong) vs consequentialism (outcomes); virtue ethics (Aristotle); most ethicists endorse moral pluralism
+
+**[73]** Q420 Descriptive vs prescriptive grammar: all languages have systematic grammar; prescriptive rules often arbitrary historical artifacts; dialect marking = political; code-switching
+
+**[74]** Q421 Immune self/non-self: MHC class I display, thymic selection (95% die), Tregs, PAMPs; fails in autoimmunity (molecular mimicry) and transplant rejection
+
+**[75]** Q422 Gutenberg press (~1450): moveable type existed in China/Korea first; transformed Europe via Reformation, Scientific Revolution, vernacular languages; Eisenstein: new knowledge relationship
+
+**[76]** Q423 Consciousness hard problem (Chalmers 1995): why experience? GWT (broadcast), IIT (Phi), higher-order, predictive processing, illusionism; no consensus
+
+**[77]** Q424 Olfaction: volatility + lipophilicity + shape -> OR binding (400 GPCR types); combinatorial code; carvone enantiomers have opposite smells; COVID anosmia
+
+**[78]** Q425 2008 crisis: housing bubble + NINJA loans + securitisation (originate-distribute) + CDO rating fraud + 30:1 leverage; Lehman collapse; $19T wealth lost; Dodd-Frank
+
+**[79]** Q426 Dark matter (~27% universe): rotation curves (Rubin), Bullet Cluster lensing, CMB; WIMP not found; axions, sterile neutrinos; MOND fails Bullet Cluster
+
+**[80]** Q427 Don Quixote (Cervantes 1605/1615): first modern novel — self-aware, psychological depth, reality/illusion theme, class equality, intertextuality; Bloom's praise
+
+**[81]** Q428 Halting problem (Turing 1936): proved undecidable via diagonal argument; limits computation; software verification incomplete; Rice's theorem; related to Godel
+
+**[82]** Q429 Vaccines: antigen -> clonal expansion -> affinity maturation -> memory B/T cells; live attenuated strongest; mRNA (no DNA alteration); boosters because titres wane
+
+**[83]** Q430 Free will: hard determinism (illusion) vs compatibilism (dominant, Dennett — real agency in causal chain) vs libertarian (indeterminism); Libet experiment critiqued

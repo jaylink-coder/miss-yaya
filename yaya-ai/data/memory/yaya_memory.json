@@ -481,5 +481,110 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-24T14:46:47.806239"
+  },
+  {
+    "id": 69,
+    "content": "Q416 Bystander effect: diffusion of responsibility + pluralistic ignorance; Darley & Latane 1968; overridden by specific assignment, small groups, known bystanders",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:00:51.609010"
+  },
+  {
+    "id": 70,
+    "content": "Q417 Plate tectonics: divergent/convergent/transform boundaries; slab pull main driver (~90%); ridge push + mantle convection also; evidence: magnetic striping, fossils",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:00:51.641955"
+  },
+  {
+    "id": 71,
+    "content": "Q418 Fourier transform: time->frequency domain; FFT O(n log n); ubiquitous in audio/images/QM (position-momentum duality)/MRI/crystallography",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:00:51.675149"
+  },
+  {
+    "id": 72,
+    "content": "Q419 Deontology (Kant: actions intrinsically right/wrong) vs consequentialism (outcomes); virtue ethics (Aristotle); most ethicists endorse moral pluralism",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:00:51.714846"
+  },
+  {
+    "id": 73,
+    "content": "Q420 Descriptive vs prescriptive grammar: all languages have systematic grammar; prescriptive rules often arbitrary historical artifacts; dialect marking = political; code-switching",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:00:51.748600"
+  },
+  {
+    "id": 74,
+    "content": "Q421 Immune self/non-self: MHC class I display, thymic selection (95% die), Tregs, PAMPs; fails in autoimmunity (molecular mimicry) and transplant rejection",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:02:26.720283"
+  },
+  {
+    "id": 75,
+    "content": "Q422 Gutenberg press (~1450): moveable type existed in China/Korea first; transformed Europe via Reformation, Scientific Revolution, vernacular languages; Eisenstein: new knowledge relationship",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:02:26.759479"
+  },
+  {
+    "id": 76,
+    "content": "Q423 Consciousness hard problem (Chalmers 1995): why experience? GWT (broadcast), IIT (Phi), higher-order, predictive processing, illusionism; no consensus",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:02:26.790997"
+  },
+  {
+    "id": 77,
+    "content": "Q424 Olfaction: volatility + lipophilicity + shape -> OR binding (400 GPCR types); combinatorial code; carvone enantiomers have opposite smells; COVID anosmia",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:02:26.825995"
+  },
+  {
+    "id": 78,
+    "content": "Q425 2008 crisis: housing bubble + NINJA loans + securitisation (originate-distribute) + CDO rating fraud + 30:1 leverage; Lehman collapse; $19T wealth lost; Dodd-Frank",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:02:26.861617"
+  },
+  {
+    "id": 79,
+    "content": "Q426 Dark matter (~27% universe): rotation curves (Rubin), Bullet Cluster lensing, CMB; WIMP not found; axions, sterile neutrinos; MOND fails Bullet Cluster",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:03:59.677616"
+  },
+  {
+    "id": 80,
+    "content": "Q427 Don Quixote (Cervantes 1605/1615): first modern novel — self-aware, psychological depth, reality/illusion theme, class equality, intertextuality; Bloom's praise",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:03:59.712264"
+  },
+  {
+    "id": 81,
+    "content": "Q428 Halting problem (Turing 1936): proved undecidable via diagonal argument; limits computation; software verification incomplete; Rice's theorem; related to Godel",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:03:59.741198"
+  },
+  {
+    "id": 82,
+    "content": "Q429 Vaccines: antigen -> clonal expansion -> affinity maturation -> memory B/T cells; live attenuated strongest; mRNA (no DNA alteration); boosters because titres wane",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:03:59.775433"
+  },
+  {
+    "id": 83,
+    "content": "Q430 Free will: hard determinism (illusion) vs compatibilism (dominant, Dennett — real agency in causal chain) vs libertarian (indeterminism); Libet experiment critiqued",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-24T15:03:59.811741"
   }
 ]
