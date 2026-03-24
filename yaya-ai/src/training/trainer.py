@@ -315,6 +315,10 @@ class Trainer:
                 )
                 loss = outputs["loss"]
 
+                # EWC continual-learning penalty — resists catastrophic forgetting
+                if self.ewc is not None:
+                    loss = loss + self.ewc.penalty()
+
                 # Scale loss for gradient accumulation
                 loss = loss / self.config.gradient_accumulation_steps
 
