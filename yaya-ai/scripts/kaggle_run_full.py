@@ -205,6 +205,7 @@ if n_sft < 50_000:
 with open('configs/training/sft_125m.yaml') as f:
     cfg = yaml.safe_load(f)
 cfg['checkpointing']['save_dir']              = SFT_DIR
+cfg['checkpointing']['keep_last_n']           = 1     # save space — only keep final
 cfg['training']['dtype']                      = DTYPE
 cfg['data']['train_data']                     = SFT_DATA_PATH
 cfg['data']['eval_data']                      = EVAL_DATA_PATH
