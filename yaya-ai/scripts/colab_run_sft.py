@@ -1,147 +1,152 @@
-"""Single-script Colab SFT runner — download data, then fine-tune.
-
-Run this AFTER pretraining is done (colab_run.py).
+"""
+Colab SFT runner — downloads 100K OpenHermes, then fine-tunes Yaya-125M.
 
 Usage (Colab cell):
-    !python /content/miss-yaya/yaya-ai/scripts/colab_run_sft.py
+    from google.colab import drive
+    drive.mount('/content/drive')
+    !git clone https://github.com/YOUR_USERNAME/YOUR_REPO /content/miss-yaya
+    %cd /content/miss-yaya/yaya-ai
+    !pip install -q sentencepiece pyyaml datasets
+    !python scripts/colab_run_sft.py
+
+Checkpoints are saved to Google Drive so they survive session resets.
+Re-run safe: auto-resumes from latest SFT checkpoint.
+
+Secrets: add HF_TOKEN and (optionally) WANDB_API_KEY to Colab Secrets
+(left sidebar → key icon) so they are injected as env vars.
 """
 
 import os
 import sys
-import json
 import glob
-import random
+import subprocess
 
-REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# ── Paths ─────────────────────────────────────────────────────────────────────
+REPO_ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SFT_CKPT_DIR   = '/content/drive/MyDrive/yaya-sft-checkpoints'
+SFT_DATA_PATH  = 'data/sft/yaya_instruct.jsonl'
+EVAL_DATA_PATH = 'data/sft/yaya_instruct_eval.jsonl'
+TOKENIZER_PATH = 'data/tokenizer/yaya_tokenizer.model'
+
+# Pretrain checkpoint lives in Drive (from colab_run.py pretrain session)
+PRETRAIN_CKPT_DIR = '/content/drive/MyDrive/yaya-checkpoints'
+
 sys.path.insert(0, REPO_ROOT)
 os.chdir(REPO_ROOT)
 
-random.seed(42)
+if not os.environ.get('WANDB_API_KEY'):
+    os.environ['WANDB_DISABLED'] = 'true'
+    os.environ['WANDB_MODE']     = 'disabled'
 
-PRETRAIN_CKPT_DIR = '/content/drive/MyDrive/yaya-checkpoints'
-SFT_CKPT_DIR      = '/content/drive/MyDrive/yaya-sft-checkpoints'
-SFT_DATA_PATH     = 'data/sft/yaya_instruct.jsonl'
+os.environ['PYTHONIOENCODING'] = 'utf-8'
 
-SYSTEM_PROMPT = (
-    "You are Yaya, a helpful and friendly AI assistant. "
-    "You answer questions clearly, tell jokes when asked, and are always honest."
-)
+# ── 0. GPU check ──────────────────────────────────────────────────────────────
+import torch
 
+if torch.cuda.is_available():
+    props   = torch.cuda.get_device_properties(0)
+    vram_gb = props.total_memory / 1e9
+    cap     = props.major * 10 + props.minor
+    DTYPE   = 'bfloat16' if cap >= 80 else 'float16'
+    print(f'GPU:   {props.name}  VRAM: {vram_gb:.1f}GB')
+    print(f'Compute capability: {props.major}.{props.minor}  → {DTYPE}')
+else:
+    print('WARNING: No GPU. Go to Runtime → Change runtime type → GPU.')
+    DTYPE = 'float32'
 
-def make_sample(user_msg, assistant_msg):
-    return {
-        "messages": [
-            {"role": "system",    "content": SYSTEM_PROMPT},
-            {"role": "user",      "content": user_msg},
-            {"role": "assistant", "content": assistant_msg},
-        ]
-    }
+# ── 1. HF Token ───────────────────────────────────────────────────────────────
+print('\n[1/4] Setting up HuggingFace token...')
+hf_token = os.environ.get('HF_TOKEN', '')
+if not hf_token:
+    try:
+        from google.colab import userdata
+        hf_token = userdata.get('HF_TOKEN')
+        os.environ['HF_TOKEN'] = hf_token
+        print('  HF_TOKEN loaded from Colab Secrets.')
+    except Exception:
+        print('  WARNING: No HF_TOKEN. Add it via the key icon in the left sidebar.')
+else:
+    print('  HF_TOKEN already set.')
 
-
-# ── 1. Load hand-crafted data ─────────────────────────────────────────────────
-print('\n[1/4] Loading hand-crafted SFT examples...')
-samples = []
-if os.path.exists(SFT_DATA_PATH):
-    with open(SFT_DATA_PATH, encoding='utf-8') as f:
-        for line in f:
-            line = line.strip()
-            if line:
-                samples.append(json.loads(line))
-print(f'  Loaded {len(samples)} hand-crafted examples')
-
-
-# ── 2. Download Alpaca ────────────────────────────────────────────────────────
-print('\n[2/4] Downloading Alpaca (300 examples)...')
-try:
-    from datasets import load_dataset
-    ds = load_dataset('tatsu-lab/alpaca', split='train')
-    added = 0
-    for row in ds:
-        instruction = row.get('instruction', '').strip()
-        inp         = row.get('input', '').strip()
-        output      = row.get('output', '').strip()
-        if not instruction or not output:
-            continue
-        user_msg = f'{instruction}\n\n{inp}' if inp else instruction
-        samples.append(make_sample(user_msg, output))
-        added += 1
-        if added >= 300:
-            break
-    print(f'  Got {added} Alpaca examples')
-except Exception as e:
-    print(f'  Alpaca download failed: {e}')
-
-
-# ── 3. Download Dolly ─────────────────────────────────────────────────────────
-print('\n[3/4] Downloading Dolly (200 examples)...')
-try:
-    ds = load_dataset('databricks/databricks-dolly-15k', split='train')
-    added = 0
-    for row in ds:
-        instruction = row.get('instruction', '').strip()
-        context     = row.get('context', '').strip()
-        response    = row.get('response', '').strip()
-        if not instruction or not response:
-            continue
-        user_msg = f'{instruction}\n\nContext: {context}' if context else instruction
-        samples.append(make_sample(user_msg, response))
-        added += 1
-        if added >= 200:
-            break
-    print(f'  Got {added} Dolly examples')
-except Exception as e:
-    print(f'  Dolly download failed: {e}')
-
-
-# Deduplicate and shuffle
-seen, deduped = set(), []
-for s in samples:
-    key = s['messages'][1]['content'][:80]
-    if key not in seen:
-        seen.add(key)
-        deduped.append(s)
-random.shuffle(deduped)
-
+# ── 2. Download + prepare SFT data ────────────────────────────────────────────
+print('\n[2/4] Preparing SFT data (100K OpenHermes + Yaya-specific)...')
 os.makedirs('data/sft', exist_ok=True)
-with open(SFT_DATA_PATH, 'w', encoding='utf-8') as f:
-    for s in deduped:
-        f.write(json.dumps(s, ensure_ascii=False) + '\n')
-print(f'  Total SFT examples: {len(deduped)}')
 
+if os.path.exists(SFT_DATA_PATH):
+    with open(SFT_DATA_PATH) as f:
+        n = sum(1 for l in f if l.strip())
+    print(f'  Existing yaya_instruct.jsonl: {n:,} examples')
+    if n >= 100_000:
+        print('  Dataset already large — skipping download.')
+    else:
+        print(f'  Only {n:,} examples — downloading fresh from OpenHermes...')
+        subprocess.run(
+            [sys.executable, 'scripts/download_openhermes.py', '--max_examples', '100000'],
+            check=True
+        )
+else:
+    print('  No data found — downloading from OpenHermes...')
+    subprocess.run(
+        [sys.executable, 'scripts/download_openhermes.py', '--max_examples', '100000'],
+        check=True
+    )
 
-# ── 4. Run SFT training ───────────────────────────────────────────────────────
+if not os.path.exists(EVAL_DATA_PATH):
+    print(f'  WARNING: eval file not found at {EVAL_DATA_PATH}')
+
+# ── 3. Find pretrain checkpoint ───────────────────────────────────────────────
+print('\n[3/4] Locating pretrain checkpoint...')
+
+def find_best_checkpoint(directory: str) -> str | None:
+    ckpts = sorted(glob.glob(f'{directory}/checkpoint-*'))
+    return ckpts[-1] if ckpts else None
+
+pretrain_ckpt = find_best_checkpoint(PRETRAIN_CKPT_DIR)
+sft_ckpt      = find_best_checkpoint(SFT_CKPT_DIR)
+
+if pretrain_ckpt:
+    print(f'  Pretrain checkpoint: {pretrain_ckpt}')
+else:
+    print('  No pretrain checkpoint in Drive — training from random init.')
+    print(f'  (Run colab_run.py first, or copy a checkpoint to {PRETRAIN_CKPT_DIR})')
+
+if sft_ckpt:
+    print(f'  Resuming SFT from: {sft_ckpt}')
+
+os.makedirs(SFT_CKPT_DIR, exist_ok=True)
+
+# ── 4. Patch config + train ───────────────────────────────────────────────────
 print('\n[4/4] Starting SFT training...')
 
-# Find the latest pretrain checkpoint
-ckpts = sorted(glob.glob(f'{PRETRAIN_CKPT_DIR}/checkpoint-*'))
-if not ckpts:
-    print(f'ERROR: No pretrain checkpoint found in {PRETRAIN_CKPT_DIR}')
-    print('Make sure pretraining has run and Drive is mounted.')
-    sys.exit(1)
-
-best_ckpt = ckpts[-1]
-print(f'  Using pretrain checkpoint: {best_ckpt}')
-
-# Update SFT config to point to Drive
 import yaml
+
 with open('configs/training/sft_125m.yaml') as f:
     cfg = yaml.safe_load(f)
+
 cfg['checkpointing']['save_dir'] = SFT_CKPT_DIR
+cfg['training']['dtype']         = DTYPE
+cfg['data']['train_data']        = SFT_DATA_PATH
+cfg['data']['eval_data']         = EVAL_DATA_PATH
+cfg['data']['tokenizer_path']    = TOKENIZER_PATH
+
+if torch.cuda.is_available() and vram_gb < 14:
+    cfg['distributed']['gradient_checkpointing'] = True
+    print('  Gradient checkpointing enabled (<14GB VRAM).')
+
 with open('configs/training/sft_125m.yaml', 'w') as f:
-    yaml.dump(cfg, f)
+    yaml.dump(cfg, f, default_flow_style=False)
 
-# Check for SFT resume checkpoint
-sft_ckpts = sorted(glob.glob(f'{SFT_CKPT_DIR}/checkpoint-*'))
-resume = f'--resume {sft_ckpts[-1]}' if sft_ckpts else ''
-if resume:
-    print(f'  Resuming SFT from: {sft_ckpts[-1]}')
-    pretrain_flag = ''
-else:
-    pretrain_flag = f'--pretrain_checkpoint {best_ckpt}'
+cmd = [
+    sys.executable, 'scripts/train_sft.py',
+    '--model_config', 'configs/model/yaya_125m.yaml',
+    '--train_config', 'configs/training/sft_125m.yaml',
+]
 
-os.system(
-    f'python scripts/train_sft.py '
-    f'--model_config configs/model/yaya_125m.yaml '
-    f'--train_config configs/training/sft_125m.yaml '
-    f'{pretrain_flag} {resume}'
-)
+if sft_ckpt:
+    cmd += ['--resume', sft_ckpt]
+elif pretrain_ckpt:
+    cmd += ['--pretrain_checkpoint', pretrain_ckpt]
+
+print(f'  Command: {" ".join(cmd)}\n')
+result = subprocess.run(cmd)
+sys.exit(result.returncode)
