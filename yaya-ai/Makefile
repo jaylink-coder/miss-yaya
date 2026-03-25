@@ -1,6 +1,6 @@
 .PHONY: install install-dev install-flash install-hf \
         test test-model test-data test-inference test-cov test-vision test-training test-all \
-        test-agent test-rag test-safety test-serving \
+        test-agent test-rag test-safety test-serving test-neuroplasticity \
         lint format typecheck \
         train-tokenizer prepare-data \
         train-1b train-1b-2gpu train-1.5b train-7b \
