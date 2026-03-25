@@ -140,17 +140,19 @@ class EWC:
         """Compute the EWC quadratic regularisation penalty.
 
         Returns a scalar tensor.  Returns 0.0 if Fisher has not been computed yet.
+        Fisher and reference weights are moved to each parameter's device on the fly,
+        so this works correctly with DDP and mixed-device setups.
         """
         if not self.fisher:
             # Fisher not yet computed — no penalty
             return torch.tensor(0.0)
 
-        loss = torch.tensor(0.0, device=next(iter(self.fisher.values())).device)
+        loss = torch.tensor(0.0, device=next(self.model.parameters()).device)
         for name, param in self.model.named_parameters():
             if name not in self.fisher:
                 continue
-            fisher = self.fisher[name]
-            ref = self.optimal_params[name]
+            fisher = self.fisher[name].to(param.device)
+            ref = self.optimal_params[name].to(param.device)
             loss = loss + (fisher * (param - ref).pow(2)).sum()
 
         return (self.lambda_ewc / 2.0) * loss
