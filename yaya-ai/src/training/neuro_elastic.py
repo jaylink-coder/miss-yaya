@@ -288,6 +288,18 @@ class ElasticGuard:
             self._submission_times.popleft()
         return len(self._submission_times) >= self.config.max_per_minute
 
+    def _is_score_anomalous(self, score: float) -> bool:
+        """Return True if score is unusually extreme vs recent history (z-score)."""
+        if len(self._score_window) < 10:
+            return False  # Not enough history to judge
+        import statistics
+        mean = statistics.mean(self._score_window)
+        stdev = statistics.stdev(self._score_window)
+        if stdev < 1e-6:
+            return False
+        z = abs((score - mean) / stdev)
+        return z > self.config.human_review_z_threshold
+
     def _is_tripped(self) -> bool:
         if not self._tripped:
             return False
