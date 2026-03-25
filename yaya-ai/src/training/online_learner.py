@@ -144,6 +144,9 @@ class OnlineLearner:
             batch_loss = self._compute_batch_loss(sample)
             if batch_loss is None:
                 continue
+            # EWC penalty — prevents online updates from erasing prior knowledge
+            if self.ewc is not None:
+                batch_loss = batch_loss + self.ewc.penalty()
             batch_loss.backward()
             nn.utils.clip_grad_norm_(
                 [p for p in self.model.parameters() if p.requires_grad],
