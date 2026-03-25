@@ -218,7 +218,11 @@ class MAML:
     # ------------------------------------------------------------------
 
     def _get_params(self) -> Dict[str, torch.Tensor]:
-        """Get trainable parameters (LoRA only if lora_only=True)."""
+        """Get trainable parameters (LoRA only if lora_only=True).
+
+        Returns tensors that are leaf variables with requires_grad=True so
+        that autograd.grad can differentiate through the inner-loop steps.
+        """
         params = {}
         for name, param in self.model.named_parameters():
             if not param.requires_grad:
@@ -233,35 +237,25 @@ class MAML:
         batch: Dict[str, torch.Tensor],
         params: Dict[str, torch.Tensor],
     ) -> torch.Tensor:
-        """Forward pass substituting model params with provided tensors.
+        """Forward pass with provided param tensors via functional_call.
 
-        Uses torch.nn.utils.parametrize-style functional override so the
-        computation graph flows through ``params`` (needed for meta-gradients).
+        Uses ``torch.func.functional_call`` to substitute only the keys
+        present in ``params`` — the rest of the model uses its live weights.
+        This lets gradients flow back through ``params`` for MAML meta-updates.
         """
-        # Temporarily swap in adapted parameters
-        original: Dict[str, torch.Tensor] = {}
-        with torch.no_grad():
-            for name, param in self.model.named_parameters():
-                if name in params:
-                    original[name] = param.data.clone()
-                    param.data.copy_(params[name].data)
+        from torch.func import functional_call
 
-        try:
-            outputs = self.model(
-                input_ids=batch["input_ids"],
-                labels=batch["labels"],
-                attention_mask=batch.get("attention_mask"),
-            )
-            loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
-        finally:
-            # Restore original parameters
-            with torch.no_grad():
-                for name, orig_data in original.items():
-                    for pname, param in self.model.named_parameters():
-                        if pname == name:
-                            param.data.copy_(orig_data)
-                            break
-
+        outputs = functional_call(
+            self.model,
+            params,
+            args=(),
+            kwargs={
+                "input_ids": batch["input_ids"],
+                "labels": batch["labels"],
+                "attention_mask": batch.get("attention_mask"),
+            },
+        )
+        loss = outputs["loss"] if isinstance(outputs, dict) else outputs[0]
         return loss
 
     def _device(self) -> torch.device:
