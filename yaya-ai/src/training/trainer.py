@@ -595,6 +595,17 @@ class Trainer:
                 score=-avg_loss,  # Use -loss so "higher is better" convention holds
             )
 
+        # Alignment monitor — check for capability drift after each eval
+        if self.alignment_monitor is not None and is_main_process():
+            task_scores = None
+            if self.forgetting_tracker is not None:
+                task_scores = {
+                    tid: self.forgetting_tracker.scores_for(tid)[-1][1]
+                    for tid in self.forgetting_tracker.task_ids()
+                    if self.forgetting_tracker.scores_for(tid)
+                }
+            self.alignment_monitor.check_drift(task_scores=task_scores)
+
         # Track best model
         if avg_loss < self.best_eval_loss and is_main_process():
             self.best_eval_loss = avg_loss
