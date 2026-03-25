@@ -62,18 +62,43 @@ if FASTAPI_AVAILABLE:
         usage: UsageInfo = UsageInfo()
 
 
-def create_app(generator: TextGenerator, model_name: str = "yaya") -> "FastAPI":
+def create_app(
+    generator: TextGenerator,
+    model_name: str = "yaya",
+    memory_store_dir: str = "checkpoints/memory",
+) -> "FastAPI":
     """Create FastAPI application for model serving.
 
     Args:
         generator: Configured TextGenerator instance.
         model_name: Model name to report in API responses.
+        memory_store_dir: Directory for persistent memory JSON files.
 
     Returns:
         FastAPI application.
     """
     if not FASTAPI_AVAILABLE:
         raise ImportError("FastAPI required for serving: pip install fastapi uvicorn")
+
+    # Shared long-term memory — loaded once at server start
+    long_term_memory = PersistentMemory(store_dir=memory_store_dir, name="long_term")
+    long_term_memory.load()
+
+    # Per-session memory cache (session_id → SessionMemory)
+    _session_cache: Dict[str, SessionMemory] = {}
+
+    def _get_session(session_id: Optional[str]) -> Optional[SessionMemory]:
+        """Return (or create) a SessionMemory for the given session_id."""
+        if session_id is None:
+            return None
+        if session_id not in _session_cache:
+            sess = SessionMemory(
+                store_dir=memory_store_dir,
+                session_id=session_id,
+                long_term=long_term_memory,
+            )
+            _session_cache[session_id] = sess
+        return _session_cache[session_id]
 
     app = FastAPI(
         title="Yaya AI API",
