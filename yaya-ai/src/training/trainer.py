@@ -177,6 +177,7 @@ class Trainer:
                 finetune_every_n_examples=getattr(config, "online_finetune_every", 50),
                 micro_finetune_steps=getattr(config, "online_micro_steps", 10),
                 micro_lr=getattr(config, "online_micro_lr", 5e-5),
+                sparse_gradient_k=getattr(config, "sparse_gradient_k", 0.0),
             )
             self.online_learner = OnlineLearner(
                 self.unwrapped_model, tokenizer=tokenizer, config=ol_cfg,
