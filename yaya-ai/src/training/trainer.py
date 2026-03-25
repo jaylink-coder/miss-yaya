@@ -54,6 +54,7 @@ class Trainer:
         config: TrainingConfig,
         train_dataloader: DataLoader,
         eval_dataloader: Optional[DataLoader] = None,
+        tokenizer=None,
     ):
         """Initialize trainer.
 
