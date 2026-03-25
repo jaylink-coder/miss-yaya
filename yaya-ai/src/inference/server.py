@@ -40,6 +40,7 @@ if FASTAPI_AVAILABLE:
         top_k: int = Field(default=50, ge=0)
         repetition_penalty: float = Field(default=1.1, ge=1.0, le=2.0)
         stream: bool = False
+        session_id: Optional[str] = None  # For persistent memory: same id = same session
 
     class CompletionChoice(BaseModel):
         index: int = 0
