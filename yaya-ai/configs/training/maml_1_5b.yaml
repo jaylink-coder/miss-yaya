@@ -1,0 +1,62 @@
+# MAML Meta-Learning Configuration — Yaya-1.5B
+# Cloud training profile for "learning to learn" fast adaptation.
+#
+# Strategy: train on a meta-batch of diverse tasks so that 1-5 inner-loop
+# gradient steps yield strong task performance (Finn et al. 2017).
+# Combined with EWC to prevent forgetting across meta-updates.
+
+seed: 42
+
+training:
+  per_device_batch_size: 4
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4        # Outer-loop (meta) learning rate
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.999
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 500
+  max_steps: 10000
+  max_seq_length: 2048
+  dtype: bfloat16
+
+  # LoRA — inner loop adapts only adapter params (efficient)
+  lora_rank: 16
+  lora_alpha: 32.0
+  lora_dropout: 0.05
+
+  # MAML meta-learning
+  maml_enabled: true
+  maml_inner_lr: 0.01         # Task-specific step size
+  maml_inner_steps: 5         # Gradient steps per task
+  maml_meta_batch_size: 4     # Tasks per outer update
+
+  # EWC — prevent forgetting across meta-updates
+  ewc_lambda: 1000.0
+  ewc_fisher_samples: 100
+
+  # Forgetting metrics
+  track_forgetting: true
+  task_id: maml_meta
+
+checkpointing:
+  save_steps: 500
+  save_dir: checkpoints/yaya-1.5b-maml
+  keep_last_n: 3
+
+logging:
+  log_steps: 10
+  wandb_project: yaya-ai
+  wandb_run_name: yaya-1.5b-maml
+
+eval:
+  eval_steps: 500
+  eval_samples: 200
+
+data:
+  train_data: data/processed/train
+  eval_data: data/processed/eval
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 4
