@@ -37,10 +37,12 @@ class TextGenerator:
         model,
         tokenizer,
         device: str = "cuda",
+        online_learner: Optional["OnlineLearner"] = None,
     ):
         self.model = model
         self.tokenizer = tokenizer
         self.device = device
+        self.online_learner = online_learner
 
     @torch.no_grad()
     def generate(
