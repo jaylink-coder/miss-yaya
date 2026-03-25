@@ -329,6 +329,116 @@ training:
 
 ---
 
+---
+
+## Alignment & Safety Layer
+
+### 9. AlignmentMonitor — Capability Drift Detection
+
+**What it does:** Tracks statistical signatures of model outputs over time to detect when a continually-adapting model drifts from intended behavior.
+
+Three signals:
+- **KL divergence** — compare token-probability distributions on fixed probe prompts against a reference snapshot
+- **Entropy collapse** — sudden drop signals reward hacking or adapter saturation
+- **Score regression** — alerts when ForgettingTracker scores fall below registered safety floors
+
+**Files:**
+- [`src/training/alignment_monitor.py`](../src/training/alignment_monitor.py) — `AlignmentMonitor`, `AlignmentConfig`
+
+**Key config:**
+```yaml
+training:
+  alignment_monitor_enabled: true
+  alignment_kl_threshold: 0.5        # Alert if KL drift > 0.5 nats
+  alignment_entropy_threshold: 0.3   # Alert if entropy drops by 0.3 nats
+  alignment_score_regression_threshold: 0.10  # Alert if task drops >10%
+```
+
+**Usage:**
+```python
+monitor.add_probe("What is 2 + 2?")
+monitor.add_probe("Translate 'hello' to Swahili:")
+monitor.set_reference()  # Baseline after initial training
+
+# After each adaptation step:
+report = monitor.check_drift()
+if report["drift_detected"]:
+    print(report["alerts"])
+```
+
+---
+
+### 10. Human-in-the-Loop Oversight (ElasticGuard)
+
+**What it does:** Flags examples with anomalous feedback scores (z-score > threshold) into a review queue. The operator inspects and approves/rejects them before they influence learning.
+
+**Key config:**
+```yaml
+training:
+  human_review_enabled: true
+  human_review_z_threshold: 3.0   # Flag if score is >3 std-devs from recent mean
+```
+
+**Usage:**
+```python
+# Periodically drain the review queue
+items = guard.pop_review_queue()
+for item in items:
+    decision = human_annotate(item["prompt"], item["response"])
+    if decision["approved"]:
+        guard.learner.add_example(item["prompt"], item["response"], decision["score"])
+```
+
+---
+
+### 11. Sparse Plasticity — Targeted Gradient Masking
+
+**What it does:** Keeps only the top-K fraction of gradient magnitudes during micro-finetuning, zeroing the rest. Simulates synaptic sparsity — only the most significant weight changes apply, reducing noise and diffuse forgetting.
+
+**Key config:**
+```yaml
+training:
+  sparse_gradient_k: 0.1   # Keep top 10% of gradients (0 = off)
+```
+
+Typical values:
+- `0.0` — off (standard dense updates)
+- `0.1` — aggressive sparsity (edge devices)
+- `0.3` — moderate (balanced)
+
+---
+
+## Full Safety + Alignment Stack
+
+```yaml
+training:
+  # Core adaptation
+  lora_rank: 16
+  online_learning_enabled: true
+  synthetic_replay_enabled: true
+  maml_enabled: true
+
+  # Stability
+  ewc_lambda: 5000.0
+  elastic_guard_enabled: true
+
+  # Sparsity
+  sparse_gradient_k: 0.1
+
+  # Alignment monitoring
+  alignment_monitor_enabled: true
+  alignment_kl_threshold: 0.5
+
+  # Human oversight
+  human_review_enabled: true
+  human_review_z_threshold: 3.0
+
+  # Metrics
+  track_forgetting: true
+```
+
+---
+
 ## References
 
 | Concept | Paper |
