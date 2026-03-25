@@ -247,6 +247,51 @@ class Trainer:
                 )
                 print("AlignmentMonitor enabled — KL drift and entropy collapse detection active.")
 
+        # Curriculum learning — difficulty-aware training schedule
+        self.curriculum_sampler = None
+        if getattr(config, "curriculum_enabled", False):
+            from src.training.curriculum import CurriculumSchedule, CurriculumSampler, CurriculumDataset
+            # CurriculumDataset will be built lazily once we have access to raw examples.
+            # For now, store the schedule config so train() can wire it up.
+            self._curriculum_schedule_kwargs = {
+                "total_steps": config.max_steps,
+                "warmup_easy_steps": getattr(config, "curriculum_warmup_easy_steps", 10_000),
+                "strategy": getattr(config, "curriculum_strategy", "linear"),
+                "easy_ceiling": getattr(config, "curriculum_easy_ceiling", 0.4),
+                "competence_loss_threshold": getattr(
+                    config, "curriculum_competence_loss_threshold", 2.5
+                ),
+            }
+            print(
+                f"Curriculum learning enabled — strategy={self._curriculum_schedule_kwargs['strategy']}, "
+                f"warmup={self._curriculum_schedule_kwargs['warmup_easy_steps']} steps"
+            )
+        else:
+            self._curriculum_schedule_kwargs = None
+
+        # Reward model — lightweight scorer for RLHF / auto-scoring
+        self.reward_model = None
+        if getattr(config, "reward_model_enabled", False):
+            from src.training.reward_model import RewardModel, RewardModelConfig, RewardModelTrainer
+            if hasattr(self.unwrapped_model, "config"):
+                rm_hidden = getattr(self.unwrapped_model.config, "hidden_size", 2048)
+            else:
+                rm_hidden = 2048
+            rm_cfg = RewardModelConfig(hidden_size=rm_hidden)
+            self.reward_model = RewardModel(
+                self.unwrapped_model, config=rm_cfg, freeze_backbone=True
+            )
+            rm_path = getattr(config, "reward_model_path", "")
+            if rm_path and os.path.exists(rm_path):
+                trainer_obj = RewardModelTrainer(
+                    self.reward_model, tokenizer, self.device
+                )
+                trainer_obj.load(rm_path)
+            print(
+                f"RewardModel enabled (hidden={rm_hidden}, "
+                f"path={getattr(config, 'reward_model_path', '') or 'untrained'})"
+            )
+
         # Training state
         self.global_step = 0
         self.epoch = 0
