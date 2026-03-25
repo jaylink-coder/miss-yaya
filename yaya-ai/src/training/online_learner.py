@@ -169,6 +169,9 @@ class OnlineLearner:
                 [p for p in self.model.parameters() if p.requires_grad],
                 self.config.max_grad_norm,
             )
+            # Sparse plasticity — zero out low-magnitude gradients
+            if self.config.sparse_gradient_k > 0.0:
+                _apply_sparse_gradients(self.model, self.config.sparse_gradient_k)
             self._optimizer.step()
             total_loss += batch_loss.item()
 
