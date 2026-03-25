@@ -65,18 +65,20 @@ class TestTransformerBlock:
         config = get_test_config()
         block = TransformerBlock(config, layer_idx=0)
         x = torch.randn(2, 16, 64)
-        out, cache = block(x)
+        out, cache, aux = block(x)
         assert out.shape == x.shape
         assert cache is None
+        assert aux is None  # Dense layer: no MoE aux loss
 
     def test_with_cache(self):
         config = get_test_config()
         block = TransformerBlock(config, layer_idx=0)
         x = torch.randn(2, 16, 64)
-        out, cache = block(x, use_cache=True)
+        out, cache, aux = block(x, use_cache=True)
         assert out.shape == x.shape
         assert cache is not None
         assert len(cache) == 2  # (key, value)
+        assert aux is None  # Dense layer: no MoE aux loss
 
 
 class TestYayaModel:
