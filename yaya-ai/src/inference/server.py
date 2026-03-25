@@ -161,6 +161,10 @@ def create_app(
         if not request.messages:
             raise HTTPException(status_code=400, detail="messages is required")
 
+        # Attach session memory to generator for this request
+        session = _get_session(request.session_id)
+        generator.memory = session
+
         # Format chat messages into prompt, then open the assistant turn
         # so the model knows to generate an assistant response.
         prompt = generator.tokenizer.format_chat(
@@ -199,6 +203,10 @@ def create_app(
         generated_text = generator.generate(prompt, config)
         response_text = generated_text[len(prompt):]
 
+        # Persist memory after each chat turn
+        if session is not None:
+            long_term_memory.save()
+
         return CompletionResponse(
             id=f"chatcmpl-{uuid.uuid4().hex[:8]}",
             object="chat.completion",
@@ -212,5 +220,48 @@ def create_app(
                 )
             ],
         )
+
+    @app.post("/v1/memory/consolidate")
+    async def consolidate_session_memory(session_id: str):
+        """Promote session facts to long-term memory and flush to disk."""
+        sess = _get_session(session_id)
+        if sess is None:
+            raise HTTPException(status_code=404, detail="session_id not found")
+        promoted = sess.consolidate_to_long_term()
+        long_term_memory.save()
+        return {"session_id": session_id, "promoted": promoted, "long_term_size": len(long_term_memory)}
+
+    @app.get("/v1/memory")
+    async def get_memory(session_id: Optional[str] = None):
+        """Return current memory state (long-term + optional session)."""
+        result: Dict[str, Any] = {
+            "long_term": {
+                "facts": long_term_memory.top_facts(20),
+                "entities": long_term_memory.top_entities(10),
+                "goals": long_term_memory.goals,
+                "total_entries": len(long_term_memory),
+            }
+        }
+        if session_id is not None:
+            sess = _get_session(session_id)
+            result["session"] = {
+                "session_id": session_id,
+                "facts": sess._session_facts[-20:] if sess else [],
+                "entities": sess._session_entities if sess else {},
+                "goals": sess._session_goals if sess else [],
+            }
+        return result
+
+    @app.delete("/v1/memory")
+    async def clear_memory(session_id: Optional[str] = None):
+        """Clear session memory (or all long-term memory if no session_id)."""
+        if session_id is not None:
+            if session_id in _session_cache:
+                _session_cache.pop(session_id)
+            return {"cleared": "session", "session_id": session_id}
+        long_term_memory.clear()
+        long_term_memory.save()
+        _session_cache.clear()
+        return {"cleared": "all"}
 
     return app
