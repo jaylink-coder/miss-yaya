@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 if TYPE_CHECKING:
     from src.training.online_learner import OnlineLearner
+    from src.training.neuro_elastic import ElasticGuard
 
 
 @dataclass
