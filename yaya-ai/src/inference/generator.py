@@ -263,6 +263,7 @@ class TextGenerator:
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         top_k: Optional[int] = None,
+        do_sample: Optional[bool] = None,
         feedback: Optional[float] = None,
     ):
         """Generator that yields tokens one at a time for streaming.
