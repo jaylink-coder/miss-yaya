@@ -151,9 +151,12 @@ class TextGenerator:
         # Decode generated tokens
         output_text = self.tokenizer.decode(generated_ids)
 
-        # Online learning — submit feedback if provided
+        # Online learning — submit feedback if provided.
+        # Use token-boundary slicing (not character slicing) to avoid tokenizer
+        # normalization mismatches between prompt and decoded output.
         if feedback is not None and self.online_learner is not None:
-            response_only = output_text[len(prompt):]
+            prompt_token_count = len(input_ids)
+            response_only = self.tokenizer.decode(generated_ids[prompt_token_count:])
             self.online_learner.add_example(prompt, response_only, score=feedback)
 
         return output_text
