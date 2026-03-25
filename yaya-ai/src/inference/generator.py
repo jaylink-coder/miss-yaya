@@ -290,6 +290,7 @@ class TextGenerator:
                 ("temperature", temperature),
                 ("top_p", top_p),
                 ("top_k", top_k),
+                ("do_sample", do_sample),
             ] if v is not None
         }
         if overrides:
