@@ -1216,15 +1216,15 @@ class TestHumanReviewQueue:
             assert guard.review_queue_size() == 0
 
     def test_anomalous_score_flagged_after_history(self):
-        """After 10 normal scores, an extreme score should be flagged."""
+        """After 10 varied scores, an extreme outlier should be flagged."""
         with tempfile.TemporaryDirectory() as tmpdir:
             guard = self._make_guard_with_review(tmpdir)
-            # Build score history with tight distribution
-            for i in range(12):
-                guard.add_example(f"p{i}", " r", score=1.0)
-            # Now submit an extreme outlier
-            guard.add_example("outlier", " resp", score=999.0)
-            # Score is clamped to score_max=10.0, but still extreme vs history of 1.0
+            # Build score history with a realistic distribution (mean~1, std~0.1)
+            normal_scores = [0.9, 1.0, 1.1, 0.95, 1.05, 0.98, 1.02, 0.93, 1.07, 1.0, 0.97, 1.03]
+            for i, s in enumerate(normal_scores):
+                guard.add_example(f"p{i}", " r", score=s)
+            # Now submit an extreme outlier: score=10.0 is many std-devs from mean~1.0
+            guard.add_example("outlier", " resp", score=10.0)
             assert guard.review_queue_size() > 0
 
     def test_pop_review_queue_clears_it(self):
