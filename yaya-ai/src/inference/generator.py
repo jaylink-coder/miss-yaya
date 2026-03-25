@@ -55,6 +55,7 @@ class TextGenerator:
         top_p: Optional[float] = None,
         top_k: Optional[int] = None,
         do_sample: Optional[bool] = None,
+        feedback: Optional[float] = None,
     ) -> str:
         """Generate text from a prompt.
 
@@ -66,6 +67,10 @@ class TextGenerator:
             top_p: Override config.top_p.
             top_k: Override config.top_k.
             do_sample: Override config.do_sample.
+            feedback: Optional scalar score for this generation (> 0 = positive,
+                      <= 0 = negative).  When provided and an OnlineLearner is
+                      attached, the (prompt, response) pair is added to the
+                      online learning buffer and may trigger a micro-finetune.
 
         Returns:
             Generated text (prompt + continuation).
