@@ -38,6 +38,7 @@ import torch.nn.functional as F
 
 if TYPE_CHECKING:
     from src.training.ewc import EWC
+    from src.training.synthetic_replay import SyntheticReplay
 
 
 # ---------------------------------------------------------------------------
