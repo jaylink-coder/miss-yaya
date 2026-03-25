@@ -315,7 +315,14 @@ class TextGenerator:
             import dataclasses
             config = dataclasses.replace(config, **overrides)
 
-        input_ids = self.tokenizer.encode(prompt, add_bos=True)
+        # Inject persistent memory context
+        actual_prompt = prompt
+        if self.memory is not None:
+            mem_ctx = self.memory.format_for_prompt()
+            if mem_ctx:
+                actual_prompt = f"[Memory context]\n{mem_ctx}\n\n{prompt}"
+
+        input_ids = self.tokenizer.encode(actual_prompt, add_bos=True)
         input_tensor = torch.tensor([input_ids], dtype=torch.long, device=self.device)
 
         stop_ids = set(config.stop_token_ids or [])
@@ -363,6 +370,13 @@ class TextGenerator:
             yield token_text
 
             input_tensor = next_token.unsqueeze(0)
+
+        # Update memory from the completed stream
+        if self.memory is not None:
+            prompt_token_count = len(input_ids)
+            response_only = self.tokenizer.decode(generated_ids[prompt_token_count:])
+            self.memory.extract_from_text(prompt)
+            self.memory.extract_from_text(response_only)
 
         # Online learning — submit full response after stream completes.
         # Use token-boundary slicing (not character slicing).
