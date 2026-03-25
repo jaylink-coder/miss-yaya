@@ -197,6 +197,36 @@ class Trainer:
                 self.online_learner = ElasticGuard(self.online_learner, elastic_cfg)
                 print("ElasticGuard enabled — rollback, circuit breaker, and feedback validation active.")
 
+        # Synthetic replay — generative rehearsal of past-task anchors
+        self.synthetic_replay = None
+        if getattr(config, "synthetic_replay_enabled", False):
+            from src.training.synthetic_replay import SyntheticReplay, ReplayConfig
+            if tokenizer is None:
+                raise ValueError(
+                    "synthetic_replay_enabled=True requires a tokenizer — "
+                    "pass tokenizer= to Trainer.__init__"
+                )
+            replay_cfg = ReplayConfig(
+                num_anchors=getattr(config, "synthetic_replay_anchors", 20),
+                samples_per_anchor=getattr(config, "synthetic_replay_samples", 2),
+                max_new_tokens=getattr(config, "synthetic_replay_max_tokens", 64),
+                replay_weight=getattr(config, "synthetic_replay_weight", 0.3),
+            )
+            self.synthetic_replay = SyntheticReplay(
+                self.unwrapped_model, tokenizer, replay_cfg
+            )
+            # Wire into OnlineLearner if it's the raw type (not ElasticGuard-wrapped)
+            if isinstance(self.online_learner, OnlineLearner):
+                self.online_learner.synthetic_replay = self.synthetic_replay
+            print(f"SyntheticReplay enabled (anchors={replay_cfg.num_anchors}, weight={replay_cfg.replay_weight})")
+
+        # Forgetting tracker — continual learning metrics across eval phases
+        self.forgetting_tracker = None
+        if getattr(config, "track_forgetting", False):
+            from src.training.continual_metrics import ForgettingTracker
+            self.forgetting_tracker = ForgettingTracker()
+            print("ForgettingTracker enabled — recording per-task scores across eval phases.")
+
         # Training state
         self.global_step = 0
         self.epoch = 0
