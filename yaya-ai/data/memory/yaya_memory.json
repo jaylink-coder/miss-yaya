@@ -796,5 +796,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-25T00:41:36.845332"
+  },
+  {
+    "id": 114,
+    "content": "Q406 Neutron star: 1.4-2 M_sun in 20km, 10^17 kg/m^3, magnetars 10^15 T; pulsars 716 Hz; LGM-1 discovery Bell Burnell",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:28:19.968070"
+  },
+  {
+    "id": 115,
+    "content": "Q407 Cognitive dissonance (Festinger 1957): inconsistent cognitions create tension; $1/$20 experiment; effort justification; belief perseverance",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:28:19.992772"
+  },
+  {
+    "id": 116,
+    "content": "Q408 Catalysts: lower activation energy via alternative pathway, regenerated after each cycle; types: homogeneous/heterogeneous/enzyme; don't change ΔG",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:28:20.015572"
+  },
+  {
+    "id": 117,
+    "content": "Q409 AI ⊃ ML ⊃ Deep Learning; AlexNet 2012 ImageNet breakthrough; DL = hierarchical reps via many-layer networks",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:28:20.037058"
+  },
+  {
+    "id": 118,
+    "content": "Q410 Enlightenment 1685-1800: Locke/Voltaire/Hume/Kant/Smith; natural rights, separation of powers; American/French revolutions",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:28:20.053732"
   }
 ]

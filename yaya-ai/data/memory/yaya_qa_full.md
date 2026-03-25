@@ -4882,3 +4882,116 @@ Modern shift: railways/roads broke river monopoly but major cities still follow 
 **Rating: 8.5/10**
 
 ---
+
+### Q406 — Astronomy
+**What is a neutron star and what are its extreme properties?**
+
+A neutron star is the collapsed core of a massive star (8-20 solar masses) after a supernova. Electrons and protons merge into neutrons — nuclear matter held up by neutron degeneracy pressure.
+
+Extreme properties:
+- Mass: 1.4-2+ solar masses in ~20 km diameter
+- Density: ~10^17 kg/m^3 — a teaspoon weighs ~1 billion tonnes
+- Gravity: surface ~2x10^11 m/s^2 (20 billion times Earth's)
+- Magnetic field: up to 10^15 Tesla (magnetars)
+- Rotation: pulsars spin 1-700 Hz; PSR J1748-2446ad at 716 Hz moves equator at ~0.24c
+- Temperature: ~10^11 K at birth; cools to ~10^6 K
+
+Pulsars: rotating neutron stars with beamed radio emission — cosmic lighthouses. So precise (nanosecond) they were mistaken for alien signals (LGM-1, 1967, Jocelyn Bell Burnell).
+
+Exotic interior: possible quark-gluon plasma at core; neutron superfluidity. Physics at limits of known matter.
+
+**Rating: 9.0/10**
+
+---
+
+### Q407 — Psychology
+**What is cognitive dissonance and how do people resolve it?**
+
+Festinger (1957): holding two psychologically inconsistent cognitions creates uncomfortable tension (dissonance), motivating reduction.
+
+Classic experiment (Festinger & Carlsmith 1959): $1 vs $20 to lie about boring task. $1 group rated task as more enjoyable — insufficient external justification, so changed attitude to match behaviour.
+
+Resolution strategies:
+1. Change a belief
+2. Add consonant cognitions ('I exercise so smoking balances out')
+3. Trivialise the inconsistency
+4. Change behaviour (least common)
+
+Phenomena: post-purchase dissonance (rationalising expensive buys); effort justification (things you suffered for feel more valuable — hazing); belief perseverance (doubling down when proved wrong — Festinger's doomsday cult).
+
+Modern view: dissonance requires self-relevant, freely chosen behaviour. Self-affirmation can buffer it.
+
+**Rating: 9.0/10**
+
+---
+
+### Q408 — Chemistry
+**How do catalysts work and why aren't they consumed?**
+
+A catalyst increases reaction rate without being consumed. It provides an alternative pathway with lower activation energy.
+
+Mechanism:
+1. Reactants bind to catalyst (adsorption or complex formation)
+2. Transition state is stabilised — less energy needed
+3. Products form and detach, regenerating the catalyst
+
+Because the catalyst is regenerated, one molecule can facilitate millions of cycles.
+
+Types:
+- Homogeneous: same phase as reactants (H+ in acid hydrolysis)
+- Heterogeneous: different phase (platinum in catalytic converters; iron in Haber process)
+- Enzymes: protein catalysts; 10^6-10^12 rate increase over uncatalysed
+
+Energy diagram: catalyst lowers activation energy but not ΔG — it speeds approach to equilibrium but cannot make a thermodynamically unfavourable reaction spontaneous.
+
+Catalyst poisons (e.g. H2S, CO in Haber process) block active sites.
+
+**Rating: 9.0/10**
+
+---
+
+### Q409 — Computer Science
+**What is the difference between machine learning, deep learning, and AI?**
+
+Nested concepts, not synonyms:
+
+AI (broadest): any technique making computers solve tasks needing human intelligence — rules, search, expert systems, ML.
+
+Machine Learning (subset of AI): systems that learn from data without explicit programming. Supervised, unsupervised, reinforcement learning.
+
+Deep Learning (subset of ML): neural networks with many layers learning hierarchical representations. Enabled by large datasets, GPUs, backpropagation.
+
+Hierarchy: AI ⊃ Machine Learning ⊃ Deep Learning
+
+Why deep learning dominated post-2012: ImageNet — AlexNet (Hinton) achieved 15.3% error vs ~26% for prior methods.
+
+Practical distinction:
+- Rule-based AI: chess engine with hand-coded evaluation
+- Classical ML: random forest on labelled data
+- Deep Learning: CNN on raw images; LLM trained on text
+
+Current frontier: LLMs, diffusion models, RL from human feedback.
+
+**Rating: 8.5/10**
+
+---
+
+### Q410 — History
+**What was the Enlightenment and why did it matter?**
+
+Enlightenment (~1685-1800): intellectual movement emphasising reason, individual rights, scepticism of authority, empirical inquiry.
+
+Key figures: Locke (natural rights, social contract), Voltaire (tolerance, free speech), Rousseau (general will), Montesquieu (separation of powers), Hume (empiricism, scepticism), Kant (sapere aude, categorical imperative), Smith (free markets, Wealth of Nations 1776).
+
+Why it mattered:
+- American Revolution 1776: Declaration of Independence — Lockean natural rights
+- French Revolution 1789: liberty/equality/fraternity — Enlightenment ideals, violently distorted
+- Abolition: rational arguments against slavery
+- Democracy: constitutional law, rights of citizens
+- Science: empirical method, separation from church
+
+Counter-currents: Romantics reacted against cold rationalism. Enlightenment ideals co-existed with colonialism — the contradictions remain contentious.
+
+**Rating: 9.0/10**
+
+---

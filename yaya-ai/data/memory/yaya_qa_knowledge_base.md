@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 115
+Total entries: 119
 
 ---
 
@@ -226,8 +226,18 @@ Total entries: 115
 
 **[110]** Q402 EMH: weak holds, semi-strong contested; momentum/value anomalies; Shiller/Thaler behavioural critique; bubbles exist
 
-**[111]** Q403 Neuroplasticity: Hebb's rule + LTP (AMPA receptor insertion); cortical remapping (Merzenich monkeys, Maguire taxi drivers, musician maps); neurogenesis in hippocampal dentate gyrus (exercise + enrichment); CIMT for stroke recovery; limits: critical periods (Hubel & Wiesel, Genie), Nogo-A/MAG/perineuronal nets inhibit adult rewiring, age degrades cholinergic neuromodulation — but plasticity never reaches zero
+**[111]** Q403 Neuroplasticity: LTP/remapping/neurogenesis; taxi drivers hippocampus, stroke recovery; limits: critical periods, age, CNS inhibitors
 
 **[112]** Q404 Goedel incompleteness 1931: true unprovable statements in any consistent system; kills Hilbert programme; linked to halting problem
 
 **[113]** Q405 River civilisations: water/silt/transport(10x cheaper)/control/defence; Nile/Tigris/Indus/Yellow River; modern roads broke monopoly
+
+**[114]** Q406 Neutron star: 1.4-2 M_sun in 20km, 10^17 kg/m^3, magnetars 10^15 T; pulsars 716 Hz; LGM-1 discovery Bell Burnell
+
+**[115]** Q407 Cognitive dissonance (Festinger 1957): inconsistent cognitions create tension; $1/$20 experiment; effort justification; belief perseverance
+
+**[116]** Q408 Catalysts: lower activation energy via alternative pathway, regenerated after each cycle; types: homogeneous/heterogeneous/enzyme; don't change ΔG
+
+**[117]** Q409 AI ⊃ ML ⊃ Deep Learning; AlexNet 2012 ImageNet breakthrough; DL = hierarchical reps via many-layer networks
+
+**[118]** Q410 Enlightenment 1685-1800: Locke/Voltaire/Hume/Kant/Smith; natural rights, separation of powers; American/French revolutions
