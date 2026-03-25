@@ -509,6 +509,12 @@ class Trainer:
                 self.ema.save(os.path.join(best_ckpt, "ema.pt"))
             if self.ewc is not None and self.ewc.fisher:
                 self.ewc.save(os.path.join(best_ckpt, "ewc.pt"))
+            if self.lora_enabled:
+                from src.model.lora import lora_state_dict
+                torch.save(
+                    lora_state_dict(self.unwrapped_model),
+                    os.path.join(best_ckpt, "lora_adapters.pt"),
+                )
 
         # Restore original weights after EMA eval
         if self.ema is not None:
