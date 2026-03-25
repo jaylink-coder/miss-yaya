@@ -260,11 +260,17 @@ def convert_to_moe(model: nn.Module, config: MoEConfig) -> nn.Module:
             bias=bias,
         )
 
-        # Copy dense weights into expert 0 to preserve existing knowledge
+        # Copy dense weights (and biases if present) into expert 0
         with torch.no_grad():
             moe_layer.experts[0].gate_proj.weight.copy_(module.gate_proj.weight)
             moe_layer.experts[0].up_proj.weight.copy_(module.up_proj.weight)
             moe_layer.experts[0].down_proj.weight.copy_(module.down_proj.weight)
+            if module.gate_proj.bias is not None:
+                moe_layer.experts[0].gate_proj.bias.copy_(module.gate_proj.bias)
+            if module.up_proj.bias is not None:
+                moe_layer.experts[0].up_proj.bias.copy_(module.up_proj.bias)
+            if module.down_proj.bias is not None:
+                moe_layer.experts[0].down_proj.bias.copy_(module.down_proj.bias)
 
         # Replace the module in its parent
         parent_name, _, attr = name.rpartition(".")
