@@ -252,6 +252,13 @@ class ElasticGuard:
             return False
         return True
 
+    def _cooldown_remaining(self) -> float:
+        """Return seconds remaining in the current cooldown (0.0 if not tripped)."""
+        if not self._tripped or self._trip_time is None:
+            return 0.0
+        elapsed = time.monotonic() - self._trip_time
+        return max(0.0, self.config.cooldown_seconds - elapsed)
+
     def _trip(self, reason: str) -> None:
         self._tripped = True
         self._trip_time = time.monotonic()
