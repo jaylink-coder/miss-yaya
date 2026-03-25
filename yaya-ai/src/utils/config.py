@@ -182,6 +182,17 @@ class TrainingConfig:
     human_review_enabled: bool = False
     human_review_z_threshold: float = 3.0
 
+    # Curriculum learning — difficulty-aware training schedule
+    curriculum_enabled: bool = False
+    curriculum_strategy: str = "linear"         # "linear" | "step" | "competence"
+    curriculum_warmup_easy_steps: int = 10_000  # steps before hard examples
+    curriculum_easy_ceiling: float = 0.4        # max difficulty during warmup
+    curriculum_competence_loss_threshold: float = 2.5  # for "competence" strategy
+
+    # Reward model — lightweight scorer for RLHF / auto-feedback quality
+    reward_model_enabled: bool = False
+    reward_model_path: str = ""    # path to saved reward head weights (empty = untrained)
+
 
 def load_model_config(path: str) -> ModelConfig:
     """Load model config from YAML file."""
