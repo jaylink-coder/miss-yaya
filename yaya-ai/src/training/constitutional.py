@@ -198,26 +198,31 @@ class ConstitutionalAI:
             initial_response = self._generate(prompt)
 
         current = initial_response
+        last_revised = initial_response
         history: List[Tuple[str, str, str]] = []
 
         for principle in self.config.get_principles():
             for _ in range(self.config.n_revisions):
-                critique_text = self.critique(prompt, current, principle)
+                # When not chaining, always critique from the original
+                critique_input = current if self.config.chain_revisions else initial_response
 
-                revision_prompt = principle.format_revision(prompt, current, critique_text)
+                critique_text = self.critique(prompt, critique_input, principle)
+
+                revision_prompt = principle.format_revision(prompt, critique_input, critique_text)
                 revised = self._generate(revision_prompt)
                 # Strip "Revised response:" prefix if echoed
                 if "Revised response:" in revised:
                     revised = revised.split("Revised response:", 1)[-1].strip()
 
                 history.append((principle.name, critique_text, revised))
+                last_revised = revised
 
                 if self.config.chain_revisions:
                     current = revised  # Use revised output as input for next cycle
 
         return {
             "original":  initial_response,
-            "revised":   current,
+            "revised":   last_revised,   # Always return the last generated revision
             "critique":  history[-1][1] if history else "",
             "history":   history,
         }
