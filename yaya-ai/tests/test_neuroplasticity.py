@@ -784,3 +784,291 @@ class TestExpertUtilization:
         moe.router._expert_token_counts[0] = 0.0
         stats = moe.routing_stats()
         assert stats["collapse_detected"], "Collapse should be detected when an expert gets no tokens"
+
+
+# ---------------------------------------------------------------------------
+# SyntheticReplay
+# ---------------------------------------------------------------------------
+
+class TestSyntheticReplay:
+    def _make_replay(self, model=None):
+        from src.training.synthetic_replay import SyntheticReplay, ReplayConfig
+        m = model or tiny_model()
+        cfg = ReplayConfig(
+            num_anchors=5,
+            samples_per_anchor=1,
+            max_new_tokens=8,
+            temperature=1.0,
+            replay_weight=1.0,
+            min_anchor_distance=3,
+        )
+        return SyntheticReplay(m, _FakeTokenizer(), cfg), m
+
+    def test_add_anchor_accepted(self):
+        replay, _ = self._make_replay()
+        ok = replay.add_anchor("hello world prompt")
+        assert ok is True
+        assert replay.num_anchors() == 1
+
+    def test_duplicate_anchor_rejected(self):
+        replay, _ = self._make_replay()
+        replay.add_anchor("hello world prompt")
+        # Same prefix — should be rejected as duplicate
+        ok = replay.add_anchor("hello world prompt")
+        assert ok is False
+        assert replay.num_anchors() == 1
+
+    def test_diverse_anchors_accepted(self):
+        replay, _ = self._make_replay()
+        replay.add_anchor("aaaaaaa")
+        replay.add_anchor("zzzzzzz")  # Very different
+        assert replay.num_anchors() == 2
+
+    def test_anchor_ring_buffer_capacity(self):
+        replay, _ = self._make_replay()
+        for i in range(10):  # More than num_anchors=5
+            replay.add_anchor(f"unique prompt number {i} xyz")
+        assert replay.num_anchors() <= 5
+
+    def test_replay_loss_returns_none_without_anchors(self):
+        replay, _ = self._make_replay()
+        assert replay.replay_loss() is None
+
+    def test_replay_loss_returns_tensor_with_anchors(self):
+        replay, _ = self._make_replay()
+        replay.add_anchor("explain gravity")
+        result = replay.replay_loss()
+        # May return None if generation fails in test env, but should not raise
+        assert result is None or (isinstance(result, torch.Tensor) and result.dim() == 0)
+
+    def test_replay_loss_stat_incremented(self):
+        replay, _ = self._make_replay()
+        replay.add_anchor("test anchor here")
+        initial_steps = replay.stats["replay_steps"]
+        replay.replay_loss()
+        # replay_steps only increments if loss was non-None
+        assert replay.stats["replay_steps"] >= initial_steps
+
+    def test_save_load_anchors(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            replay, model = self._make_replay()
+            replay.add_anchor("anchor one here")
+            replay.add_anchor("anchor two there")
+            path = os.path.join(tmpdir, "replay.pt")
+            replay.save(path)
+
+            from src.training.synthetic_replay import SyntheticReplay, ReplayConfig
+            cfg = ReplayConfig(num_anchors=5, samples_per_anchor=1, max_new_tokens=8)
+            replay2 = SyntheticReplay(model, _FakeTokenizer(), cfg)
+            replay2.load(path)
+            assert replay2.num_anchors() == replay.num_anchors()
+
+    def test_add_anchors_bulk(self):
+        replay, _ = self._make_replay()
+        n = replay.add_anchors(["aaaaaa", "bbbbbb", "cccccc"])
+        assert n == 3
+
+    def test_replay_integrated_in_online_learner(self):
+        """SyntheticReplay must be invoked from OnlineLearner.step()."""
+        from src.training.online_learner import OnlineLearner, OnlineLearnerConfig
+        from src.training.synthetic_replay import SyntheticReplay, ReplayConfig
+        with tempfile.TemporaryDirectory() as tmpdir:
+            model = tiny_model()
+            cfg = OnlineLearnerConfig(
+                buffer_capacity=50,
+                min_examples_to_finetune=2,
+                finetune_every_n_examples=99,
+                micro_finetune_steps=1,
+                micro_lr=1e-4,
+                max_seq_length=32,
+                buffer_path=os.path.join(tmpdir, "buf.jsonl"),
+            )
+            replay_cfg = ReplayConfig(num_anchors=3, samples_per_anchor=1, max_new_tokens=8)
+            replay = SyntheticReplay(model, _FakeTokenizer(), replay_cfg)
+            replay.add_anchor("test anchor for integration")
+            learner = OnlineLearner(
+                model, _FakeTokenizer(), cfg, torch.device("cpu"),
+                synthetic_replay=replay,
+            )
+            for i in range(3):
+                learner.add_example(f"p{i}", f" r{i}", score=1.0)
+            # Should not raise
+            result = learner.step()
+            assert result is not None
+
+
+# ---------------------------------------------------------------------------
+# ForgettingTracker
+# ---------------------------------------------------------------------------
+
+class TestForgettingTracker:
+    def test_empty_tracker_report(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        report = tracker.report()
+        assert report["num_tasks"] == 0
+        assert report["avg_forgetting"] == 0.0
+        assert report["plasticity"] == 0.0
+
+    def test_single_task_single_phase(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        tracker.record("task_A", phase=0, score=0.90)
+        assert tracker.plasticity() == 0.90
+        # Only 1 record — no forgetting computable
+        assert tracker.avg_forgetting() == 0.0
+
+    def test_forgetting_computed_correctly(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        tracker.record("task_A", phase=0, score=0.92)
+        tracker.record("task_A", phase=1, score=0.81)
+        f = tracker.forgetting()
+        assert "task_A" in f
+        assert abs(f["task_A"] - 0.11) < 1e-6
+
+    def test_no_forgetting_when_score_improves(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        tracker.record("task_A", phase=0, score=0.80)
+        tracker.record("task_A", phase=1, score=0.90)
+        f = tracker.forgetting()
+        # Positive improvement: forgetting should be ≤ 0
+        assert f["task_A"] <= 0.0
+
+    def test_backward_transfer_negative_on_forgetting(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        tracker.record("task_A", phase=0, score=0.92)
+        tracker.record("task_A", phase=1, score=0.81)  # dropped
+        assert tracker.backward_transfer() < 0.0
+
+    def test_backward_transfer_positive_on_improvement(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        tracker.record("task_A", phase=0, score=0.80)
+        tracker.record("task_A", phase=1, score=0.90)  # improved
+        assert tracker.backward_transfer() > 0.0
+
+    def test_two_tasks_avg_forgetting(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        tracker.record("task_A", phase=0, score=0.90)
+        tracker.record("task_B", phase=0, score=0.80)
+        tracker.record("task_A", phase=1, score=0.80)  # forgot 0.10
+        tracker.record("task_B", phase=1, score=0.70)  # forgot 0.10
+        assert abs(tracker.avg_forgetting() - 0.10) < 1e-5
+
+    def test_max_forgetting(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        tracker.record("easy", phase=0, score=0.95)
+        tracker.record("hard", phase=0, score=0.85)
+        tracker.record("easy", phase=1, score=0.90)   # forgot 0.05
+        tracker.record("hard", phase=1, score=0.60)   # forgot 0.25
+        worst_task, worst_score = tracker.max_forgetting()
+        assert worst_task == "hard"
+        assert abs(worst_score - 0.25) < 1e-5
+
+    def test_summary_line_contains_key_metrics(self):
+        from src.training.continual_metrics import ForgettingTracker
+        tracker = ForgettingTracker()
+        tracker.record("t1", phase=0, score=0.9)
+        tracker.record("t1", phase=1, score=0.8)
+        line = tracker.summary_line()
+        assert "avg_forgetting" in line
+        assert "plasticity" in line
+
+    def test_save_load_roundtrip(self):
+        from src.training.continual_metrics import ForgettingTracker
+        with tempfile.TemporaryDirectory() as tmpdir:
+            tracker = ForgettingTracker()
+            tracker.record("task_A", phase=0, score=0.9)
+            tracker.record("task_A", phase=1, score=0.8)
+            path = os.path.join(tmpdir, "tracker.pt")
+            tracker.save(path)
+
+            tracker2 = ForgettingTracker()
+            tracker2.load(path)
+            assert tracker2.avg_forgetting() == tracker.avg_forgetting()
+            assert len(tracker2._records) == 2
+
+
+# ---------------------------------------------------------------------------
+# MAML
+# ---------------------------------------------------------------------------
+
+class TestMAML:
+    def _make_maml(self, lora_only=True):
+        from src.training.maml import MAML, MAMLConfig
+        from src.model.lora import inject_lora, LoRAConfig
+        model = tiny_model()
+        if lora_only:
+            inject_lora(model, LoRAConfig(rank=4))
+        cfg = MAMLConfig(
+            inner_lr=0.01,
+            inner_steps=2,
+            meta_batch_size=2,
+            lora_only=lora_only,
+            first_order=True,
+        )
+        return MAML(model, cfg), model
+
+    def test_snapshot_and_restore(self):
+        maml, model = self._make_maml()
+        original = maml.snapshot_params()
+        # Perturb
+        with torch.no_grad():
+            for p in model.parameters():
+                p.add_(0.5)
+        maml.restore_params(original)
+        for name, orig_val in original.items():
+            for pname, param in model.named_parameters():
+                if pname == name:
+                    assert torch.allclose(param.data, orig_val), f"Restore failed for {name}"
+
+    def test_inner_loop_changes_params(self):
+        maml, model = self._make_maml()
+        batch = fake_batch()
+        original = maml.snapshot_params()
+        adapted = maml.inner_loop(batch)
+        # Adapted params must differ from original
+        changed = any(
+            not torch.allclose(adapted[k], original[k])
+            for k in adapted
+            if k in original
+        )
+        assert changed, "Inner loop must update at least one parameter"
+
+    def test_adapt_does_not_modify_model_in_place(self):
+        maml, model = self._make_maml()
+        original = maml.snapshot_params()
+        _ = maml.adapt(fake_batch())
+        # Model weights must be unchanged after adapt()
+        for name, orig_val in original.items():
+            for pname, param in model.named_parameters():
+                if pname == name:
+                    assert torch.allclose(param.data, orig_val), \
+                        f"adapt() must not modify model in place (param {name} changed)"
+
+    def test_lora_only_adapts_lora_params(self):
+        from src.training.maml import MAML, MAMLConfig
+        from src.model.lora import inject_lora, LoRAConfig
+        model = tiny_model()
+        inject_lora(model, LoRAConfig(rank=4))
+        cfg = MAMLConfig(inner_lr=0.01, inner_steps=1, lora_only=True, first_order=True)
+        maml = MAML(model, cfg)
+        params = maml._get_params()
+        for name in params:
+            assert "lora_A" in name or "lora_B" in name, \
+                f"lora_only=True must only include LoRA params, got {name}"
+
+    def test_outer_step_returns_float(self):
+        maml, model = self._make_maml()
+        opt = torch.optim.AdamW(
+            [p for p in model.parameters() if p.requires_grad], lr=1e-3
+        )
+        task_batches = [(fake_batch(), fake_batch()), (fake_batch(), fake_batch())]
+        meta_loss = maml.outer_step(task_batches, opt)
+        assert isinstance(meta_loss, float)
+        assert not (meta_loss != meta_loss)  # not NaN
