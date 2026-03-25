@@ -21,6 +21,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from src.utils.config import _resolve_moe_layer
+
 
 # ---------------------------------------------------------------------------
 # Config
