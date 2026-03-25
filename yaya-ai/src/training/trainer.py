@@ -430,6 +430,12 @@ class Trainer:
                         self.ema.save(os.path.join(ckpt_dir, "ema.pt"))
                     if self.ewc is not None and self.ewc.fisher:
                         self.ewc.save(os.path.join(ckpt_dir, "ewc.pt"))
+                    if self.lora_enabled:
+                        from src.model.lora import lora_state_dict
+                        torch.save(
+                            lora_state_dict(self.unwrapped_model),
+                            os.path.join(ckpt_dir, "lora_adapters.pt"),
+                        )
                     barrier()
 
     @torch.no_grad()
