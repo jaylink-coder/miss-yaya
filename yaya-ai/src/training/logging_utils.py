@@ -160,7 +160,11 @@ class TrainingLogger:
     def log_model_info(self, info: str):
         """Log model architecture info."""
         if self.is_main:
-            print(info, flush=True)
+            # Encode safely for Windows terminals that don't support full Unicode
+            safe = info.encode(sys.stdout.encoding or "utf-8", errors="replace").decode(
+                sys.stdout.encoding or "utf-8", errors="replace"
+            )
+            print(safe, flush=True)
 
     def finish(self):
         """Finalize logging (close W&B run)."""
