@@ -151,6 +151,51 @@ sft-1.5b:
 		--train_config configs/training/sft_1_5b.yaml \
 		--resume checkpoints/yaya-1.5b/latest
 
+# LoRA fine-tuning (parameter-efficient, trains ~0.5% of params)
+lora-sft-1.5b:
+	python scripts/train_sft.py \
+		--model_config configs/model/yaya_1_5b.yaml \
+		--train_config configs/training/lora_sft_1_5b.yaml \
+		--pretrain_checkpoint checkpoints/yaya-1.5b/latest
+
+# LoRA + EWC continual learning (fine-tune new domain without forgetting)
+lora-continual-1.5b:
+	python scripts/train_sft.py \
+		--model_config configs/model/yaya_1_5b.yaml \
+		--train_config configs/training/lora_sft_continual_1_5b.yaml \
+		--pretrain_checkpoint checkpoints/yaya-1.5b-lora-sft/latest \
+		--compute_ewc_fisher
+
+# Merge LoRA adapters into base weights and export a standard checkpoint
+merge-lora-1.5b:
+	python -c "\
+import torch; \
+from src.utils.config import load_model_config; \
+from src.model.yaya_model import YayaForCausalLM; \
+from src.model.lora import inject_lora, merge_lora, LoRAConfig; \
+cfg = load_model_config('configs/model/yaya_1_5b.yaml'); \
+model = YayaForCausalLM(cfg); \
+inject_lora(model, LoRAConfig(rank=16)); \
+adapters = torch.load('checkpoints/yaya-1.5b-lora-sft/latest/lora_adapters.pt', weights_only=True); \
+model.load_state_dict(adapters, strict=False); \
+merge_lora(model); \
+torch.save(model.state_dict(), 'checkpoints/yaya-1.5b-lora-merged/model.pt'); \
+print('Merged checkpoint saved.')"
+
+# MoE pre-training
+train-moe-1.5b:
+	torchrun --nproc_per_node=8 scripts/train.py \
+		--model_config configs/model/yaya_1_5b_moe.yaml \
+		--train_config configs/training/train_1_5b.yaml \
+		--resume checkpoints/yaya-1.5b-moe/latest
+
+# MoE SFT
+sft-moe-1.5b:
+	torchrun --nproc_per_node=8 scripts/train.py \
+		--model_config configs/model/yaya_1_5b_moe.yaml \
+		--train_config configs/training/sft_1_5b.yaml \
+		--resume checkpoints/yaya-1.5b-moe/latest
+
 # DPO (Alignment)
 align-dpo-1b:
 	python scripts/align_dpo_hf.py \
