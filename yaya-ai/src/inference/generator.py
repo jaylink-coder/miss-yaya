@@ -340,3 +340,9 @@ class TextGenerator:
             yield token_text
 
             input_tensor = next_token.unsqueeze(0)
+
+        # Online learning — submit full response after stream completes
+        if feedback is not None and self.online_learner is not None:
+            full_response = self.tokenizer.decode(generated_ids)
+            response_only = full_response[len(prompt):]
+            self.online_learner.add_example(prompt, response_only, score=feedback)
