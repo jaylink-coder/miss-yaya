@@ -95,8 +95,15 @@ class TextGenerator:
             import dataclasses
             config = dataclasses.replace(config, **overrides)
 
+        # Inject persistent memory context into the prompt
+        actual_prompt = prompt
+        if self.memory is not None:
+            mem_ctx = self.memory.format_for_prompt()
+            if mem_ctx:
+                actual_prompt = f"[Memory context]\n{mem_ctx}\n\n{prompt}"
+
         # Tokenize prompt
-        input_ids = self.tokenizer.encode(prompt, add_bos=True)
+        input_ids = self.tokenizer.encode(actual_prompt, add_bos=True)
         input_tensor = torch.tensor([input_ids], dtype=torch.long, device=self.device)
 
         # Set up stop tokens
@@ -154,6 +161,13 @@ class TextGenerator:
 
         # Decode generated tokens
         output_text = self.tokenizer.decode(generated_ids)
+
+        # Update memory: extract facts from both the user prompt and the response
+        if self.memory is not None:
+            prompt_token_count = len(input_ids)
+            response_only = self.tokenizer.decode(generated_ids[prompt_token_count:])
+            self.memory.extract_from_text(prompt)
+            self.memory.extract_from_text(response_only)
 
         # Online learning — submit feedback if provided.
         # Use token-boundary slicing (not character slicing) to avoid tokenizer
