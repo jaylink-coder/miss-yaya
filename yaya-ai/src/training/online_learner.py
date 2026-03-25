@@ -73,11 +73,13 @@ class OnlineLearner:
         tokenizer: Any,
         config: OnlineLearnerConfig,
         device: torch.device,
+        ewc: Optional["EWC"] = None,
     ):
         self.model = model
         self.tokenizer = tokenizer
         self.config = config
         self.device = device
+        self.ewc = ewc  # Optional EWC regulariser — prevents forgetting during micro-finetune
 
         self.buffer: deque[dict] = deque(maxlen=config.buffer_capacity)
         self.examples_since_last_finetune = 0
