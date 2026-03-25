@@ -1,0 +1,51 @@
+# Yaya-1.5B MoE (Mixture-of-Experts) Model Configuration
+#
+# Sparse MoE: 8 experts per FFN layer, top-2 routing.
+# Applied to alternating layers (odd-indexed: 1, 3, 5, ..., 23).
+#
+# Parameter count: ~4x dense FFN params, but FLOPs per token ~2x (top-2 of 8).
+# Load-balance auxiliary loss (coeff=0.01) prevents expert collapse.
+#
+# To convert a trained dense checkpoint to MoE:
+#   from src.model.moe import convert_to_moe, MoEConfig
+#   moe_cfg = MoEConfig(enabled=True, num_experts=8, top_k=2)
+#   model = convert_to_moe(model, moe_cfg)
+
+model_name: "yaya-1.5b-moe"
+model_type: "yaya"
+
+architecture:
+  vocab_size: 64000
+  hidden_size: 2048
+  intermediate_size: 5632
+  num_hidden_layers: 24
+  num_attention_heads: 16
+  num_key_value_heads: 4
+  max_position_embeddings: 4096
+  rope_theta: 10000.0
+  rms_norm_eps: 1.0e-5
+  tie_word_embeddings: true
+  hidden_act: "silu"
+  attention_dropout: 0.0
+  attention_bias: false
+  mlp_bias: false
+
+  # MoE — replaces dense FFN in alternating layers
+  moe_enabled: true
+  moe_num_experts: 8                # Total experts per MoE layer
+  moe_top_k: 2                      # Experts activated per token
+  moe_layers: "alternate"           # "all", "alternate", or "0,2,4,..."
+  moe_load_balance_coeff: 0.01      # Switch Transformer aux loss weight
+  moe_router_jitter: 0.01           # Training noise for load balance
+
+vision:
+  enabled: false
+  image_size: 336
+  patch_size: 14
+  vision_hidden_size: 1024
+  vision_layers: 24
+  vision_heads: 16
+  projection_dim: 2048
+
+dtype: "bfloat16"
+initializer_range: 0.02
