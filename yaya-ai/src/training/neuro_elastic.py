@@ -149,13 +149,45 @@ class ElasticGuard:
             # 3. Clamp score to safe range
             score = max(self.config.score_min, min(self.config.score_max, score))
 
-            # 4. Record submission time for rate limiting
+            # 4. Human-in-the-loop: flag anomalous scores for review
+            if self.config.human_review_enabled and self._is_score_anomalous(score):
+                self._review_queue.append({
+                    "prompt": prompt,
+                    "response": response,
+                    "score": score,
+                    "timestamp": time.monotonic(),
+                    "reason": "score_anomaly",
+                })
+                self.stats["examples_flagged_for_review"] += 1
+                # Still accept, but operator should review before trusting this signal
+
+            # 5. Record submission time for rate limiting
             self._submission_times.append(time.monotonic())
+            self._score_window.append(score)
             self.stats["examples_accepted"] += 1
 
         # Delegate outside lock to avoid blocking
         self.learner.add_example(prompt, response, score)
         return True
+
+    def pop_review_queue(self) -> List[Dict[str, Any]]:
+        """Return and clear all examples flagged for human review.
+
+        Called by the operator's oversight loop.  Typical use:
+            items = guard.pop_review_queue()
+            for item in items:
+                human_label = human_annotate(item)
+                if human_label["approved"]:
+                    guard.learner.add_example(...)
+        """
+        with self._lock:
+            items = list(self._review_queue)
+            self._review_queue.clear()
+        return items
+
+    def review_queue_size(self) -> int:
+        """Number of examples currently waiting for human review."""
+        return len(self._review_queue)
 
     def step(self) -> Optional[float]:
         """Run a guarded micro-finetune step with rollback and circuit breaker."""
