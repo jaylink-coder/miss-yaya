@@ -123,7 +123,8 @@ class MoERouter(nn.Module):
         # Select top-K experts per token
         router_weights, selected_experts = torch.topk(router_probs, self.top_k, dim=-1)
         # Renormalise top-K weights so they sum to 1
-        router_weights = router_weights / router_weights.sum(dim=-1, keepdim=True)
+        # Clamp denominator to avoid divide-by-zero from numerical instability
+        router_weights = router_weights / router_weights.sum(dim=-1, keepdim=True).clamp(min=1e-8)
         router_weights = router_weights.to(hidden_states.dtype)
 
         # Load-balance auxiliary loss (Switch Transformer Eq. 4-5)
