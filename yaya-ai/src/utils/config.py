@@ -245,4 +245,9 @@ def load_training_config(path: str) -> TrainingConfig:
         lora_target_modules=training.get("lora_target_modules", "q_proj,k_proj,v_proj,o_proj"),
         ewc_lambda=training.get("ewc_lambda", 0.0),
         ewc_fisher_samples=training.get("ewc_fisher_samples", 200),
+        online_learning_enabled=training.get("online_learning_enabled", False),
+        online_buffer_capacity=training.get("online_buffer_capacity", 1000),
+        online_finetune_every=training.get("online_finetune_every", 50),
+        online_micro_steps=training.get("online_micro_steps", 10),
+        online_micro_lr=training.get("online_micro_lr", 5e-5),
     )
