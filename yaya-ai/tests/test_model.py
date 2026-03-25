@@ -86,8 +86,9 @@ class TestYayaModel:
         config = get_test_config()
         model = YayaModel(config)
         input_ids = torch.randint(0, 256, (2, 16))
-        hidden_states, _ = model(input_ids)
+        hidden_states, _, moe_aux = model(input_ids)
         assert hidden_states.shape == (2, 16, 64)
+        assert moe_aux is None  # Dense model: no MoE aux loss
 
     def test_causal_lm_output(self):
         config = get_test_config()
