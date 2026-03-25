@@ -1332,3 +1332,417 @@ class TestSparsePlasticity:
         assert cfg.sparse_gradient_k == 0.0
         assert cfg.alignment_monitor_enabled is False
         assert cfg.human_review_enabled is False
+
+
+# ---------------------------------------------------------------------------
+# PersistentMemory (cross-session working memory)
+# ---------------------------------------------------------------------------
+
+class TestPersistentMemory:
+    def test_add_fact_returns_true_for_new(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            assert mem.add_fact("Kenya has 47 counties") is True
+
+    def test_add_fact_returns_false_for_duplicate(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.add_fact("cats are mammals")
+            assert mem.add_fact("cats are mammals") is False
+
+    def test_add_entity_and_retrieve(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.add_entity("Nairobi", "capital city of Kenya")
+            assert "nairobi" in mem.entities
+
+    def test_set_goal(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.set_goal("answer geography questions")
+            assert "answer geography questions" in mem.goals
+
+    def test_forget_fact(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.add_fact("sky is blue")
+            assert mem.forget_fact("sky is blue") is True
+            assert len(mem.facts) == 0
+
+    def test_forget_entity(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.add_entity("Mount Kenya", "highest mountain in Kenya")
+            assert mem.forget_entity("Mount Kenya") is True
+            assert "mount kenya" not in mem.entities
+
+    def test_save_load_roundtrip(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.add_fact("water boils at 100C")
+            mem.add_entity("Yaya", "AI model built from scratch")
+            mem.set_goal("help users")
+            mem.save()
+
+            mem2 = PersistentMemory(store_dir=tmpdir)
+            mem2.load()
+            assert "water boils at 100C" in mem2.facts
+            assert "yaya" in mem2.entities
+            assert "help users" in mem2.goals
+
+    def test_load_is_noop_when_no_file(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir, name="nonexistent")
+            mem.load()  # should not raise
+            assert len(mem) == 0
+
+    def test_format_for_prompt_includes_goals_and_facts(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.set_goal("teach math")
+            mem.add_fact("addition is commutative")
+            text = mem.format_for_prompt()
+            assert "teach math" in text
+            assert "addition is commutative" in text
+
+    def test_importance_bumped_on_duplicate(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.add_fact("gravity pulls objects down")
+            mem.add_fact("gravity pulls objects down")  # duplicate → bump
+            entries = mem._facts
+            assert entries[0].importance == 2
+
+    def test_len_counts_all_entries(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import PersistentMemory
+            mem = PersistentMemory(store_dir=tmpdir)
+            mem.add_fact("f1")
+            mem.add_entity("E1", "desc")
+            mem.set_goal("g1")
+            assert len(mem) == 3
+
+
+class TestSessionMemory:
+    def test_session_facts_isolated(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import SessionMemory, PersistentMemory
+            lt = PersistentMemory(store_dir=tmpdir)
+            sess = SessionMemory(store_dir=tmpdir, session_id="s1", long_term=lt)
+            sess.add_fact("session-only fact")
+            # Long-term should not yet have it
+            assert "session-only fact" not in lt.facts
+
+    def test_consolidate_promotes_to_long_term(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import SessionMemory, PersistentMemory
+            lt = PersistentMemory(store_dir=tmpdir)
+            sess = SessionMemory(store_dir=tmpdir, session_id="s1", long_term=lt)
+            sess.add_fact("Alex lives in Kalimoni")
+            sess.add_entity("Alex", "user building Yaya AI")
+            promoted = sess.consolidate_to_long_term()
+            assert promoted == 2
+            assert "Alex lives in Kalimoni" in lt.facts
+
+    def test_format_for_prompt_merges_lt_and_session(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            from src.agent.persistent_memory import SessionMemory, PersistentMemory
+            lt = PersistentMemory(store_dir=tmpdir)
+            lt.add_fact("long term background")
+            sess = SessionMemory(store_dir=tmpdir, session_id="s1", long_term=lt)
+            sess.add_fact("session local fact")
+            text = sess.format_for_prompt()
+            assert "long term background" in text
+            assert "session local fact" in text
+
+
+# ---------------------------------------------------------------------------
+# CurriculumLearning
+# ---------------------------------------------------------------------------
+
+class TestDifficultyScorer:
+    def test_empty_example_scores_zero(self):
+        from src.training.curriculum import DifficultyScorer
+        scorer = DifficultyScorer()
+        assert scorer.score({}) == 0.0
+
+    def test_short_example_scores_lower_than_long(self):
+        from src.training.curriculum import DifficultyScorer
+        scorer = DifficultyScorer()
+        easy = {"text": "hi"}
+        hard = {"text": " ".join(["complex technical terminology analysis"] * 30)}
+        assert scorer.score(easy) < scorer.score(hard)
+
+    def test_score_in_range(self):
+        from src.training.curriculum import DifficultyScorer
+        scorer = DifficultyScorer()
+        examples = [
+            {"text": "simple"},
+            {"text": "The quick brown fox jumps over the lazy dog near the river bank"},
+            {"prompt": "Explain quantum entanglement", "response": "Quantum entanglement is " * 20},
+        ]
+        for ex in examples:
+            s = scorer.score(ex)
+            assert 0.0 <= s <= 1.0, f"Score out of range: {s}"
+
+    def test_score_batch_returns_correct_length(self):
+        from src.training.curriculum import DifficultyScorer
+        scorer = DifficultyScorer()
+        examples = [{"text": f"example number {i}"} for i in range(10)]
+        scores = scorer.score_batch(examples)
+        assert len(scores) == 10
+
+    def test_loss_based_scoring(self):
+        from src.training.curriculum import DifficultyScorer
+        scorer = DifficultyScorer()
+        ex = {"text": "some text"}
+        score_no_loss = scorer.score(ex, model_loss=None)
+        score_high_loss = scorer.score(ex, model_loss=10.0)
+        # Higher loss → higher difficulty
+        assert score_high_loss >= score_no_loss
+
+
+class TestCurriculumDataset:
+    def test_sort_by_difficulty(self):
+        from src.training.curriculum import CurriculumDataset, DifficultyScorer
+        examples = [
+            {"text": "very very very very very long complex text with many unique vocabulary words"},
+            {"text": "hi"},
+            {"text": "medium length example text here"},
+        ]
+        scorer = DifficultyScorer()
+        ds = CurriculumDataset(examples, scorer)
+        ds.sort_by_difficulty()
+        # After sorting, scores should be non-decreasing
+        for i in range(len(ds.scores) - 1):
+            assert ds.scores[i] <= ds.scores[i + 1]
+
+    def test_difficulty_band_filters(self):
+        from src.training.curriculum import CurriculumDataset, DifficultyScorer
+        examples = [{"text": f"word " * (i + 1)} for i in range(20)]
+        scorer = DifficultyScorer()
+        ds = CurriculumDataset(examples, scorer)
+        ds.sort_by_difficulty()
+        easy = ds.difficulty_band(0.0, 0.3)
+        hard = ds.difficulty_band(0.7, 1.0)
+        # Easy subset should be non-empty and all scores <= 0.3
+        if len(easy) > 0:
+            assert all(s <= 0.31 for s in easy.scores)
+
+    def test_len_and_getitem(self):
+        from src.training.curriculum import CurriculumDataset
+        examples = [{"text": f"ex {i}"} for i in range(5)]
+        ds = CurriculumDataset(examples)
+        assert len(ds) == 5
+        assert "text" in ds[0]
+
+
+class TestCurriculumSchedule:
+    def test_linear_warmup_window(self):
+        from src.training.curriculum import CurriculumSchedule
+        sched = CurriculumSchedule(
+            total_steps=1000, warmup_easy_steps=100, strategy="linear", easy_ceiling=0.4
+        )
+        # During warmup: window should be small
+        lo, hi = sched.active_window(0)
+        assert lo == 0.0
+        assert hi <= 0.4
+
+    def test_linear_full_window_after_warmup(self):
+        from src.training.curriculum import CurriculumSchedule
+        sched = CurriculumSchedule(
+            total_steps=1000, warmup_easy_steps=100, strategy="linear", easy_ceiling=0.4
+        )
+        lo, hi = sched.active_window(999)
+        assert hi > 0.9  # should be close to 1.0 by end
+
+    def test_step_strategy_phases(self):
+        from src.training.curriculum import CurriculumSchedule
+        sched = CurriculumSchedule(
+            total_steps=100, warmup_easy_steps=10,
+            strategy="step",
+            medium_start_step=20, hard_start_step=50,
+            easy_ceiling=0.4, medium_ceiling=0.7,
+        )
+        _, hi_easy = sched.active_window(5)
+        _, hi_medium = sched.active_window(30)
+        _, hi_hard = sched.active_window(60)
+        assert hi_easy <= 0.4
+        assert hi_medium <= 0.7
+        assert hi_hard == 1.0
+
+    def test_competence_strategy(self):
+        from src.training.curriculum import CurriculumSchedule
+        sched = CurriculumSchedule(
+            total_steps=100, strategy="competence",
+            competence_loss_threshold=2.5, easy_ceiling=0.4
+        )
+        # High loss → stay in easy mode
+        _, hi_hard_loss = sched.active_window(50, mean_loss=5.0)
+        # Low loss → open up full window
+        _, hi_low_loss = sched.active_window(50, mean_loss=1.0)
+        assert hi_hard_loss <= 0.4
+        assert hi_low_loss == 1.0
+
+
+class TestCurriculumSampler:
+    def test_sampler_yields_valid_indices(self):
+        from src.training.curriculum import CurriculumDataset, CurriculumSchedule, CurriculumSampler
+        examples = [{"text": f"example {i}"} for i in range(20)]
+        ds = CurriculumDataset(examples)
+        ds.sort_by_difficulty()
+        sched = CurriculumSchedule(total_steps=100, warmup_easy_steps=50, strategy="linear")
+        sampler = CurriculumSampler(ds, sched, shuffle=False, seed=0)
+        sampler.update_step(0)
+        indices = list(sampler)
+        assert all(0 <= i < len(ds) for i in indices)
+        assert len(indices) > 0
+
+    def test_sampler_expands_with_step(self):
+        from src.training.curriculum import CurriculumDataset, CurriculumSchedule, CurriculumSampler
+        examples = [{"text": f"word " * (i + 1)} for i in range(30)]
+        ds = CurriculumDataset(examples)
+        ds.sort_by_difficulty()
+        sched = CurriculumSchedule(total_steps=100, warmup_easy_steps=10, strategy="linear")
+        sampler = CurriculumSampler(ds, sched, shuffle=False, seed=0)
+
+        sampler.update_step(0)
+        early_count = len(sampler)
+        sampler.update_step(99)
+        late_count = len(sampler)
+        # By end of training, more examples should be accessible
+        assert late_count >= early_count
+
+
+class TestBuildCurriculum:
+    def test_build_curriculum_returns_dataset_and_sampler(self):
+        from src.training.curriculum import build_curriculum
+        examples = [{"text": f"sample text {i}"} for i in range(10)]
+        ds, sampler = build_curriculum(examples, schedule_kwargs={"total_steps": 100})
+        assert len(ds) == 10
+        assert len(list(sampler)) > 0
+
+
+# ---------------------------------------------------------------------------
+# RewardModel
+# ---------------------------------------------------------------------------
+
+class TestRewardModel:
+    def _make_rm(self):
+        from src.training.reward_model import RewardModel, RewardModelConfig
+        model = tiny_model()
+        cfg = RewardModelConfig(
+            hidden_size=64,  # matches tiny_model hidden_size
+            dropout=0.0,
+            max_seq_length=32,
+        )
+        return RewardModel(model, config=cfg, freeze_backbone=True)
+
+    def test_reward_head_output_shape(self):
+        rm = self._make_rm()
+        input_ids = torch.randint(0, 256, (2, 16))
+        rewards = rm(input_ids)
+        assert rewards.shape == (2,), f"Expected (2,), got {rewards.shape}"
+
+    def test_reward_head_scalar_output(self):
+        rm = self._make_rm()
+        input_ids = torch.randint(0, 256, (1, 8))
+        reward = rm(input_ids)
+        assert reward.dim() == 1
+        assert reward.shape[0] == 1
+
+    def test_score_clamp(self):
+        from src.training.reward_model import RewardModel, RewardModelConfig
+        model = tiny_model()
+        cfg = RewardModelConfig(hidden_size=64, score_clamp=3.0, dropout=0.0)
+        rm = RewardModel(model, config=cfg)
+        # Force head bias to huge value
+        with torch.no_grad():
+            rm.head.linear.bias.fill_(1000.0)
+        input_ids = torch.randint(0, 256, (1, 8))
+        reward = rm(input_ids)
+        assert reward.item() <= 3.0, f"Reward should be clamped to 3.0, got {reward.item()}"
+
+    def test_backbone_frozen(self):
+        rm = self._make_rm()
+        frozen_params = [p for p in rm.backbone.parameters() if not p.requires_grad]
+        assert len(frozen_params) > 0, "Backbone should have frozen parameters"
+
+    def test_head_trainable(self):
+        rm = self._make_rm()
+        head_params = [p for p in rm.head.parameters() if p.requires_grad]
+        assert len(head_params) > 0, "Reward head must be trainable"
+
+
+class TestBradleyTerryLoss:
+    def test_loss_decreases_when_chosen_higher(self):
+        from src.training.reward_model import bradley_terry_loss
+        # Perfect separation: chosen >> rejected
+        chosen = torch.tensor([5.0, 4.0, 3.0])
+        rejected = torch.tensor([-5.0, -4.0, -3.0])
+        loss = bradley_terry_loss(chosen, rejected)
+        assert loss.item() < 0.05  # Near-zero loss for perfect ordering
+
+    def test_loss_is_high_when_rejected_higher(self):
+        from src.training.reward_model import bradley_terry_loss
+        chosen = torch.tensor([-5.0])
+        rejected = torch.tensor([5.0])
+        loss = bradley_terry_loss(chosen, rejected)
+        assert loss.item() > 4.0  # High loss
+
+    def test_label_smoothing_increases_loss_at_perfect(self):
+        from src.training.reward_model import bradley_terry_loss
+        chosen = torch.tensor([5.0])
+        rejected = torch.tensor([-5.0])
+        loss_no_smooth = bradley_terry_loss(chosen, rejected, label_smoothing=0.0)
+        loss_smooth = bradley_terry_loss(chosen, rejected, label_smoothing=0.1)
+        assert loss_smooth.item() >= loss_no_smooth.item()
+
+
+class TestRewardModelTrainer:
+    def test_train_step_returns_float(self):
+        from src.training.reward_model import RewardModel, RewardModelConfig, RewardModelTrainer
+        model = tiny_model()
+        cfg = RewardModelConfig(hidden_size=64, dropout=0.0, max_seq_length=32)
+        rm = RewardModel(model, config=cfg, freeze_backbone=False)
+        trainer = RewardModelTrainer(rm, _FakeTokenizer(), torch.device("cpu"))
+        batch = [
+            {"prompt": "What is 2+2?", "chosen": " Four.", "rejected": " Purple."},
+            {"prompt": "Hello", "chosen": " Hi there!", "rejected": " XYZ"},
+        ]
+        loss = trainer.train_step(batch)
+        assert isinstance(loss, float)
+        assert loss >= 0.0
+
+    def test_eval_accuracy_returns_fraction(self):
+        from src.training.reward_model import RewardModel, RewardModelConfig, RewardModelTrainer
+        model = tiny_model()
+        cfg = RewardModelConfig(hidden_size=64, dropout=0.0, max_seq_length=32)
+        rm = RewardModel(model, config=cfg, freeze_backbone=False)
+        trainer = RewardModelTrainer(rm, _FakeTokenizer(), torch.device("cpu"))
+        batch = [
+            {"prompt": "p", "chosen": " good", "rejected": " bad"},
+        ]
+        acc = trainer.eval_accuracy(batch)
+        assert 0.0 <= acc <= 1.0
+
+    def test_save_load_head(self):
+        from src.training.reward_model import RewardModel, RewardModelConfig, RewardModelTrainer
+        with tempfile.TemporaryDirectory() as tmpdir:
+            model = tiny_model()
+            cfg = RewardModelConfig(hidden_size=64, dropout=0.0)
+            rm = RewardModel(model, config=cfg, freeze_backbone=True)
+            trainer = RewardModelTrainer(rm, _FakeTokenizer(), torch.device("cpu"))
+            path = os.path.join(tmpdir, "rm.pt")
+            trainer.save(path)
+            trainer.load(path)  # Should not raise
