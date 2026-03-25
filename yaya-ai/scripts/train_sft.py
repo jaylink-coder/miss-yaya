@@ -34,6 +34,9 @@ def main():
                         help="Pretrained checkpoint to start from")
     parser.add_argument("--resume",              type=str, default=None,
                         help="SFT checkpoint to resume from")
+    parser.add_argument("--compute_ewc_fisher",  action="store_true",
+                        help="After loading checkpoint, compute EWC Fisher before training "
+                             "(use for continual learning Phase 2)")
     args = parser.parse_args()
 
     model_config = load_model_config(args.model_config)
