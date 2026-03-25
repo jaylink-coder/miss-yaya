@@ -1,6 +1,7 @@
 .PHONY: install install-dev install-flash install-hf \
         test test-model test-data test-inference test-cov test-vision test-training test-all \
         test-agent test-rag test-safety test-serving test-neuroplasticity test-continual \
+        test-curriculum test-reward-model test-persistent-memory \
         lint format typecheck \
         train-tokenizer prepare-data \
         train-1b train-1b-2gpu train-1.5b train-7b \
@@ -8,6 +9,7 @@
         lora-sft-1.5b lora-continual-1.5b merge-lora-1.5b \
         train-moe-1.5b sft-moe-1.5b \
         align-dpo-1b align-dpo dpo-1.5b \
+        train-reward-model \
         evaluate evaluate-full \
         serve serve-production generate \
         build-dataset build-dataset-test dataset-stats \
