@@ -268,3 +268,41 @@ class OnlineLearner:
             )
         except Exception as e:
             print(f"[OnlineLearner] WARNING: could not read buffer file: {e}")
+
+
+# ---------------------------------------------------------------------------
+# Sparse plasticity helper
+# ---------------------------------------------------------------------------
+
+def _apply_sparse_gradients(model: nn.Module, k: float) -> None:
+    """Zero out all but the top-k fraction of gradient magnitudes.
+
+    This simulates synaptic sparsity — only the most significant parameter
+    updates are applied, reducing noise and preventing diffuse forgetting.
+
+    Args:
+        model: The model whose parameter gradients will be masked.
+        k:     Fraction of gradients to KEEP (0.1 = top 10%).
+               Must be in (0, 1].  Values outside this range are clamped.
+    """
+    k = max(0.0, min(1.0, k))
+    if k <= 0.0 or k >= 1.0:
+        return
+
+    for param in model.parameters():
+        if param.grad is None:
+            continue
+        grad = param.grad
+        flat = grad.abs().flatten()
+        if flat.numel() == 0:
+            continue
+        # Find the magnitude threshold that keeps the top-k fraction
+        n_keep = max(1, int(k * flat.numel()))
+        # kthvalue returns the n_keep-th smallest; we want the threshold for top-k
+        threshold_idx = flat.numel() - n_keep  # index of first element to keep
+        if threshold_idx <= 0:
+            continue
+        sorted_flat, _ = flat.sort()
+        threshold = sorted_flat[threshold_idx]
+        # Zero out gradients below threshold
+        grad[grad.abs() < threshold] = 0.0
