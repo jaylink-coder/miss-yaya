@@ -5186,3 +5186,108 @@ Parallel to internet: same dynamics of information democratisation, disruption o
 **Rating: 9.5/10**
 
 ---
+
+### Q421 — Physics
+**What is the Standard Model of particle physics?**
+
+The Standard Model describes all fundamental particles and forces — verified to extraordinary precision, yet incomplete.
+
+Matter particles (fermions):
+- Quarks (6): up/down/charm/strange/top/bottom. Combine in triplets (protons/neutrons) or pairs (mesons). Never isolated — colour confinement.
+- Leptons (6): electron/muon/tau + neutrinos. Both in 3 generations — reason unknown.
+
+Force carriers (bosons):
+- Photon: electromagnetic force
+- W+/W-/Z0: weak nuclear force (radioactive decay, solar fusion)
+- Gluons (8): strong nuclear force
+- Higgs boson: gives mass to W/Z and fermions; discovered 2012 CERN
+
+What it doesn't explain: gravity, dark matter (27%), dark energy (68%), matter-antimatter asymmetry, why 3 generations, neutrino masses.
+
+**Rating: 9.5/10**
+
+---
+
+### Q422 — Medicine
+**What is antibiotic resistance and how does it develop?**
+
+Antibiotic resistance: bacteria evolve to survive antibiotics. ~700,000 deaths/year; projected 10M/year by 2050.
+
+Mechanisms:
+1. Enzymatic inactivation: beta-lactamases destroy penicillins
+2. Efflux pumps: actively expel antibiotics
+3. Target modification: alter binding site (MRSA)
+4. Reduced permeability: modified outer membrane
+5. Bypass pathway: alternative metabolic route
+
+How it spreads: mutation + selection (antibiotics don't cause mutations — they select pre-existing resistant variants); horizontal gene transfer via plasmids (resistance jumps between species).
+
+Crisis drivers: 50% of prescriptions unnecessary; agriculture uses 70% of global antibiotics; no new antibiotic class since 1987.
+
+Solutions: phage therapy, antibiotic combinations, new molecular targets, antimicrobial peptides.
+
+**Rating: 9.0/10**
+
+---
+
+### Q423 — Mathematics
+**What is the Riemann Hypothesis and why does it matter?**
+
+Riemann (1859): conjecture about zeros of the zeta function. One of 7 Millennium Prize Problems ($1M prize).
+
+Zeta function: z(s) = 1 + 1/2^s + 1/3^s + ... Analytically continued to whole complex plane.
+
+Trivial zeros: at s = -2, -4, -6, ... (well understood).
+Non-trivial zeros: all known ones have Re(s) = 1/2 (on the 'critical line').
+
+The hypothesis: ALL non-trivial zeros have real part exactly 1/2.
+
+Why it matters:
+- Prime distribution: encodes how closely pi(x) approximates x/ln(x)
+- 1,000+ theorems are conditional on RH
+- Implications for cryptography, quantum chaos, random matrix theory
+
+Status: proven for first 10^13 zeros. Never proved or disproved.
+
+**Rating: 9.5/10**
+
+---
+
+### Q424 — Psychology
+**What is the difference between intrinsic and extrinsic motivation, and does reward kill interest?**
+
+Intrinsic motivation: doing something for its own sake — curiosity, enjoyment, challenge.
+Extrinsic motivation: doing it for external rewards or to avoid punishment.
+
+Overjustification effect (Deci & Ryan, Cognitive Evaluation Theory): expected rewards can undermine intrinsic motivation.
+
+Classic study (Lepper, Greene & Nisbett 1973): children who loved drawing given expected rewards drew LESS afterward — reframed activity as work done for reward. Unexpected reward group and no-reward group showed no decline.
+
+Why: reward shifts perceived locus of causality from internal to external. Remove reward — activity loses meaning.
+
+When rewards don't undermine: unexpected; verbal praise for competence (informational not controlling); tasks never intrinsically interesting; rewards signalling competence.
+
+Self-Determination Theory (Deci & Ryan): three innate needs — autonomy, competence, relatedness. Controlling environments erode intrinsic motivation.
+
+**Rating: 9.0/10**
+
+---
+
+### Q425 — History
+**How did the Roman Empire fall — and did it really fall?**
+
+Conventional end: 476 CE (Romulus Augustulus deposed). But the question is contested.
+
+Internal factors: military overstretch (10,000km frontier, declining tax base); political instability (50+ emperors in 235-284 CE Crisis); currency debasement and inflation; Diocletian's split (284 CE); Constantine moved capital to Constantinople (330 CE).
+
+External: Huns pushed Goths across Danube; Visigoths sacked Rome 410 CE; Vandals 455 CE. Climate change; Antonine and Cyprian plagues.
+
+Historiographical debate: Heather (military/barbarian emphasis) vs Ward-Perkins (catastrophic collapse) vs Goffart (peaceful accommodation — barbarians invited as federates).
+
+Did it fall? Eastern Empire (Byzantium) continued until 1453 CE. Western institutions transformed: Church preserved Roman law and Latin. Gibbon's 'fall' is partly a narrative choice.
+
+Consensus: multicausal long unravelling. The real question is why it couldn't adapt.
+
+**Rating: 9.0/10**
+
+---

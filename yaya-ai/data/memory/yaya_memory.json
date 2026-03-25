@@ -901,5 +901,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-25T18:35:43.295873"
+  },
+  {
+    "id": 129,
+    "content": "Q421 Standard Model: quarks/leptons (3 generations), photon/W/Z/gluon/Higgs; doesn't explain gravity, dark matter, 3 generations",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T01:39:33.404093"
+  },
+  {
+    "id": 130,
+    "content": "Q422 Antibiotic resistance: beta-lactamases/efflux pumps/MRSA; plasmid horizontal transfer; 700K deaths/yr; no new class since 1987",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T01:39:33.443426"
+  },
+  {
+    "id": 131,
+    "content": "Q423 Riemann Hypothesis: all non-trivial zeta zeros on Re(s)=1/2; implies prime distribution bounds; 1000+ conditional theorems; unproved",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T01:39:33.471226"
+  },
+  {
+    "id": 132,
+    "content": "Q424 Intrinsic vs extrinsic motivation: overjustification effect (Lepper 1973); expected rewards reduce interest; SDT: autonomy/competence/relatedness",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T01:39:33.508647"
+  },
+  {
+    "id": 133,
+    "content": "Q425 Roman fall: multicausal — military overstretch, 3rd century crisis, Huns/Visigoths, economic decline; Byzantium survived to 1453; Heather vs Ward-Perkins vs Goffart",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T01:39:33.543836"
   }
 ]

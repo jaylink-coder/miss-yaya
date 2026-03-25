@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 129
+Total entries: 134
 
 ---
 
@@ -261,3 +261,13 @@ Total entries: 129
 **[127]** Q419 Language acquisition: Chomsky UG/poverty-of-stimulus vs Tomasello usage-based; critical period (Genie); Pirahã recursion debate; some innate predisposition
 
 **[128]** Q420 Printing press (Gutenberg ~1440): cost 300x drop; Reformation (Luther 95 Theses), Scientific Revolution, nationalism (Anderson), public sphere (Habermas)
+
+**[129]** Q421 Standard Model: quarks/leptons (3 generations), photon/W/Z/gluon/Higgs; doesn't explain gravity, dark matter, 3 generations
+
+**[130]** Q422 Antibiotic resistance: beta-lactamases/efflux pumps/MRSA; plasmid horizontal transfer; 700K deaths/yr; no new class since 1987
+
+**[131]** Q423 Riemann Hypothesis: all non-trivial zeta zeros on Re(s)=1/2; implies prime distribution bounds; 1000+ conditional theorems; unproved
+
+**[132]** Q424 Intrinsic vs extrinsic motivation: overjustification effect (Lepper 1973); expected rewards reduce interest; SDT: autonomy/competence/relatedness
+
+**[133]** Q425 Roman fall: multicausal — military overstretch, 3rd century crisis, Huns/Visigoths, economic decline; Byzantium survived to 1453; Heather vs Ward-Perkins vs Goffart
