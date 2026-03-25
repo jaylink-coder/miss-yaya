@@ -495,3 +495,294 @@ class TestConfig:
         assert cfg.moe_enabled is False
         assert cfg.moe_num_experts == 8
         assert cfg.moe_top_k == 2
+
+    def test_elastic_guard_defaults_in_training_config(self):
+        cfg = TrainingConfig()
+        assert cfg.elastic_guard_enabled is False
+        assert cfg.elastic_loss_spike_ratio == 2.5
+        assert cfg.elastic_max_per_minute == 120
+
+
+# ---------------------------------------------------------------------------
+# ElasticGuard (neuroelastic resilience)
+# ---------------------------------------------------------------------------
+
+class TestElasticGuard:
+    """Tests for the neuroelastic ElasticGuard wrapper."""
+
+    def _make_guard(self, tmpdir, **elastic_kwargs):
+        from src.training.online_learner import OnlineLearner, OnlineLearnerConfig
+        from src.training.neuro_elastic import ElasticGuard, ElasticConfig
+        model = tiny_model()
+        ol_cfg = OnlineLearnerConfig(
+            buffer_capacity=100,
+            min_examples_to_finetune=2,
+            finetune_every_n_examples=99,  # Manual step only
+            micro_finetune_steps=1,
+            micro_lr=1e-4,
+            max_seq_length=32,
+            buffer_path=os.path.join(tmpdir, "buf.jsonl"),
+        )
+        learner = OnlineLearner(model, _FakeTokenizer(), ol_cfg, torch.device("cpu"))
+        e_cfg = ElasticConfig(**elastic_kwargs)
+        return ElasticGuard(learner, e_cfg), learner
+
+    def test_add_example_accepted(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, _ = self._make_guard(tmpdir)
+            accepted = guard.add_example("hello", " world", score=1.0)
+            assert accepted is True
+            assert guard.stats["examples_accepted"] == 1
+            assert guard.stats["examples_rejected"] == 0
+
+    def test_rejects_nan_score(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, _ = self._make_guard(tmpdir)
+            accepted = guard.add_example("hello", " world", score=float("nan"))
+            assert accepted is False
+            assert guard.stats["examples_rejected"] == 1
+
+    def test_rejects_empty_response(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, _ = self._make_guard(tmpdir, min_response_chars=3)
+            accepted = guard.add_example("hello", "ab", score=1.0)
+            assert accepted is False
+
+    def test_clamps_score_to_range(self):
+        """Score outside [score_min, score_max] must be clamped, not rejected."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, learner = self._make_guard(tmpdir, score_min=-1.0, score_max=1.0)
+            accepted = guard.add_example("hello", " world", score=999.0)
+            assert accepted is True
+            # Check the clamped score was stored
+            stored_score = learner.buffer[-1]["score"]
+            assert stored_score <= 1.0
+
+    def test_rate_limiter_blocks_flood(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, _ = self._make_guard(tmpdir, max_per_minute=3)
+            for i in range(3):
+                guard.add_example(f"p{i}", " r", score=1.0)
+            # 4th should be rate-limited
+            accepted = guard.add_example("p4", " r", score=1.0)
+            assert accepted is False
+
+    def test_step_returns_loss_or_none(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, _ = self._make_guard(tmpdir)
+            for i in range(5):
+                guard.add_example(f"p{i}", f" r{i}", score=1.0)
+            result = guard.step()
+            # Returns float or None (None = no positives or circuit tripped)
+            assert result is None or isinstance(result, float)
+
+    def test_circuit_trips_on_nan_tolerance(self):
+        """After nan_tolerance NaN steps, circuit must be tripped."""
+        from src.training.neuro_elastic import ElasticGuard, ElasticConfig
+        from src.training.online_learner import OnlineLearner, OnlineLearnerConfig
+        with tempfile.TemporaryDirectory() as tmpdir:
+            model = tiny_model()
+            ol_cfg = OnlineLearnerConfig(
+                buffer_capacity=100,
+                min_examples_to_finetune=2,
+                finetune_every_n_examples=99,
+                micro_finetune_steps=1,
+                micro_lr=1e-4,
+                max_seq_length=32,
+                buffer_path=os.path.join(tmpdir, "buf.jsonl"),
+            )
+            learner = OnlineLearner(model, _FakeTokenizer(), ol_cfg, torch.device("cpu"))
+            guard = ElasticGuard(learner, ElasticConfig(nan_tolerance=2, cooldown_seconds=1000))
+
+            # Inject NaN losses by patching learner.step
+            call_count = [0]
+            def _nan_step():
+                call_count[0] += 1
+                return float("nan")
+            learner.step = _nan_step
+
+            for i in range(5):
+                guard.add_example(f"p{i}", " r", score=1.0)
+            guard.step()  # NaN #1
+            guard.step()  # NaN #2 — should trip (nan_tolerance=2)
+
+            assert guard._tripped, "Circuit should be tripped after nan_tolerance NaN steps"
+            assert guard.stats["circuit_trips"] == 1
+
+    def test_circuit_resets_after_cooldown(self):
+        import time
+        from src.training.neuro_elastic import ElasticGuard, ElasticConfig
+        from src.training.online_learner import OnlineLearner, OnlineLearnerConfig
+        with tempfile.TemporaryDirectory() as tmpdir:
+            model = tiny_model()
+            ol_cfg = OnlineLearnerConfig(
+                buffer_capacity=100,
+                min_examples_to_finetune=2,
+                finetune_every_n_examples=99,
+                micro_finetune_steps=1,
+                micro_lr=1e-4,
+                max_seq_length=32,
+                buffer_path=os.path.join(tmpdir, "buf.jsonl"),
+            )
+            learner = OnlineLearner(model, _FakeTokenizer(), ol_cfg, torch.device("cpu"))
+            guard = ElasticGuard(learner, ElasticConfig(cooldown_seconds=0.05))
+            # Trip manually
+            guard._trip("test trip")
+            assert guard._is_tripped()
+            # Wait for cooldown
+            time.sleep(0.1)
+            assert not guard._is_tripped(), "Circuit should auto-reset after cooldown"
+
+    def test_manual_reset_circuit(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, _ = self._make_guard(tmpdir)
+            guard._trip("manual test")
+            assert guard._tripped
+            guard.reset_circuit()
+            assert not guard._tripped
+
+    def test_health_report_structure(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, _ = self._make_guard(tmpdir)
+            report = guard.health_report()
+            assert "circuit_tripped" in report
+            assert "cooldown_remaining_s" in report
+            assert "examples_accepted" in report
+            assert "rollbacks" in report
+            assert "adapter_norms" in report
+
+    def test_blocked_when_tripped(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard, _ = self._make_guard(tmpdir)
+            guard._trip("force trip")
+            accepted = guard.add_example("hello", " world", score=1.0)
+            assert accepted is False
+            assert guard.stats["examples_rejected"] == 1
+
+
+# ---------------------------------------------------------------------------
+# Dynamic EWC lambda
+# ---------------------------------------------------------------------------
+
+class TestDynamicEWC:
+    def test_drift_magnitude_zero_before_fisher(self):
+        from src.training.ewc import EWC
+        model = tiny_model()
+        ewc = EWC(model, lambda_ewc=100.0)
+        assert ewc.drift_magnitude() == 0.0
+
+    def test_drift_magnitude_increases_after_modification(self):
+        from src.training.ewc import EWC
+        model = tiny_model()
+        ewc = EWC(model, lambda_ewc=100.0)
+        batches = [fake_batch(256) for _ in range(3)]
+        ewc.compute_fisher(batches, num_samples=3, device=torch.device("cpu"))
+        drift_before = ewc.drift_magnitude()
+        # Perturb weights significantly
+        with torch.no_grad():
+            for param in model.parameters():
+                param.add_(torch.randn_like(param) * 5.0)
+        drift_after = ewc.drift_magnitude()
+        assert drift_after > drift_before
+
+    def test_dynamic_lambda_penalty_stronger_than_static(self):
+        """dynamic_lambda=True must produce >= penalty than static when drift > 0."""
+        from src.training.ewc import EWC
+        model = tiny_model()
+        ewc = EWC(model, lambda_ewc=1.0)
+        batches = [fake_batch(256) for _ in range(3)]
+        ewc.compute_fisher(batches, num_samples=3, device=torch.device("cpu"))
+        # Perturb weights so drift > 0
+        with torch.no_grad():
+            for param in model.parameters():
+                param.add_(torch.randn_like(param) * 0.1)
+        penalty_static = ewc.penalty(dynamic_lambda=False).item()
+        penalty_dynamic = ewc.penalty(dynamic_lambda=True).item()
+        assert penalty_dynamic >= penalty_static, (
+            "Dynamic lambda must be >= static lambda when drift > 0"
+        )
+
+    def test_dynamic_penalty_zero_when_no_drift(self):
+        """When model hasn't moved at all, dynamic and static penalties are equal."""
+        from src.training.ewc import EWC
+        model = tiny_model()
+        ewc = EWC(model, lambda_ewc=500.0)
+        batches = [fake_batch(256) for _ in range(3)]
+        ewc.compute_fisher(batches, num_samples=3, device=torch.device("cpu"))
+        # Snapshot weights, then don't move them
+        penalty_static = ewc.penalty(dynamic_lambda=False).item()
+        penalty_dynamic = ewc.penalty(dynamic_lambda=True).item()
+        # Both should be 0 (no drift)
+        assert abs(penalty_static - penalty_dynamic) < 1e-6
+
+
+# ---------------------------------------------------------------------------
+# Expert utilization tracking
+# ---------------------------------------------------------------------------
+
+class TestExpertUtilization:
+    def test_routing_stats_initially_zero(self):
+        from src.model.moe import MoEFeedForward
+        moe = MoEFeedForward(hidden_size=64, intermediate_size=128, num_experts=4, top_k=2)
+        moe.train()
+        stats = moe.routing_stats()
+        assert stats["steps_tracked"] == 0
+        assert all(v == 0.0 for v in stats["expert_avg_tokens"])
+
+    def test_routing_stats_accumulate_during_training(self):
+        from src.model.moe import MoEFeedForward
+        moe = MoEFeedForward(hidden_size=64, intermediate_size=128, num_experts=4, top_k=2)
+        moe.train()
+        x = torch.randn(2, 8, 64)
+        moe(x)
+        moe(x)
+        stats = moe.routing_stats()
+        assert stats["steps_tracked"] == 2
+        # All experts get at least some tokens across 2 steps (probabilistically)
+        assert sum(stats["expert_avg_tokens"]) > 0
+
+    def test_routing_stats_not_accumulated_in_eval(self):
+        from src.model.moe import MoEFeedForward
+        moe = MoEFeedForward(hidden_size=64, intermediate_size=128, num_experts=4, top_k=2)
+        moe.eval()
+        x = torch.randn(2, 8, 64)
+        with torch.no_grad():
+            moe(x)
+            moe(x)
+        stats = moe.routing_stats()
+        assert stats["steps_tracked"] == 0, "Routing stats must not accumulate in eval mode"
+
+    def test_reset_routing_stats(self):
+        from src.model.moe import MoEFeedForward
+        moe = MoEFeedForward(hidden_size=64, intermediate_size=128, num_experts=4, top_k=2)
+        moe.train()
+        x = torch.randn(2, 8, 64)
+        moe(x)
+        assert moe.routing_stats()["steps_tracked"] == 1
+        moe.reset_routing_stats()
+        assert moe.routing_stats()["steps_tracked"] == 0
+
+    def test_utilization_sums_to_one(self):
+        from src.model.moe import MoEFeedForward
+        moe = MoEFeedForward(hidden_size=64, intermediate_size=128, num_experts=4, top_k=2)
+        moe.train()
+        x = torch.randn(4, 16, 64)
+        for _ in range(10):
+            moe(x)
+        stats = moe.routing_stats()
+        total_util = sum(stats["utilization"])
+        assert abs(total_util - 1.0) < 1e-5, f"Utilization must sum to 1.0, got {total_util}"
+
+    def test_collapse_detection(self):
+        """If one expert gets 0 tokens, collapse_detected must be True."""
+        from src.model.moe import MoEFeedForward, MoERouter
+        moe = MoEFeedForward(hidden_size=64, intermediate_size=128, num_experts=4, top_k=2)
+        # Manually inject a routing bias so expert 0 never gets tokens
+        with torch.no_grad():
+            moe.router.gate.weight[0].fill_(-1e9)  # Make expert 0 essentially unreachable
+        moe.train()
+        x = torch.randn(4, 16, 64)
+        for _ in range(20):
+            moe(x)
+        stats = moe.routing_stats()
+        assert stats["collapse_detected"], "Collapse should be detected when an expert gets no tokens"
