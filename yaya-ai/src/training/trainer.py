@@ -174,7 +174,8 @@ class Trainer:
                 micro_lr=getattr(config, "online_micro_lr", 5e-5),
             )
             self.online_learner = OnlineLearner(
-                self.unwrapped_model, tokenizer=tokenizer, config=ol_cfg, device=self.device
+                self.unwrapped_model, tokenizer=tokenizer, config=ol_cfg,
+                device=self.device, ewc=self.ewc,
             )
             print(f"OnlineLearner enabled (buffer={ol_cfg.buffer_capacity}, every={ol_cfg.finetune_every_n_examples})")
 
