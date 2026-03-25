@@ -25,6 +25,13 @@
         sft dpo export agent rag safety \
         maml-1.5b
 
+# MAML meta-learning
+maml-1.5b:
+	python scripts/train_sft.py \
+		--model_config configs/model/yaya_1_5b.yaml \
+		--train_config configs/training/maml_1_5b.yaml \
+		--pretrain_checkpoint checkpoints/yaya-1.5b/latest
+
 # Installation
 install:
 	pip install -e .
