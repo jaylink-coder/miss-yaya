@@ -19,6 +19,7 @@ except ImportError:
 
 from src.inference.generator import TextGenerator, GenerationConfig
 from src.tokenizer.tokenizer import ASSISTANT_TOKEN
+from src.agent.persistent_memory import PersistentMemory, SessionMemory
 
 
 # --- Pydantic models for API request/response ---
