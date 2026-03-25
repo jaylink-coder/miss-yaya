@@ -57,9 +57,16 @@ class TestLoRA:
         inject_lora(model, LoRAConfig(rank=4, target_modules=["q_proj", "v_proj"]))
         trainable = sum(p.numel() for p in model.parameters() if p.requires_grad)
         total_after = sum(p.numel() for p in model.parameters())
-        assert total_after == total_before, "inject_lora must not change total param count"
-        assert trainable < total_before, "LoRA must freeze most params"
+        # inject_lora ADDS adapter params (lora_A + lora_B), so total grows slightly
+        assert total_after > total_before, "inject_lora must add adapter parameters"
+        # Trainable params must be only the adapters — a tiny fraction of total
+        assert trainable < total_before * 0.1, "LoRA must freeze the vast majority of params"
         assert trainable > 0, "LoRA must leave adapter params trainable"
+        # Only adapter names should be trainable
+        for name, p in model.named_parameters():
+            if p.requires_grad:
+                assert "lora_A" in name or "lora_B" in name, \
+                    f"Non-adapter param is trainable: {name}"
 
     def test_lm_head_never_wrapped(self):
         from src.model.lora import inject_lora, LoRAConfig, LoRALinear
