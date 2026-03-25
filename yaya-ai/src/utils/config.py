@@ -17,6 +17,23 @@ class VisionConfig:
     projection_dim: int = 2048
 
 
+def _resolve_moe_layer(moe_layers: str, layer_idx: int) -> bool:
+    """Determine if a given layer index should use MoE.
+
+    Single source of truth — shared by ModelConfig and MoEConfig so the
+    routing logic never diverges.
+    """
+    if moe_layers == "all":
+        return True
+    if moe_layers == "alternate":
+        return layer_idx % 2 == 1
+    try:
+        indices = {int(x.strip()) for x in moe_layers.split(",")}
+        return layer_idx in indices
+    except ValueError:
+        return False
+
+
 @dataclass
 class ModelConfig:
     """Yaya model architecture configuration."""
