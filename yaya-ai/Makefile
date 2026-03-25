@@ -432,6 +432,33 @@ learn-125m:
 		--train_config configs/training/sft_125m.yaml \
 		--pretrain_checkpoint checkpoints/yaya-125m/latest
 
+# ─── Yaya-tiny convenience targets ─────────────────────────────────────────
+
+## Run SFT training from pretrain checkpoint (fresh clean run, 20k steps)
+sft-tiny:
+	PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
+		--model_config configs/model/yaya_tiny.yaml \
+		--train_config configs/training/sft_tiny_clean.yaml \
+		--pretrain_checkpoint checkpoints/yaya-tiny/checkpoint-00010000
+
+## Run DPO alignment after SFT (uses combined DPO dataset)
+dpo-tiny:
+	PYTHONUNBUFFERED=1 python -u scripts/train_dpo.py \
+		--model_config configs/model/yaya_tiny.yaml \
+		--sft_checkpoint checkpoints/yaya-tiny-sft-clean/latest \
+		--dpo_data data/sft/yaya_dpo_combined.jsonl \
+		--save_dir checkpoints/yaya-tiny-dpo \
+		--lr 5e-7 \
+		--max_steps 2000
+
+## Chat interactively with the best available tiny checkpoint
+chat-tiny:
+	python scripts/chat_tiny.py
+
+## Show training log tail (monitor background training)
+training-status:
+	@tail -20 logs/sft_clean.log 2>/dev/null || echo "No active training log found."
+
 # Cleanup
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
