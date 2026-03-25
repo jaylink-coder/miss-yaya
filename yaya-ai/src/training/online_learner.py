@@ -75,6 +75,11 @@ class OnlineLearner:
         device: torch.device,
         ewc: Optional["EWC"] = None,
     ):
+        if tokenizer is None:
+            raise ValueError(
+                "OnlineLearner requires a tokenizer for encoding prompt/response pairs. "
+                "Pass the model's tokenizer when constructing OnlineLearner."
+            )
         self.model = model
         self.tokenizer = tokenizer
         self.config = config
