@@ -1,0 +1,70 @@
+# Edge / Mobile Online Learning Profile
+# Tuned for low-power devices: phones, Raspberry Pi, edge MCUs.
+#
+# Key trade-offs vs server profile:
+#   - Tiny replay buffer (50 examples) — fits in ~2 MB RAM
+#   - Less frequent micro-finetuning (every 20 examples, 3 steps)
+#   - Low learning rate (5e-6) — conservative updates to avoid corruption
+#   - ElasticGuard with strict limits — protects limited-resource models
+#   - LoRA rank 4 (vs 16) — adapts only ~0.1% of parameters
+#   - Synthetic replay with 10 anchors, 1 sample each
+#   - Forgetting tracking enabled — visibility into personalization drift
+
+seed: 42
+
+training:
+  # Core hyperparams — minimal footprint
+  per_device_batch_size: 1
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4
+  weight_decay: 0.01
+  max_grad_norm: 0.5
+  max_steps: 5000
+  max_seq_length: 512
+  dtype: float16            # float16 on mobile GPU (bfloat16 not available)
+
+  # LoRA — adapt only 0.1% of parameters
+  lora_rank: 4
+  lora_alpha: 8.0
+  lora_dropout: 0.0         # No dropout — deterministic on edge
+
+  # Online learning — lightweight feedback loop
+  online_learning_enabled: true
+  online_buffer_capacity: 50
+  online_finetune_every: 20
+  online_micro_steps: 3
+  online_micro_lr: 5.0e-6
+
+  # ElasticGuard — strict safety limits for constrained hardware
+  elastic_guard_enabled: true
+  elastic_loss_spike_ratio: 2.0     # More conservative than server (2.5)
+  elastic_max_grad_norm: 10.0       # Tighter than server (20.0)
+  elastic_cooldown_seconds: 300.0   # 5-minute cooldown — avoid thrashing
+  elastic_max_per_minute: 30        # Rate-limit feedback aggressively
+  elastic_max_adapter_norm: 50.0    # Tighter adapter health check
+
+  # Synthetic replay — 10 anchors, 1 sample each (privacy-friendly)
+  synthetic_replay_enabled: true
+  synthetic_replay_anchors: 10
+  synthetic_replay_samples: 1
+  synthetic_replay_max_tokens: 32   # Short completions to save compute
+  synthetic_replay_weight: 0.2
+
+  # Continual metrics — track personalization vs forgetting
+  track_forgetting: true
+  task_id: edge_user
+
+checkpointing:
+  save_steps: 500
+  save_dir: checkpoints/edge-online
+  keep_last_n: 2            # Minimal storage on device
+
+logging:
+  log_steps: 50
+  wandb_project: yaya-ai
+
+data:
+  train_data: data/processed/train
+  eval_data: data/processed/eval
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 0            # Single worker on edge (no multiprocessing overhead)
