@@ -127,39 +127,57 @@ class RewardModel(nn.Module):
     ) -> torch.Tensor:
         """Run backbone and extract the hidden state at the last non-pad token.
 
+        Supports two backbone shapes:
+          - YayaForCausalLM: has a `.model` sub-module (YayaModel) that returns
+            (hidden_states, kv_cache, moe_aux_loss) directly.
+          - HF-compatible: forward() returns a dict/object with 'last_hidden_state'
+            or 'hidden_states'.
+
         Returns:
             (batch, hidden_size) tensor.
         """
-        outputs = self.backbone(
-            input_ids=input_ids,
-            attention_mask=attention_mask,
-        )
-
-        # Try to get hidden states — handle both our model format and HF format
-        if isinstance(outputs, dict):
-            if "last_hidden_state" in outputs:
-                hidden_states = outputs["last_hidden_state"]
-            elif "hidden_states" in outputs and outputs["hidden_states"] is not None:
-                hidden_states = outputs["hidden_states"][-1]
-            else:
-                # Fall back: re-run without loss to get logits, then back-project
-                # This path should rarely be hit for a properly configured model.
-                raise ValueError(
-                    "RewardModel: backbone output does not contain hidden states. "
-                    "Pass output_hidden_states=True or use a compatible backbone."
+        # Prefer the inner YayaModel path (avoids recomputing the LM head)
+        inner = getattr(self.backbone, "model", None)
+        if inner is not None and callable(inner):
+            try:
+                result = inner(
+                    input_ids=input_ids,
+                    attention_mask=attention_mask,
                 )
+                # YayaModel returns (hidden_states, kv_cache, moe_aux_loss)
+                if isinstance(result, (tuple, list)) and len(result) >= 1:
+                    hidden_states = result[0]
+                else:
+                    hidden_states = result
+            except Exception:
+                hidden_states = None
         else:
-            # Assume standard HF BaseModelOutput
-            hidden_states = outputs.last_hidden_state
+            hidden_states = None
+
+        # Fallback: call full backbone forward and parse the output
+        if hidden_states is None:
+            outputs = self.backbone(input_ids=input_ids, attention_mask=attention_mask)
+            if isinstance(outputs, dict):
+                if "last_hidden_state" in outputs:
+                    hidden_states = outputs["last_hidden_state"]
+                elif "hidden_states" in outputs and outputs["hidden_states"] is not None:
+                    hidden_states = outputs["hidden_states"][-1]
+                else:
+                    raise ValueError(
+                        "RewardModel: backbone output does not contain hidden states. "
+                        "Expected a backbone with a '.model' sub-module returning hidden states, "
+                        "or a forward() returning 'last_hidden_state'/'hidden_states'."
+                    )
+            else:
+                hidden_states = outputs.last_hidden_state
 
         # Index of the last non-padding token per sequence
         if attention_mask is not None:
-            # last 1 in each row
             seq_lengths = attention_mask.sum(dim=1) - 1   # (batch,)
         else:
             seq_lengths = torch.full(
                 (input_ids.shape[0],), input_ids.shape[1] - 1,
-                dtype=torch.long, device=input_ids.device
+                dtype=torch.long, device=input_ids.device,
             )
 
         batch_idx = torch.arange(input_ids.shape[0], device=input_ids.device)
