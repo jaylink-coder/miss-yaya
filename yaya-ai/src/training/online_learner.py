@@ -55,6 +55,10 @@ class OnlineLearnerConfig:
     max_seq_length: int = 512
     max_grad_norm: float = 1.0
     buffer_path: str = "checkpoints/online_buffer.jsonl"
+    # Sparse plasticity: keep only top-K fraction of gradient magnitudes (0 = off)
+    # Simulates synaptic sparsity — only the most significant weight changes apply.
+    # e.g. sparse_gradient_k=0.1 keeps top 10% of gradients, zeroes the rest.
+    sparse_gradient_k: float = 0.0
 
 
 # ---------------------------------------------------------------------------
