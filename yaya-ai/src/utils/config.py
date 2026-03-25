@@ -267,4 +267,10 @@ def load_training_config(path: str) -> TrainingConfig:
         online_finetune_every=training.get("online_finetune_every", 50),
         online_micro_steps=training.get("online_micro_steps", 10),
         online_micro_lr=training.get("online_micro_lr", 5e-5),
+        elastic_guard_enabled=training.get("elastic_guard_enabled", False),
+        elastic_loss_spike_ratio=training.get("elastic_loss_spike_ratio", 2.5),
+        elastic_max_grad_norm=training.get("elastic_max_grad_norm", 20.0),
+        elastic_cooldown_seconds=training.get("elastic_cooldown_seconds", 60.0),
+        elastic_max_per_minute=training.get("elastic_max_per_minute", 120),
+        elastic_max_adapter_norm=training.get("elastic_max_adapter_norm", 100.0),
     )
