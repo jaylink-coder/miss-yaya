@@ -120,16 +120,26 @@ def inject_lora(model: nn.Module, config: LoRAConfig) -> nn.Module:
                 return True
         return False
 
-    for name, module in list(model.named_modules()):
-        # Skip lm_head — it shares weight with embed_tokens
-        if name.endswith("lm_head"):
-            continue
+    # Detect tied weights by data pointer — any Linear whose weight is shared
+    # with another parameter (e.g., lm_head <-> embed_tokens) must be skipped
+    # to preserve the tie. This is robust to naming convention changes.
+    seen_ptrs: set[int] = set()
+    tied_ptrs: set[int] = set()
+    for param in model.parameters():
+        ptr = param.data_ptr()
+        if ptr in seen_ptrs:
+            tied_ptrs.add(ptr)
+        seen_ptrs.add(ptr)
 
+    for name, module in list(model.named_modules()):
         # Check if the leaf attribute name is a target
         parent_name, _, attr_name = name.rpartition(".")
         if attr_name not in config.target_modules:
             continue
         if not isinstance(module, nn.Linear):
+            continue
+        # Skip any Linear whose weight is tied to another parameter
+        if module.weight.data_ptr() in tied_ptrs:
             continue
         if not _in_adapted_layer(name):
             continue
