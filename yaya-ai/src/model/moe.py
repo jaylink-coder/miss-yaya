@@ -251,6 +251,14 @@ class MoEFeedForward(nn.Module):
         output = output.view(batch, seq_len, hidden_size)
         return output, aux_loss
 
+    def routing_stats(self) -> dict:
+        """Delegate to the router's utilization statistics."""
+        return self.router.routing_stats()
+
+    def reset_routing_stats(self) -> None:
+        """Delegate to the router's stat reset."""
+        self.router.reset_routing_stats()
+
 
 # ---------------------------------------------------------------------------
 # convert_to_moe  — dense → sparse upgrade path
