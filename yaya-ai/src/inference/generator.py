@@ -149,7 +149,14 @@ class TextGenerator:
             input_tensor = next_token.unsqueeze(0)
 
         # Decode generated tokens
-        return self.tokenizer.decode(generated_ids)
+        output_text = self.tokenizer.decode(generated_ids)
+
+        # Online learning — submit feedback if provided
+        if feedback is not None and self.online_learner is not None:
+            response_only = output_text[len(prompt):]
+            self.online_learner.add_example(prompt, response_only, score=feedback)
+
+        return output_text
 
     @torch.no_grad()
     def generate_batch(
