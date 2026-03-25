@@ -22,7 +22,8 @@
         deploy deploy-quantized \
         pipeline-full clean \
         validate-sft-data validate-sft-data-verbose \
-        sft dpo export agent rag safety
+        sft dpo export agent rag safety \
+        maml-1.5b
 
 # Installation
 install:
