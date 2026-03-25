@@ -1,0 +1,63 @@
+# LoRA + EWC Continual Learning Configuration — Yaya-1.5B
+# Fine-tune on new data without forgetting the reference task.
+#
+# Workflow:
+#   1. Train Phase 1 normally (lora_sft_1_5b.yaml or sft_1_5b.yaml)
+#   2. Call trainer.compute_ewc_fisher() to anchor weights
+#   3. Swap in new train_data and run Phase 2 with this config
+#
+# EWC adds a quadratic penalty proportional to Fisher importance,
+# preventing high-importance weights from drifting away from Phase 1 values.
+
+seed: 42
+
+training:
+  per_device_batch_size: 8
+  gradient_accumulation_steps: 4
+  learning_rate: 5.0e-5             # Lower LR for continual learning stability
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 50
+  min_lr_ratio: 0.0
+  max_steps: 3000
+  max_seq_length: 4096
+  dtype: bfloat16
+
+  # LoRA — keeps base weights frozen, reducing forgetting by default
+  lora_rank: 16
+  lora_alpha: 32.0
+  lora_dropout: 0.05
+  lora_target_modules: "q_proj,k_proj,v_proj,o_proj"
+
+  # EWC — additional regularisation on adapter params relative to Phase 1 anchors
+  ewc_lambda: 5000.0                # Penalty strength; higher = less forgetting
+  ewc_fisher_samples: 200           # Batches used to estimate Fisher diagonal
+
+checkpointing:
+  save_steps: 500
+  save_dir: checkpoints/yaya-1.5b-continual
+  keep_last_n: 3
+
+logging:
+  log_steps: 10
+  wandb_project: yaya-ai
+  wandb_run_name: yaya-1.5b-continual
+
+eval:
+  eval_steps: 500
+  eval_samples: 200
+
+data:
+  train_data: data/sft/phase2_train    # New domain data
+  eval_data: data/sft/phase2_eval
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 4
+
+distributed:
+  strategy: deepspeed_zero2
+  gradient_checkpointing: true
+  cpu_offload: false
