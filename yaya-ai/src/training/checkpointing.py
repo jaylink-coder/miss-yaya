@@ -222,8 +222,11 @@ class CheckpointManager:
         ckpt_dirs = sorted(glob.glob(os.path.join(self.save_dir, "checkpoint-*")))
         while len(ckpt_dirs) > self.keep_last_n:
             old_dir = ckpt_dirs.pop(0)
-            print(f"  Removing old checkpoint: {old_dir}")
-            shutil.rmtree(old_dir)
+            try:
+                shutil.rmtree(old_dir)
+                print(f"  Removing old checkpoint: {old_dir}")
+            except FileNotFoundError:
+                pass  # Another process already removed it — safe to ignore
 
     def list_checkpoints(self) -> list:
         """List all available checkpoints."""
