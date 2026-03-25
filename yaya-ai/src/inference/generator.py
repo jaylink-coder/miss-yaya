@@ -260,6 +260,7 @@ class TextGenerator:
         temperature: Optional[float] = None,
         top_p: Optional[float] = None,
         top_k: Optional[int] = None,
+        feedback: Optional[float] = None,
     ):
         """Generator that yields tokens one at a time for streaming.
 
@@ -270,6 +271,9 @@ class TextGenerator:
             temperature: Override config.temperature.
             top_p: Override config.top_p.
             top_k: Override config.top_k.
+            feedback: Optional scalar score. When provided and an OnlineLearner
+                      is attached, the full response is submitted after the
+                      stream completes.
 
         Yields:
             Individual generated token strings.
