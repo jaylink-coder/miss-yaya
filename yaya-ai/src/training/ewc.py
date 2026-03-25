@@ -136,18 +136,43 @@ class EWC:
     # Penalty
     # ------------------------------------------------------------------
 
-    def penalty(self) -> torch.Tensor:
+    def penalty(self, dynamic_lambda: bool = False) -> torch.Tensor:
         """Compute the EWC quadratic regularisation penalty.
 
         Returns a scalar tensor.  Returns 0.0 if Fisher has not been computed yet.
         Fisher and reference weights are moved to each parameter's device on the fly,
         so this works correctly with DDP and mixed-device setups.
+
+        Args:
+            dynamic_lambda: When True, scales the effective lambda by
+                ``1 + mean_squared_drift`` across all parameters.  This
+                self-reinforces: the further the model drifts from the
+                reference, the stronger the penalty becomes — preventing
+                runaway adaptation during online fine-tuning.
         """
         if not self.fisher:
             # Fisher not yet computed — no penalty
             return torch.tensor(0.0)
 
-        loss = torch.tensor(0.0, device=next(self.model.parameters()).device)
+        device = next(self.model.parameters()).device
+        loss = torch.tensor(0.0, device=device)
+
+        if dynamic_lambda:
+            # Compute mean squared drift across all tracked parameters first.
+            # Done in float32 to avoid underflow with bfloat16.
+            drift_sum = 0.0
+            n_params = 0
+            for name, param in self.model.named_parameters():
+                if name not in self.fisher:
+                    continue
+                ref = self.optimal_params[name].to(param.device)
+                drift_sum += (param.detach().float() - ref.float()).pow(2).mean().item()
+                n_params += 1
+            mean_drift = drift_sum / max(n_params, 1)
+            effective_lambda = self.lambda_ewc * (1.0 + mean_drift)
+        else:
+            effective_lambda = self.lambda_ewc
+
         for name, param in self.model.named_parameters():
             if name not in self.fisher:
                 continue
@@ -155,7 +180,25 @@ class EWC:
             ref = self.optimal_params[name].to(param.device)
             loss = loss + (fisher * (param - ref).pow(2)).sum()
 
-        return (self.lambda_ewc / 2.0) * loss
+        return (effective_lambda / 2.0) * loss
+
+    def drift_magnitude(self) -> float:
+        """Return the mean squared L2 drift from the reference parameters.
+
+        Useful for monitoring how far the model has moved since the EWC
+        reference was snapshotted.  Returns 0.0 if Fisher not yet computed.
+        """
+        if not self.optimal_params:
+            return 0.0
+        drift_sum = 0.0
+        n = 0
+        for name, param in self.model.named_parameters():
+            if name not in self.optimal_params:
+                continue
+            ref = self.optimal_params[name].to(param.device)
+            drift_sum += (param.detach().float() - ref.float()).pow(2).mean().item()
+            n += 1
+        return drift_sum / max(n, 1)
 
     # ------------------------------------------------------------------
     # State dict / save / load  (mirrors EMA interface)
