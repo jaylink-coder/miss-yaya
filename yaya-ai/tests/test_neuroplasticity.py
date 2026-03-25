@@ -134,24 +134,33 @@ class TestLoRA:
 
     def test_adapter_save_load_roundtrip(self):
         from src.model.lora import inject_lora, LoRAConfig, lora_state_dict
-        model_a = tiny_model()
-        model_b = tiny_model()
         cfg = LoRAConfig(rank=4)
-        inject_lora(model_a, cfg)
-        inject_lora(model_b, cfg)
+        model = tiny_model()
+        inject_lora(model, cfg)
+
+        # Run a forward pass to get a reference output
+        batch = fake_batch()
+        with torch.no_grad():
+            out_before = model(**batch)["logits"].clone()
 
         with tempfile.NamedTemporaryFile(suffix=".pt", delete=False) as f:
             path = f.name
         try:
-            torch.save(lora_state_dict(model_a), path)
-            sd = torch.load(path, weights_only=True)
-            model_b.load_state_dict(sd, strict=False)
-            # Outputs should now match
-            batch = fake_batch()
+            torch.save(lora_state_dict(model), path)
+
+            # Zero out the adapter weights in place to simulate a fresh init
             with torch.no_grad():
-                out_a = model_a(**batch)["logits"]
-                out_b = model_b(**batch)["logits"]
-            assert torch.allclose(out_a, out_b, atol=1e-5)
+                for name, p in model.named_parameters():
+                    if "lora_A" in name or "lora_B" in name:
+                        p.zero_()
+
+            # Reload the saved adapters — output must match original
+            sd = torch.load(path, weights_only=True)
+            model.load_state_dict(sd, strict=False)
+            with torch.no_grad():
+                out_after = model(**batch)["logits"]
+            assert torch.allclose(out_before, out_after, atol=1e-5), \
+                "Output after adapter save/load must match original"
         finally:
             os.unlink(path)
 
