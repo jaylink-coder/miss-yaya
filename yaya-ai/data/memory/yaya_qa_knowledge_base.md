@@ -226,7 +226,7 @@ Total entries: 115
 
 **[110]** Q402 EMH: weak holds, semi-strong contested; momentum/value anomalies; Shiller/Thaler behavioural critique; bubbles exist
 
-**[111]** Q403 Neuroplasticity: Hebb's rule + LTP (AMPA receptor insertion); cortical remapping (Merzenich monkeys, Maguire taxi drivers, musician maps); neurogenesis in hippocampal dentate gyrus; CIMT for stroke recovery; limits: critical periods (Hubel & Wiesel, Genie), Nogo-A/MAG/perineuronal nets inhibit adult rewiring, age degrades neuromodulator signaling — but plasticity never reaches zero
+**[111]** Q403 Neuroplasticity: Hebb's rule + LTP (AMPA receptor insertion); cortical remapping (Merzenich monkeys, Maguire taxi drivers, musician maps); neurogenesis in hippocampal dentate gyrus (exercise + enrichment); CIMT for stroke recovery; limits: critical periods (Hubel & Wiesel, Genie), Nogo-A/MAG/perineuronal nets inhibit adult rewiring, age degrades cholinergic neuromodulation — but plasticity never reaches zero
 
 **[112]** Q404 Goedel incompleteness 1931: true unprovable statements in any consistent system; kills Hilbert programme; linked to halting problem
 
