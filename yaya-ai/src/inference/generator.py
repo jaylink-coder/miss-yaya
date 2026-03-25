@@ -346,8 +346,9 @@ class TextGenerator:
 
             input_tensor = next_token.unsqueeze(0)
 
-        # Online learning — submit full response after stream completes
+        # Online learning — submit full response after stream completes.
+        # Use token-boundary slicing (not character slicing).
         if feedback is not None and self.online_learner is not None:
-            full_response = self.tokenizer.decode(generated_ids)
-            response_only = full_response[len(prompt):]
+            prompt_token_count = len(input_ids)
+            response_only = self.tokenizer.decode(generated_ids[prompt_token_count:])
             self.online_learner.add_example(prompt, response_only, score=feedback)
