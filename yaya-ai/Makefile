@@ -47,6 +47,9 @@ test-data:
 test-inference:
 	pytest tests/test_inference.py -v
 
+test-neuroplasticity:
+	pytest tests/test_neuroplasticity.py -v --tb=short
+
 test-cov:
 	pytest tests/ -v --cov=src --cov-report=term-missing
 
