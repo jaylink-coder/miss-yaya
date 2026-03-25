@@ -108,7 +108,8 @@ class MAML:
         if params is None:
             params = self._get_params()
 
-        adapted = {k: v.clone() for k, v in params.items()}
+        # Clone to leaf tensors with grad so autograd.grad can differentiate
+        adapted = {k: v.clone().detach().requires_grad_(True) for k, v in params.items()}
 
         for _ in range(self.config.inner_steps):
             loss = self._functional_loss(support_batch, adapted)
