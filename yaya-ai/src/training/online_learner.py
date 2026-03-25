@@ -30,11 +30,14 @@ import os
 import threading
 from collections import deque
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any, Optional, TYPE_CHECKING
 
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+
+if TYPE_CHECKING:
+    from src.training.ewc import EWC
 
 
 # ---------------------------------------------------------------------------
