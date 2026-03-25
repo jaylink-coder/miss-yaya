@@ -130,6 +130,6 @@ class EMA:
         print(f"EMA saved to {path}")
 
     def load(self, path: str):
-        state = torch.load(path, map_location="cpu")
+        state = torch.load(path, map_location="cpu", weights_only=False)
         self.load_state_dict(state)
         print(f"EMA loaded from {path} (step {self.step_count})")
