@@ -334,4 +334,13 @@ def load_training_config(path: str) -> TrainingConfig:
         ),
         human_review_enabled=training.get("human_review_enabled", False),
         human_review_z_threshold=training.get("human_review_z_threshold", 3.0),
+        curriculum_enabled=training.get("curriculum_enabled", False),
+        curriculum_strategy=training.get("curriculum_strategy", "linear"),
+        curriculum_warmup_easy_steps=training.get("curriculum_warmup_easy_steps", 10_000),
+        curriculum_easy_ceiling=training.get("curriculum_easy_ceiling", 0.4),
+        curriculum_competence_loss_threshold=training.get(
+            "curriculum_competence_loss_threshold", 2.5
+        ),
+        reward_model_enabled=training.get("reward_model_enabled", False),
+        reward_model_path=training.get("reward_model_path", ""),
     )
