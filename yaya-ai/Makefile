@@ -221,6 +221,20 @@ sft-moe-1.5b:
 		--train_config configs/training/sft_1_5b.yaml \
 		--resume checkpoints/yaya-1.5b-moe/latest
 
+# Reward model training (train from preference pairs, then use for RLHF scoring)
+train-reward-model:
+	python -c "\
+from src.utils.config import load_model_config; \
+from src.model.yaya_model import YayaForCausalLM; \
+from src.training.reward_model import RewardModel, RewardModelConfig, RewardModelTrainer; \
+import torch; \
+cfg = load_model_config('configs/model/yaya_1_5b.yaml'); \
+model = YayaForCausalLM(cfg); \
+rm_cfg = RewardModelConfig(hidden_size=cfg.hidden_size); \
+rm = RewardModel(model, config=rm_cfg, freeze_backbone=True); \
+print('RewardModel ready — head params:', sum(p.numel() for p in rm.head.parameters())); \
+print('Backbone frozen params:', sum(p.numel() for p in rm.backbone.parameters() if not p.requires_grad))"
+
 # DPO (Alignment)
 align-dpo-1b:
 	python scripts/align_dpo_hf.py \
