@@ -184,6 +184,19 @@ class Trainer:
             )
             print(f"OnlineLearner enabled (buffer={ol_cfg.buffer_capacity}, every={ol_cfg.finetune_every_n_examples})")
 
+            # Optionally wrap OnlineLearner with ElasticGuard for resilience
+            if getattr(config, "elastic_guard_enabled", False):
+                from src.training.neuro_elastic import ElasticGuard, ElasticConfig
+                elastic_cfg = ElasticConfig(
+                    loss_spike_ratio=getattr(config, "elastic_loss_spike_ratio", 2.5),
+                    max_grad_norm_hard=getattr(config, "elastic_max_grad_norm", 20.0),
+                    cooldown_seconds=getattr(config, "elastic_cooldown_seconds", 60.0),
+                    max_per_minute=getattr(config, "elastic_max_per_minute", 120),
+                    max_adapter_norm=getattr(config, "elastic_max_adapter_norm", 100.0),
+                )
+                self.online_learner = ElasticGuard(self.online_learner, elastic_cfg)
+                print("ElasticGuard enabled — rollback, circuit breaker, and feedback validation active.")
+
         # Training state
         self.global_step = 0
         self.epoch = 0
