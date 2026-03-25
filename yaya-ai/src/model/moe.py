@@ -43,15 +43,7 @@ class MoEConfig:
     def is_moe_layer(self, layer_idx: int) -> bool:
         if not self.enabled:
             return False
-        if self.moe_layers == "all":
-            return True
-        if self.moe_layers == "alternate":
-            return layer_idx % 2 == 1
-        try:
-            indices = {int(x.strip()) for x in self.moe_layers.split(",")}
-            return layer_idx in indices
-        except ValueError:
-            return False
+        return _resolve_moe_layer(self.moe_layers, layer_idx)
 
 
 # ---------------------------------------------------------------------------
