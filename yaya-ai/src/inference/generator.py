@@ -38,7 +38,7 @@ class TextGenerator:
         model,
         tokenizer,
         device: str = "cuda",
-        online_learner: Optional["OnlineLearner"] = None,
+        online_learner: Optional["OnlineLearner | ElasticGuard"] = None,
     ):
         self.model = model
         self.tokenizer = tokenizer
