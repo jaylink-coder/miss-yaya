@@ -152,6 +152,23 @@ class TrainingConfig:
     elastic_max_per_minute: int = 120
     elastic_max_adapter_norm: float = 100.0
 
+    # Synthetic replay — generative rehearsal of past-task anchors
+    synthetic_replay_enabled: bool = False
+    synthetic_replay_anchors: int = 20
+    synthetic_replay_samples: int = 2
+    synthetic_replay_max_tokens: int = 64
+    synthetic_replay_weight: float = 0.3
+
+    # Continual learning metrics — track forgetting across eval phases
+    track_forgetting: bool = False
+    task_id: str = "default"  # Task name for ForgettingTracker.record()
+
+    # MAML meta-learning — fast adaptation from few examples
+    maml_enabled: bool = False
+    maml_inner_lr: float = 0.01
+    maml_inner_steps: int = 5
+    maml_meta_batch_size: int = 4
+
 
 def load_model_config(path: str) -> ModelConfig:
     """Load model config from YAML file."""
