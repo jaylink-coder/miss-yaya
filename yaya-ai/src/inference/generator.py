@@ -40,11 +40,13 @@ class TextGenerator:
         tokenizer,
         device: str = "cuda",
         online_learner: Optional["OnlineLearner | ElasticGuard"] = None,
+        memory: Optional["SessionMemory"] = None,
     ):
         self.model = model
         self.tokenizer = tokenizer
         self.device = device
         self.online_learner = online_learner
+        self.memory = memory   # Optional persistent cross-session memory
 
     @torch.no_grad()
     def generate(
