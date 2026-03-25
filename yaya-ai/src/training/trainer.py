@@ -167,6 +167,11 @@ class Trainer:
         # Online learner — inference-time feedback → micro-finetune
         self.online_learner: Optional[OnlineLearner] = None
         if getattr(config, "online_learning_enabled", False):
+            if tokenizer is None:
+                raise ValueError(
+                    "online_learning_enabled=True requires a tokenizer — "
+                    "pass tokenizer= to Trainer.__init__"
+                )
             ol_cfg = OnlineLearnerConfig(
                 buffer_capacity=getattr(config, "online_buffer_capacity", 1000),
                 finetune_every_n_examples=getattr(config, "online_finetune_every", 50),
