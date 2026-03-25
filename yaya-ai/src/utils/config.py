@@ -314,4 +314,13 @@ def load_training_config(path: str) -> TrainingConfig:
         maml_inner_lr=training.get("maml_inner_lr", 0.01),
         maml_inner_steps=training.get("maml_inner_steps", 5),
         maml_meta_batch_size=training.get("maml_meta_batch_size", 4),
+        sparse_gradient_k=training.get("sparse_gradient_k", 0.0),
+        alignment_monitor_enabled=training.get("alignment_monitor_enabled", False),
+        alignment_kl_threshold=training.get("alignment_kl_threshold", 0.5),
+        alignment_entropy_threshold=training.get("alignment_entropy_threshold", 0.3),
+        alignment_score_regression_threshold=training.get(
+            "alignment_score_regression_threshold", 0.10
+        ),
+        human_review_enabled=training.get("human_review_enabled", False),
+        human_review_z_threshold=training.get("human_review_z_threshold", 3.0),
     )
