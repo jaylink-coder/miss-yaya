@@ -534,6 +534,8 @@ class Trainer:
                     lora_state_dict(self.unwrapped_model),
                     os.path.join(best_ckpt, "lora_adapters.pt"),
                 )
+            if self.online_learner is not None:
+                self.online_learner.save_state(os.path.join(best_ckpt, "online_learner.pt"))
 
         # Restore original weights after EMA eval
         if self.ema is not None:
