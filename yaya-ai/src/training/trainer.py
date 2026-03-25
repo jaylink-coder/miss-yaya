@@ -314,6 +314,8 @@ class Trainer:
                     lora_state_dict(self.unwrapped_model),
                     os.path.join(final_ckpt, "lora_adapters.pt"),
                 )
+            if self.online_learner is not None:
+                self.online_learner.save_state(os.path.join(final_ckpt, "online_learner.pt"))
             print(f"\nTraining complete at step {self.global_step}")
 
         self.logger.finish()
