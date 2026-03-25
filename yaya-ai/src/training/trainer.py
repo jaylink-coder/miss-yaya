@@ -248,6 +248,20 @@ class Trainer:
             if os.path.exists(ewc_path):
                 self.ewc.load(ewc_path)
 
+        # Restore LoRA adapter weights if a checkpoint exists
+        if self.lora_enabled and _ckpt_path is not None:
+            lora_path = os.path.join(_ckpt_path, "lora_adapters.pt")
+            if os.path.exists(lora_path):
+                lora_state = torch.load(lora_path, map_location=self.device, weights_only=True)
+                self.unwrapped_model.load_state_dict(lora_state, strict=False)
+                print(f"LoRA adapters restored from {lora_path}")
+
+        # Restore online learner state if a checkpoint exists
+        if self.online_learner is not None and _ckpt_path is not None:
+            ol_path = os.path.join(_ckpt_path, "online_learner.pt")
+            if os.path.exists(ol_path):
+                self.online_learner.load_state(ol_path)
+
         # Log model info
         if is_main_process():
             summary = self.unwrapped_model.generate_summary()
