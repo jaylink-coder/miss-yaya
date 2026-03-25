@@ -457,6 +457,8 @@ class Trainer:
                             lora_state_dict(self.unwrapped_model),
                             os.path.join(ckpt_dir, "lora_adapters.pt"),
                         )
+                    if self.online_learner is not None:
+                        self.online_learner.save_state(os.path.join(ckpt_dir, "online_learner.pt"))
                     barrier()
 
     @torch.no_grad()
