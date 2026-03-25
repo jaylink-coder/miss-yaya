@@ -50,6 +50,9 @@ test-inference:
 test-neuroplasticity:
 	pytest tests/test_neuroplasticity.py -v --tb=short
 
+test-continual:
+	pytest tests/test_neuroplasticity.py -v --tb=short -k "ElasticGuard or DynamicEWC or ExpertUtil or SyntheticReplay or ForgettingTracker or MAML"
+
 test-cov:
 	pytest tests/ -v --cov=src --cov-report=term-missing
 
