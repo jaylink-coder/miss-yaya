@@ -293,6 +293,12 @@ class Trainer:
                 self.ema.save(os.path.join(final_ckpt, "ema.pt"))
             if self.ewc is not None and self.ewc.fisher:
                 self.ewc.save(os.path.join(final_ckpt, "ewc.pt"))
+            if self.lora_enabled:
+                from src.model.lora import lora_state_dict
+                torch.save(
+                    lora_state_dict(self.unwrapped_model),
+                    os.path.join(final_ckpt, "lora_adapters.pt"),
+                )
             print(f"\nTraining complete at step {self.global_step}")
 
         self.logger.finish()
