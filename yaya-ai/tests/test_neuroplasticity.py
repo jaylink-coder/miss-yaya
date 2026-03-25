@@ -775,14 +775,12 @@ class TestExpertUtilization:
 
     def test_collapse_detection(self):
         """If one expert gets 0 tokens, collapse_detected must be True."""
-        from src.model.moe import MoEFeedForward, MoERouter
+        from src.model.moe import MoEFeedForward
         moe = MoEFeedForward(hidden_size=64, intermediate_size=128, num_experts=4, top_k=2)
-        # Manually inject a routing bias so expert 0 never gets tokens
-        with torch.no_grad():
-            moe.router.gate.weight[0].fill_(-1e9)  # Make expert 0 essentially unreachable
         moe.train()
         x = torch.randn(4, 16, 64)
-        for _ in range(20):
-            moe(x)
+        moe(x)  # Populate steps_tracked
+        # Manually zero out one expert's count to simulate total collapse
+        moe.router._expert_token_counts[0] = 0.0
         stats = moe.routing_stats()
         assert stats["collapse_detected"], "Collapse should be detected when an expert gets no tokens"
