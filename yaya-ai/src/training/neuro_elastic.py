@@ -68,6 +68,13 @@ class ElasticConfig:
     # Warn when any adapter parameter's L2 norm exceeds this
     max_adapter_norm: float = 100.0
 
+    # --- Human-in-the-loop oversight ---
+    # Queue examples for human review instead of silently accepting/rejecting
+    # when their score is unusually extreme (outside this many std-devs)
+    human_review_enabled: bool = False
+    human_review_z_threshold: float = 3.0   # z-score beyond which to flag
+    human_review_queue_size: int = 100       # max pending-review items
+
 
 # ---------------------------------------------------------------------------
 # ElasticGuard
