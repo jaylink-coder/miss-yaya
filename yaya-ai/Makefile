@@ -63,6 +63,15 @@ test-neuroplasticity:
 test-continual:
 	pytest tests/test_neuroplasticity.py -v --tb=short -k "ElasticGuard or DynamicEWC or ExpertUtil or SyntheticReplay or ForgettingTracker or MAML"
 
+test-curriculum:
+	pytest tests/test_neuroplasticity.py -v --tb=short -k "Curriculum or DifficultyScorer or BuildCurriculum"
+
+test-reward-model:
+	pytest tests/test_neuroplasticity.py -v --tb=short -k "RewardModel or BradleyTerry or RewardModelTrainer"
+
+test-persistent-memory:
+	pytest tests/test_neuroplasticity.py -v --tb=short -k "PersistentMemory or SessionMemory"
+
 test-cov:
 	pytest tests/ -v --cov=src --cov-report=term-missing
 
