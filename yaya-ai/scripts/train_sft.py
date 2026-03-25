@@ -95,7 +95,17 @@ def main():
         config=train_config,
         train_dataloader=train_dataloader,
         eval_dataloader=eval_dataloader,
+        tokenizer=tokenizer,
     )
+
+    # Continual learning: anchor current weights before Phase 2 fine-tuning
+    if args.compute_ewc_fisher:
+        if trainer.ewc is None:
+            print("WARNING: --compute_ewc_fisher passed but ewc_lambda=0 in config. Skipping.")
+        else:
+            if is_main_process():
+                print("Computing EWC Fisher information matrix on training data...")
+            trainer.compute_ewc_fisher()
 
     trainer.train(resume_from=args.resume)
 
