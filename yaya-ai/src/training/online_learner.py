@@ -75,6 +75,7 @@ class OnlineLearner:
         config: OnlineLearnerConfig,
         device: torch.device,
         ewc: Optional["EWC"] = None,
+        synthetic_replay: Optional["SyntheticReplay"] = None,
     ):
         if tokenizer is None:
             raise ValueError(
@@ -86,6 +87,7 @@ class OnlineLearner:
         self.config = config
         self.device = device
         self.ewc = ewc  # Optional EWC regulariser — prevents forgetting during micro-finetune
+        self.synthetic_replay = synthetic_replay  # Optional generative replay
 
         self.buffer: deque[dict] = deque(maxlen=config.buffer_capacity)
         self.examples_since_last_finetune = 0
