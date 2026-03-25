@@ -831,5 +831,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-25T18:28:20.053732"
+  },
+  {
+    "id": 119,
+    "content": "Q411 Self/non-self: thymic negative selection, AIRE gene, Tregs, anergy; breaks: molecular mimicry (rheumatic fever), AIRE mutations",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:31:13.623212"
+  },
+  {
+    "id": 120,
+    "content": "Q412 Entropy: S=k_B*ln(Omega); increases because disordered states vastly outnumber ordered ones; Maxwell's Demon; arrow of time",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:31:13.654359"
+  },
+  {
+    "id": 121,
+    "content": "Q413 Social capital: Bourdieu (individual advantage) vs Putnam (Bowling Alone, civic decline); bridging vs bonding; isolation = 15 cigs/day",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:31:13.660135"
+  },
+  {
+    "id": 122,
+    "content": "Q414 Primes: infinite (Euclid), unique factorisation; RSA security = factoring hardness; Shor's algorithm threatens it; post-quantum crypto",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:31:13.691852"
+  },
+  {
+    "id": 123,
+    "content": "Q415 Keystone species (Paine 1966): disproportionate effect; sea otters/wolves Yellowstone trophic cascade; sea star removal -> monoculture",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:31:13.711754"
   }
 ]

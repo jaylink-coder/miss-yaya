@@ -4995,3 +4995,92 @@ Counter-currents: Romantics reacted against cold rationalism. Enlightenment idea
 **Rating: 9.0/10**
 
 ---
+
+### Q411 — Medicine
+**How does the immune system distinguish self from non-self?**
+
+Central tolerance (thymus education for T-cells): developing T-cells are shown every protein the body makes (AIRE gene). Those reacting too strongly to self are deleted (negative selection); those that can't recognise MHC are also deleted. Survivors react to MHC + foreign peptide only.
+
+Peripheral tolerance (backup): regulatory T-cells (Tregs) suppress escaped autoreactive cells; anergy (T-cell encounters antigen without co-stimulation = inactivated); ignorance (some self-antigens sequestered in eye, brain, testis).
+
+B-cells: receptor editing and clonal deletion in bone marrow.
+
+What breaks it: molecular mimicry (strep antigens mimic heart proteins -> rheumatic fever); bystander activation; loss of Tregs; AIRE mutations (type 1 APS).
+
+**Rating: 9.0/10**
+
+---
+
+### Q412 — Physics
+**What is entropy and why does it always increase?**
+
+Entropy measures microstates consistent with an observed macrostate. Boltzmann: S = k_B * ln(Omega). More disorder = more arrangements = higher entropy.
+
+Why it increases: universe starts in extreme low-entropy state (Big Bang). Any spontaneous change overwhelmingly tends toward higher entropy because there are vastly more disordered configurations. It's statistical — individual particle collisions are time-reversible, but with ~10^80 particles, spontaneous order is effectively impossible.
+
+Examples: heat flows hot to cold; ice melts (liquid has more positional microstates); gas expands.
+
+Maxwell's Demon: a sorting demon could decrease entropy but must erase memory, which generates entropy (Landauer's principle).
+
+Arrow of time: entropy increase is why past and future feel different. Fundamental physics is (nearly) time-symmetric; time's direction emerges from entropy.
+
+**Rating: 9.5/10**
+
+---
+
+### Q413 — Sociology
+**What is social capital and why does it matter?**
+
+Social capital: networks, norms of reciprocity, and trust enabling collective action and individual advantage.
+
+Two traditions: Bourdieu (individual resource — who you know gates opportunities; class reproduction); Putnam (collective resource — Bowling Alone 2000: declining civic participation correlates with declining trust, health, governance).
+
+Bridging vs bonding (Putnam): bonding = within-group ties (support but exclusion); bridging = cross-group ties (new info, mobility, cohesion).
+
+Why it matters: health (social isolation = 15 cigarettes/day, Holt-Lunstad); economic mobility (who-you-know > qualifications); democracy (Putnam's Italian regions: civic traditions predict governance centuries later); crime reduction.
+
+Dark side: bonding capital -> tribalism, mafia-style networks.
+
+**Rating: 8.5/10**
+
+---
+
+### Q414 — Mathematics
+**What is a prime number and why are they important in cryptography?**
+
+A prime is a natural number > 1 with no divisors other than 1 and itself.
+
+Key facts: infinitely many primes (Euclid ~300 BCE); Prime Number Theorem (density near n ~ 1/ln(n)); unique prime factorisation (Fundamental Theorem of Arithmetic).
+
+Why cryptography depends on them — RSA (1977, Rivest Shamir Adleman):
+1. Choose two large primes p, q (~2048 bits each)
+2. Public key: n = p*q (trivial to compute)
+3. Private key: derived from p and q separately
+Trap: factoring a 2048-bit number is computationally infeasible — best algorithms take longer than age of universe.
+
+ECC: more modern alternative with smaller keys.
+
+Threat: Shor's algorithm on quantum computers factors in polynomial time — drives post-quantum cryptography research.
+
+**Rating: 9.0/10**
+
+---
+
+### Q415 — Ecology
+**What is the concept of a keystone species?**
+
+A keystone species has disproportionately large ecological effect relative to its biomass. Remove it and the ecosystem collapses.
+
+Origin: Paine (1966) removed sea stars from intertidal zone. Mussels exploded, crowded out all others — 15 species to mussel monoculture.
+
+Examples:
+- Sea otters: eat urchins; without otters, urchins destroy kelp forests -> lose hundreds of dependent species
+- African elephants: create waterholes, disperse seeds, clear bush; remove them -> savannah converts to closed woodland
+- Wolves in Yellowstone (reintroduced 1995): reduced elk overgrazing -> rivers recovered -> beavers returned -> fish/bird habitat restored (trophic cascade)
+- Fig trees: year-round fruit supports dozens of species during lean seasons
+
+Policy: losing 0.1% of biomass (sea star) can mean losing 90% of diversity. Conservation must identify keystone species, not just total biomass.
+
+**Rating: 9.0/10**
+
+---

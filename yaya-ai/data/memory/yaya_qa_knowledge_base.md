@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 119
+Total entries: 124
 
 ---
 
@@ -241,3 +241,13 @@ Total entries: 119
 **[117]** Q409 AI ⊃ ML ⊃ Deep Learning; AlexNet 2012 ImageNet breakthrough; DL = hierarchical reps via many-layer networks
 
 **[118]** Q410 Enlightenment 1685-1800: Locke/Voltaire/Hume/Kant/Smith; natural rights, separation of powers; American/French revolutions
+
+**[119]** Q411 Self/non-self: thymic negative selection, AIRE gene, Tregs, anergy; breaks: molecular mimicry (rheumatic fever), AIRE mutations
+
+**[120]** Q412 Entropy: S=k_B*ln(Omega); increases because disordered states vastly outnumber ordered ones; Maxwell's Demon; arrow of time
+
+**[121]** Q413 Social capital: Bourdieu (individual advantage) vs Putnam (Bowling Alone, civic decline); bridging vs bonding; isolation = 15 cigs/day
+
+**[122]** Q414 Primes: infinite (Euclid), unique factorisation; RSA security = factoring hardness; Shor's algorithm threatens it; post-quantum crypto
+
+**[123]** Q415 Keystone species (Paine 1966): disproportionate effect; sea otters/wolves Yellowstone trophic cascade; sea star removal -> monoculture
