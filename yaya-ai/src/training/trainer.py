@@ -194,6 +194,8 @@ class Trainer:
                     cooldown_seconds=getattr(config, "elastic_cooldown_seconds", 60.0),
                     max_per_minute=getattr(config, "elastic_max_per_minute", 120),
                     max_adapter_norm=getattr(config, "elastic_max_adapter_norm", 100.0),
+                    human_review_enabled=getattr(config, "human_review_enabled", False),
+                    human_review_z_threshold=getattr(config, "human_review_z_threshold", 3.0),
                 )
                 self.online_learner = ElasticGuard(self.online_learner, elastic_cfg)
                 print("ElasticGuard enabled — rollback, circuit breaker, and feedback validation active.")
