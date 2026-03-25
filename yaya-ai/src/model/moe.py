@@ -140,7 +140,45 @@ class MoERouter(nn.Module):
         mean_router_prob = router_probs.mean(dim=0)                             # [E]
         load_balance_loss = self.num_experts * (fraction_routed * mean_router_prob).sum()
 
+        # Accumulate per-expert token counts for utilization monitoring
+        if self.training:
+            self._expert_token_counts += tokens_per_expert.cpu()
+            self._steps_tracked += 1
+
         return router_weights, selected_experts, load_balance_loss
+
+    def routing_stats(self) -> dict:
+        """Return per-expert utilization statistics.
+
+        Returns a dict with:
+            expert_avg_tokens:  list[float] — average tokens per expert per step
+            utilization:        list[float] — fraction of total tokens each expert gets
+            steps_tracked:      int         — how many forward passes contributed
+            collapse_detected:  bool        — True if any expert receives < 1% of tokens
+        """
+        if self._steps_tracked == 0:
+            return {
+                "expert_avg_tokens": [0.0] * self.num_experts,
+                "utilization": [0.0] * self.num_experts,
+                "steps_tracked": 0,
+                "collapse_detected": False,
+            }
+        avg = (self._expert_token_counts / self._steps_tracked).tolist()
+        total = sum(avg)
+        utilization = [a / total if total > 0 else 0.0 for a in avg]
+        collapse_threshold = 1.0 / (self.num_experts * 100)  # < 1% of uniform share
+        collapse_detected = any(u < collapse_threshold for u in utilization)
+        return {
+            "expert_avg_tokens": avg,
+            "utilization": utilization,
+            "steps_tracked": self._steps_tracked,
+            "collapse_detected": collapse_detected,
+        }
+
+    def reset_routing_stats(self) -> None:
+        """Reset utilization accumulators (e.g. between training phases)."""
+        self._expert_token_counts.zero_()
+        self._steps_tracked = 0
 
 
 # ---------------------------------------------------------------------------
