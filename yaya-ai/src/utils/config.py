@@ -169,6 +169,19 @@ class TrainingConfig:
     maml_inner_steps: int = 5
     maml_meta_batch_size: int = 4
 
+    # Sparse plasticity — top-K gradient masking in online learning (0 = off)
+    sparse_gradient_k: float = 0.0
+
+    # Alignment monitoring — capability drift detection (disabled by default)
+    alignment_monitor_enabled: bool = False
+    alignment_kl_threshold: float = 0.5
+    alignment_entropy_threshold: float = 0.3
+    alignment_score_regression_threshold: float = 0.10
+
+    # Human-in-the-loop oversight in ElasticGuard
+    human_review_enabled: bool = False
+    human_review_z_threshold: float = 3.0
+
 
 def load_model_config(path: str) -> ModelConfig:
     """Load model config from YAML file."""
