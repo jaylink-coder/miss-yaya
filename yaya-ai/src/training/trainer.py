@@ -163,6 +163,20 @@ class Trainer:
             self.ewc = EWC(self.unwrapped_model, lambda_ewc=config.ewc_lambda)
             print(f"EWC enabled (lambda={config.ewc_lambda}, fisher_samples={config.ewc_fisher_samples})")
 
+        # Online learner — inference-time feedback → micro-finetune
+        self.online_learner: Optional[OnlineLearner] = None
+        if getattr(config, "online_learning_enabled", False):
+            ol_cfg = OnlineLearnerConfig(
+                buffer_capacity=getattr(config, "online_buffer_capacity", 1000),
+                finetune_every_n_examples=getattr(config, "online_finetune_every", 50),
+                micro_finetune_steps=getattr(config, "online_micro_steps", 10),
+                micro_lr=getattr(config, "online_micro_lr", 5e-5),
+            )
+            self.online_learner = OnlineLearner(
+                self.unwrapped_model, tokenizer=None, config=ol_cfg, device=self.device
+            )
+            print(f"OnlineLearner enabled (buffer={ol_cfg.buffer_capacity}, every={ol_cfg.finetune_every_n_examples})")
+
         # Training state
         self.global_step = 0
         self.epoch = 0
