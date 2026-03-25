@@ -128,6 +128,13 @@ class TrainingConfig:
     ewc_lambda: float = 0.0
     ewc_fisher_samples: int = 200
 
+    # Online learning — learn from inference-time feedback (disabled by default)
+    online_learning_enabled: bool = False
+    online_buffer_capacity: int = 1000
+    online_finetune_every: int = 50
+    online_micro_steps: int = 10
+    online_micro_lr: float = 5e-5
+
 
 def load_model_config(path: str) -> ModelConfig:
     """Load model config from YAML file."""
