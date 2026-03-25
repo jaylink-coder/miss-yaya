@@ -288,7 +288,7 @@ class SessionMemory:
         long_term: Optional[PersistentMemory] = None,
     ):
         self.session_id = session_id or f"session_{int(time.time())}"
-        self.long_term = long_term or PersistentMemory(store_dir=store_dir)
+        self.long_term = long_term if long_term is not None else PersistentMemory(store_dir=store_dir)
 
         # Session-local stores (transient — not saved to disk independently)
         self._session_facts: List[str] = []
