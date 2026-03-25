@@ -104,6 +104,13 @@ class ElasticGuard:
         # Rate limiting
         self._submission_times: deque[float] = deque(maxlen=self.config.max_per_minute)
 
+        # Human-in-the-loop review queue
+        self._review_queue: deque[dict] = deque(
+            maxlen=self.config.human_review_queue_size
+        )
+        # Running score statistics for z-score anomaly detection
+        self._score_window: deque[float] = deque(maxlen=200)
+
         # Stats
         self.stats: Dict[str, Any] = {
             "examples_accepted": 0,
@@ -113,6 +120,7 @@ class ElasticGuard:
             "steps_taken": 0,
             "last_loss": None,
             "adapter_norm_warnings": 0,
+            "examples_flagged_for_review": 0,
         }
 
     # ------------------------------------------------------------------
