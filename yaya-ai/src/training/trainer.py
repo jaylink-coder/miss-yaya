@@ -479,26 +479,32 @@ class Trainer:
         total_loss = 0.0
         num_batches = 0
 
-        for batch in self.eval_dataloader:
-            if num_batches >= self.config.eval_samples:
-                break
+        try:
+            for batch in self.eval_dataloader:
+                if num_batches >= self.config.eval_samples:
+                    break
 
-            batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
-                     for k, v in batch.items()}
+                batch = {k: v.to(self.device) if isinstance(v, torch.Tensor) else v
+                         for k, v in batch.items()}
 
-            with torch.autocast(
-                device_type="cuda" if self.device.type == "cuda" else "cpu",
-                dtype=self.amp_dtype,
-                enabled=self.use_amp,
-            ):
-                outputs = self.model(
-                    input_ids=batch["input_ids"],
-                    labels=batch["labels"],
-                    attention_mask=batch.get("attention_mask"),
-                )
+                with torch.autocast(
+                    device_type="cuda" if self.device.type == "cuda" else "cpu",
+                    dtype=self.amp_dtype,
+                    enabled=self.use_amp,
+                ):
+                    outputs = self.model(
+                        input_ids=batch["input_ids"],
+                        labels=batch["labels"],
+                        attention_mask=batch.get("attention_mask"),
+                    )
 
-            total_loss += outputs["loss"].item()
-            num_batches += 1
+                total_loss += outputs["loss"].item()
+                num_batches += 1
+
+        finally:
+            # Always restore original weights — even if evaluation throws
+            if self.ema is not None:
+                self.ema.restore()
 
         avg_loss = total_loss / max(num_batches, 1)
 
@@ -541,9 +547,5 @@ class Trainer:
                 )
             if self.online_learner is not None:
                 self.online_learner.save_state(os.path.join(best_ckpt, "online_learner.pt"))
-
-        # Restore original weights after EMA eval
-        if self.ema is not None:
-            self.ema.restore()
 
         self.model.train()
