@@ -566,6 +566,15 @@ class Trainer:
 
         self.logger.log_eval(self.global_step, metrics)
 
+        # Forgetting tracker — record eval score for current task phase
+        if self.forgetting_tracker is not None and is_main_process():
+            task_id = getattr(self.config, "task_id", "default")
+            self.forgetting_tracker.record(
+                task_id=task_id,
+                phase=self.epoch,
+                score=-avg_loss,  # Use -loss so "higher is better" convention holds
+            )
+
         # Track best model
         if avg_loss < self.best_eval_loss and is_main_process():
             self.best_eval_loss = avg_loss
