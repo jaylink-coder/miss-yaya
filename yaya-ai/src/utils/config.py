@@ -144,6 +144,14 @@ class TrainingConfig:
     online_micro_steps: int = 10
     online_micro_lr: float = 5e-5
 
+    # ElasticGuard — neuroelastic resilience wrapper for online learning
+    elastic_guard_enabled: bool = False
+    elastic_loss_spike_ratio: float = 2.5
+    elastic_max_grad_norm: float = 20.0
+    elastic_cooldown_seconds: float = 60.0
+    elastic_max_per_minute: int = 120
+    elastic_max_adapter_norm: float = 100.0
+
 
 def load_model_config(path: str) -> ModelConfig:
     """Load model config from YAML file."""
