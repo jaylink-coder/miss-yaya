@@ -1,0 +1,56 @@
+# LoRA SFT Configuration — Yaya-1.5B
+# Parameter-efficient fine-tuning: trains ~0.5% of parameters via low-rank adapters.
+# Use this instead of sft_1_5b.yaml when GPU memory is limited or fast iteration
+# is needed. Adapters saved as lora_adapters.pt alongside each checkpoint.
+#
+# To enable: pass this file as --train_config to train_sft.py
+# To merge adapters for export: call merge_lora(model) before saving
+
+seed: 42
+
+training:
+  per_device_batch_size: 8          # Larger batch OK — base weights frozen, no optimizer states
+  gradient_accumulation_steps: 4
+  learning_rate: 1.0e-4             # Higher LR safe: only adapters update
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 100
+  min_lr_ratio: 0.0
+  max_steps: 5000
+  max_seq_length: 4096
+  dtype: bfloat16
+
+  # LoRA — inject low-rank adapters into attention projections
+  lora_rank: 16                      # r: adapter bottleneck dimension
+  lora_alpha: 32.0                   # scaling = alpha / rank = 2.0
+  lora_dropout: 0.05
+  lora_target_modules: "q_proj,k_proj,v_proj,o_proj"
+
+checkpointing:
+  save_steps: 500
+  save_dir: checkpoints/yaya-1.5b-lora-sft
+  keep_last_n: 3
+
+logging:
+  log_steps: 10
+  wandb_project: yaya-ai
+  wandb_run_name: yaya-1.5b-lora-sft
+
+eval:
+  eval_steps: 500
+  eval_samples: 200
+
+data:
+  train_data: data/sft/train
+  eval_data: data/sft/eval
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 4
+
+distributed:
+  strategy: deepspeed_zero2
+  gradient_checkpointing: true
+  cpu_offload: false
