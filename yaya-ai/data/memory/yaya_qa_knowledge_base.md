@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 124
+Total entries: 129
 
 ---
 
@@ -251,3 +251,13 @@ Total entries: 124
 **[122]** Q414 Primes: infinite (Euclid), unique factorisation; RSA security = factoring hardness; Shor's algorithm threatens it; post-quantum crypto
 
 **[123]** Q415 Keystone species (Paine 1966): disproportionate effect; sea otters/wolves Yellowstone trophic cascade; sea star removal -> monoculture
+
+**[124]** Q416 Reasoning: deductive (necessarily true), inductive (probably true, black swan), abductive (best explanation, Peirce); Popper hypothetico-deductive
+
+**[125]** Q417 Evolution and complexity: selection is non-random filter; incremental steps, gene duplication, exaptation; flagellum co-option refutes irreducible complexity
+
+**[126]** Q418 2008 crisis: subprime bubble, CDO securitisation, AAA rating failure, AIG $440B CDS, Lehman collapse Sep 2008; $19T wealth destroyed
+
+**[127]** Q419 Language acquisition: Chomsky UG/poverty-of-stimulus vs Tomasello usage-based; critical period (Genie); Pirahã recursion debate; some innate predisposition
+
+**[128]** Q420 Printing press (Gutenberg ~1440): cost 300x drop; Reformation (Luther 95 Theses), Scientific Revolution, nationalism (Anderson), public sphere (Habermas)

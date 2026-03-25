@@ -866,5 +866,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-25T18:31:13.711754"
+  },
+  {
+    "id": 124,
+    "content": "Q416 Reasoning: deductive (necessarily true), inductive (probably true, black swan), abductive (best explanation, Peirce); Popper hypothetico-deductive",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:35:43.206320"
+  },
+  {
+    "id": 125,
+    "content": "Q417 Evolution and complexity: selection is non-random filter; incremental steps, gene duplication, exaptation; flagellum co-option refutes irreducible complexity",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:35:43.230843"
+  },
+  {
+    "id": 126,
+    "content": "Q418 2008 crisis: subprime bubble, CDO securitisation, AAA rating failure, AIG $440B CDS, Lehman collapse Sep 2008; $19T wealth destroyed",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:35:43.256260"
+  },
+  {
+    "id": 127,
+    "content": "Q419 Language acquisition: Chomsky UG/poverty-of-stimulus vs Tomasello usage-based; critical period (Genie); Pirahã recursion debate; some innate predisposition",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:35:43.276638"
+  },
+  {
+    "id": 128,
+    "content": "Q420 Printing press (Gutenberg ~1440): cost 300x drop; Reformation (Luther 95 Theses), Scientific Revolution, nationalism (Anderson), public sphere (Habermas)",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-25T18:35:43.295873"
   }
 ]

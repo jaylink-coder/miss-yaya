@@ -5084,3 +5084,105 @@ Policy: losing 0.1% of biomass (sea star) can mean losing 90% of diversity. Cons
 **Rating: 9.0/10**
 
 ---
+
+### Q416 — Philosophy
+**What is the difference between deductive, inductive, and abductive reasoning?**
+
+Three fundamental modes of inference:
+
+Deductive: conclusion necessarily follows from premises. Truth-preserving. Tool of mathematics and formal logic.
+Example: All humans are mortal. Socrates is human. Therefore Socrates is mortal.
+
+Inductive: conclusion is probably true given premises. Generalises from observations. Never certain.
+Example: Every swan I've seen is white. Therefore all swans are white. (Refuted by black swans, Australia 1697.)
+
+Abductive: inference to the best explanation. Chooses most plausible hypothesis.
+Example: The grass is wet. Best explanation: it rained. Not guaranteed (sprinklers possible).
+
+Role in science: induction generates hypotheses; deduction derives testable predictions; abduction selects best hypothesis when multiple fit data.
+
+C.S. Peirce formulated abduction. Popper argued science is hypothetico-deductive. In practice all three operate together.
+
+**Rating: 9.0/10**
+
+---
+
+### Q417 — Biology
+**How does evolution actually produce complexity — isn't it just random?**
+
+Common misconception: evolution is random therefore complexity can't arise.
+
+The mechanism: mutation is random; natural selection is NOT random — it consistently favours variants that reproduce more. Selection is the non-random filter on random variation.
+
+How complexity accumulates:
+- Incremental improvement: each step must be viable (1% of an eye improves survival; millions of generations -> full eye)
+- Gene duplication: one copy evolves new function while other maintains original
+- Co-option/exaptation: feathers evolved for thermoregulation, later used for flight; jaw bones became ear ossicles
+- Modularity: existing signalling pathways reused in new contexts
+
+Irreducible complexity (Behe): bacterial flagellum couldn't evolve piecemeal. Refuted: flagellum shares components with type III secretion system — co-opted from earlier function.
+
+Deep time: 3.8 billion years × millions of generations per species.
+
+**Rating: 9.0/10**
+
+---
+
+### Q418 — Economics
+**What caused the 2008 financial crisis?**
+
+Cascade of interconnected failures:
+
+1. Housing bubble: low interest rates + deregulation -> subprime lending explosion (no-doc loans)
+2. Securitisation: mortgages bundled into MBS and CDOs; risk appeared dispersed but concentrated in opaque leveraged instruments
+3. Rating agency failure: subprime CDOs rated AAA; models assumed house prices couldn't fall nationally
+4. Shadow banking: AIG wrote $440B in credit default swaps with no capital reserves; Bear Stearns/Lehman leveraged 30:1
+5. Contagion: Lehman collapsed Sep 15 2008; interbank lending froze; credit markets seized globally
+
+Consequences: $19 trillion US household wealth destroyed; 8.7 million jobs lost; global recession.
+
+Response: TARP $700B bailout, Fed QE, Dodd-Frank regulation. Moral hazard unresolved: banks socialised losses, privatised gains.
+
+**Rating: 9.5/10**
+
+---
+
+### Q419 — Linguistics
+**How do children acquire language so fast — what is the language acquisition debate?**
+
+Children reach fluent grammar in ~3 years across all languages without formal instruction.
+
+Nativist (Chomsky): Universal Grammar — innate template constraining possible grammars. Poverty of stimulus: input too incomplete to specify acquired grammar; something innate must help. Critical period: Genie case (feral child found at 13) — vocabulary but no grammar.
+
+Usage-based / Emergentist (Tomasello): general cognitive mechanisms — pattern recognition, intention-reading, analogy — suffice. No special language organ. CHILDES corpus shows input is richer than poverty-of-stimulus claims.
+
+Evidence for nativism: same developmental sequence across all cultures; sign language acquired at same pace.
+Evidence against: connectionist models acquire many structures without innate grammar; languages vary more than UG predicts (Pirahã recursion debate, Everett).
+
+Consensus: some innate biological predisposition + general learning + social interaction. Not a detailed innate grammar.
+
+**Rating: 9.0/10**
+
+---
+
+### Q420 — History
+**What was the significance of the printing press?**
+
+Gutenberg's movable-type press (~1440): most important invention of the millennium.
+
+Before: books hand-copied (Bible = 1 year); knowledge monopolised by Church and aristocracy.
+
+Immediate: cost of books dropped ~300x in 50 years; 20 million books by 1500; standardised spelling and language.
+
+Consequences:
+1. Reformation: Luther's 95 Theses (1517) spread across Germany in weeks. Church lost doctrinal monopoly. 100+ years of religious war.
+2. Scientific Revolution: scientists could publish, build on each other, correct errors. Cumulative knowledge possible.
+3. Public sphere: newspapers, pamphlets, political discourse (Habermas)
+4. Nationalism: print capitalism (Benedict Anderson) — shared printed language created imagined communities
+5. Vernacular literature: Shakespeare, Cervantes reached mass audiences
+
+Parallel to internet: same dynamics of information democratisation, disruption of gatekeepers, spread of misinformation (Eisenstein).
+
+**Rating: 9.5/10**
+
+---
