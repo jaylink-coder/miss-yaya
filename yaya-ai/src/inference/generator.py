@@ -6,8 +6,11 @@ and repetition penalty for controllable text generation.
 
 import torch
 import torch.nn.functional as F
-from typing import Optional, List, Dict, Any
+from typing import Optional, List, Dict, Any, TYPE_CHECKING
 from dataclasses import dataclass
+
+if TYPE_CHECKING:
+    from src.training.online_learner import OnlineLearner
 
 
 @dataclass
