@@ -5,6 +5,8 @@
         train-tokenizer prepare-data \
         train-1b train-1b-2gpu train-1.5b train-7b \
         sft-1b sft-1b-2gpu sft-1.5b \
+        lora-sft-1.5b lora-continual-1.5b merge-lora-1.5b \
+        train-moe-1.5b sft-moe-1.5b \
         align-dpo-1b align-dpo dpo-1.5b \
         evaluate evaluate-full \
         serve serve-production generate \
