@@ -87,6 +87,9 @@ class MoERouter(nn.Module):
         self.jitter_noise = jitter_noise
         # Lightweight linear gate — one scalar per expert per token
         self.gate = nn.Linear(hidden_size, num_experts, bias=False)
+        # Utilization tracking (CPU tensors; not model params)
+        self._expert_token_counts = torch.zeros(num_experts)
+        self._steps_tracked: int = 0
 
     def forward(
         self, hidden_states: torch.Tensor
