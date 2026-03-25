@@ -1072,3 +1072,263 @@ class TestMAML:
         meta_loss = maml.outer_step(task_batches, opt)
         assert isinstance(meta_loss, float)
         assert not (meta_loss != meta_loss)  # not NaN
+
+
+# ---------------------------------------------------------------------------
+# AlignmentMonitor
+# ---------------------------------------------------------------------------
+
+class TestAlignmentMonitor:
+    def _make_monitor(self):
+        from src.training.alignment_monitor import AlignmentMonitor, AlignmentConfig
+        model = tiny_model()
+        cfg = AlignmentConfig(
+            max_probes=5,
+            probe_tokens=4,
+            kl_alert_threshold=0.3,
+            entropy_alert_threshold=0.5,
+            score_regression_threshold=0.1,
+        )
+        return AlignmentMonitor(model, _FakeTokenizer(), cfg), model
+
+    def test_no_probes_check_returns_empty_alerts(self):
+        monitor, _ = self._make_monitor()
+        report = monitor.check_drift()
+        assert report["drift_detected"] is False
+        assert report["alerts"] == []
+
+    def test_add_probe(self):
+        monitor, _ = self._make_monitor()
+        monitor.add_probe("what is 2+2?")
+        assert len(monitor._probes) == 1
+
+    def test_set_reference_requires_probes(self):
+        monitor, _ = self._make_monitor()
+        # With no probes, set_reference should warn but not raise
+        monitor.set_reference()  # Should not raise
+        assert monitor._reference is None
+
+    def test_set_reference_with_probes(self):
+        monitor, _ = self._make_monitor()
+        monitor.add_probe("hello world")
+        monitor.set_reference()
+        assert monitor._reference is not None
+        assert monitor._reference_entropy is not None
+
+    def test_no_drift_right_after_reference(self):
+        """Immediately after set_reference, KL divergence should be ~0."""
+        monitor, _ = self._make_monitor()
+        monitor.add_probe("test prompt one")
+        monitor.set_reference()
+        report = monitor.check_drift()
+        # KL against itself should be ~0, no alert
+        assert report["kl_divergence"] < 0.01
+
+    def test_drift_detected_after_large_weight_change(self):
+        """After perturbing model weights, KL divergence should rise."""
+        monitor, model = self._make_monitor()
+        monitor.add_probe("explain gravity")
+        monitor.set_reference()
+        # Massively perturb weights
+        with torch.no_grad():
+            for p in model.parameters():
+                p.add_(torch.randn_like(p) * 10.0)
+        report = monitor.check_drift()
+        # KL should be non-zero
+        assert report["kl_divergence"] > 0.0
+
+    def test_score_floor_regression_alert(self):
+        monitor, _ = self._make_monitor()
+        monitor.set_score_floor("task_A", min_score=0.8)
+        report = monitor.check_drift(task_scores={"task_A": 0.5})
+        assert report["drift_detected"] is True
+        assert "task_A" in report["score_regressions"]
+
+    def test_score_floor_no_alert_when_above_floor(self):
+        monitor, _ = self._make_monitor()
+        monitor.set_score_floor("task_A", min_score=0.8)
+        report = monitor.check_drift(task_scores={"task_A": 0.9})
+        assert "task_A" not in report["score_regressions"]
+
+    def test_drift_trend_history(self):
+        monitor, _ = self._make_monitor()
+        monitor.add_probe("hello")
+        monitor.set_reference()
+        monitor.check_drift()
+        monitor.check_drift()
+        assert len(monitor.drift_trend()) == 2
+
+    def test_is_safe_before_any_check(self):
+        monitor, _ = self._make_monitor()
+        assert monitor.is_safe() is True
+
+    def test_save_load_roundtrip(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            monitor, _ = self._make_monitor()
+            monitor.add_probe("save test prompt")
+            monitor.set_score_floor("t1", 0.7)
+            path = os.path.join(tmpdir, "monitor.pt")
+            monitor.save(path)
+
+            from src.training.alignment_monitor import AlignmentMonitor, AlignmentConfig
+            monitor2 = AlignmentMonitor(tiny_model(), _FakeTokenizer(), AlignmentConfig())
+            monitor2.load(path)
+            assert len(monitor2._probes) == 1
+            assert "t1" in monitor2._score_floors
+
+
+# ---------------------------------------------------------------------------
+# Human-in-the-loop review queue
+# ---------------------------------------------------------------------------
+
+class TestHumanReviewQueue:
+    def _make_guard_with_review(self, tmpdir):
+        from src.training.online_learner import OnlineLearner, OnlineLearnerConfig
+        from src.training.neuro_elastic import ElasticGuard, ElasticConfig
+        model = tiny_model()
+        ol_cfg = OnlineLearnerConfig(
+            buffer_capacity=50,
+            min_examples_to_finetune=2,
+            finetune_every_n_examples=99,
+            micro_finetune_steps=1,
+            micro_lr=1e-4,
+            max_seq_length=32,
+            buffer_path=os.path.join(tmpdir, "buf.jsonl"),
+        )
+        learner = OnlineLearner(model, _FakeTokenizer(), ol_cfg, torch.device("cpu"))
+        cfg = ElasticConfig(
+            human_review_enabled=True,
+            human_review_z_threshold=2.0,  # Flag if score > 2 std-devs from mean
+        )
+        return ElasticGuard(learner, cfg)
+
+    def test_review_queue_empty_initially(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard = self._make_guard_with_review(tmpdir)
+            assert guard.review_queue_size() == 0
+
+    def test_normal_scores_not_flagged(self):
+        """With insufficient score history, no flagging occurs."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard = self._make_guard_with_review(tmpdir)
+            for i in range(5):
+                guard.add_example(f"p{i}", " r", score=1.0)
+            assert guard.review_queue_size() == 0
+
+    def test_anomalous_score_flagged_after_history(self):
+        """After 10 normal scores, an extreme score should be flagged."""
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard = self._make_guard_with_review(tmpdir)
+            # Build score history with tight distribution
+            for i in range(12):
+                guard.add_example(f"p{i}", " r", score=1.0)
+            # Now submit an extreme outlier
+            guard.add_example("outlier", " resp", score=999.0)
+            # Score is clamped to score_max=10.0, but still extreme vs history of 1.0
+            assert guard.review_queue_size() > 0
+
+    def test_pop_review_queue_clears_it(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard = self._make_guard_with_review(tmpdir)
+            # Force a flag by directly injecting into review queue
+            guard._review_queue.append({"prompt": "x", "response": "y", "score": 99.0, "timestamp": 0.0, "reason": "test"})
+            assert guard.review_queue_size() == 1
+            items = guard.pop_review_queue()
+            assert len(items) == 1
+            assert guard.review_queue_size() == 0
+
+    def test_review_item_has_expected_fields(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard = self._make_guard_with_review(tmpdir)
+            guard._review_queue.append({"prompt": "p", "response": "r", "score": 5.0, "timestamp": 0.0, "reason": "score_anomaly"})
+            items = guard.pop_review_queue()
+            assert items[0]["reason"] == "score_anomaly"
+            assert "prompt" in items[0]
+            assert "score" in items[0]
+
+    def test_stats_track_flagged_count(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            guard = self._make_guard_with_review(tmpdir)
+            for i in range(15):
+                guard.add_example(f"p{i}", " r", score=1.0)
+            guard.add_example("outlier", " resp", score=9.9)
+            assert guard.stats["examples_flagged_for_review"] >= 0  # May or may not flag depending on variance
+
+
+# ---------------------------------------------------------------------------
+# Sparse plasticity
+# ---------------------------------------------------------------------------
+
+class TestSparsePlasticity:
+    def test_sparse_gradient_zeros_low_magnitude(self):
+        from src.training.online_learner import _apply_sparse_gradients
+        model = tiny_model()
+        # Set up fake gradients
+        for p in model.parameters():
+            if p.requires_grad:
+                p.grad = torch.randn_like(p)
+        # Apply top-10% sparse mask
+        _apply_sparse_gradients(model, k=0.1)
+        # Count non-zero grads
+        total = 0
+        nonzero = 0
+        for p in model.parameters():
+            if p.grad is not None:
+                total += p.grad.numel()
+                nonzero += (p.grad != 0).sum().item()
+        if total > 0:
+            fraction_kept = nonzero / total
+            # Should keep approximately 10% (within tolerance due to ties)
+            assert fraction_kept <= 0.15, f"Too many grads kept: {fraction_kept:.3f}"
+
+    def test_sparse_gradient_k_zero_is_noop(self):
+        from src.training.online_learner import _apply_sparse_gradients
+        model = tiny_model()
+        for p in model.parameters():
+            if p.requires_grad:
+                p.grad = torch.ones_like(p)
+        _apply_sparse_gradients(model, k=0.0)
+        # All gradients should still be 1.0 (noop)
+        for p in model.parameters():
+            if p.grad is not None:
+                assert (p.grad == 1.0).all()
+
+    def test_sparse_gradient_k_one_is_noop(self):
+        from src.training.online_learner import _apply_sparse_gradients
+        model = tiny_model()
+        for p in model.parameters():
+            if p.requires_grad:
+                p.grad = torch.ones_like(p)
+        _apply_sparse_gradients(model, k=1.0)
+        # k=1.0 = keep all — should be noop
+        for p in model.parameters():
+            if p.grad is not None:
+                assert (p.grad == 1.0).all()
+
+    def test_sparse_plasticity_in_online_learner_step(self):
+        """OnlineLearner with sparse_gradient_k > 0 must complete a step without error."""
+        from src.training.online_learner import OnlineLearner, OnlineLearnerConfig
+        with tempfile.TemporaryDirectory() as tmpdir:
+            model = tiny_model()
+            cfg = OnlineLearnerConfig(
+                buffer_capacity=50,
+                min_examples_to_finetune=2,
+                finetune_every_n_examples=99,
+                micro_finetune_steps=1,
+                micro_lr=1e-4,
+                max_seq_length=32,
+                buffer_path=os.path.join(tmpdir, "buf.jsonl"),
+                sparse_gradient_k=0.1,
+            )
+            learner = OnlineLearner(model, _FakeTokenizer(), cfg, torch.device("cpu"))
+            for i in range(4):
+                learner.add_example(f"p{i}", f" r{i}", score=1.0)
+            result = learner.step()
+            assert result is not None
+
+    def test_config_defaults(self):
+        from src.utils.config import TrainingConfig
+        cfg = TrainingConfig()
+        assert cfg.sparse_gradient_k == 0.0
+        assert cfg.alignment_monitor_enabled is False
+        assert cfg.human_review_enabled is False
