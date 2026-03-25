@@ -155,6 +155,11 @@ class OnlineLearner:
             # EWC penalty — prevents online updates from erasing prior knowledge
             if self.ewc is not None:
                 batch_loss = batch_loss + self.ewc.penalty()
+            # Synthetic replay — rehearse past-task anchors
+            if self.synthetic_replay is not None:
+                replay_loss = self.synthetic_replay.replay_loss()
+                if replay_loss is not None:
+                    batch_loss = batch_loss + replay_loss
             batch_loss.backward()
             nn.utils.clip_grad_norm_(
                 [p for p in self.model.parameters() if p.requires_grad],
