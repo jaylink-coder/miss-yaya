@@ -230,6 +230,23 @@ class Trainer:
             self.forgetting_tracker = ForgettingTracker()
             print("ForgettingTracker enabled — recording per-task scores across eval phases.")
 
+        # Alignment monitor — capability drift detection
+        self.alignment_monitor = None
+        if getattr(config, "alignment_monitor_enabled", False):
+            from src.training.alignment_monitor import AlignmentMonitor, AlignmentConfig
+            if tokenizer is not None:
+                align_cfg = AlignmentConfig(
+                    kl_alert_threshold=getattr(config, "alignment_kl_threshold", 0.5),
+                    entropy_alert_threshold=getattr(config, "alignment_entropy_threshold", 0.3),
+                    score_regression_threshold=getattr(
+                        config, "alignment_score_regression_threshold", 0.10
+                    ),
+                )
+                self.alignment_monitor = AlignmentMonitor(
+                    self.unwrapped_model, tokenizer, align_cfg
+                )
+                print("AlignmentMonitor enabled — KL drift and entropy collapse detection active.")
+
         # Training state
         self.global_step = 0
         self.epoch = 0
