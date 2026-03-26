@@ -133,8 +133,8 @@ def run_gradio(generator, tokenizer, args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_config", type=str, required=True)
-    parser.add_argument("--checkpoint",   type=str, required=True)
+    parser.add_argument("--model_config", type=str, default="configs/model/yaya_tiny.yaml")
+    parser.add_argument("--checkpoint",   type=str, default=None)
     parser.add_argument("--port",         type=int, default=7860)
     parser.add_argument("--share",        action="store_true",
                         help="Create public Gradio link (useful on Colab)")
@@ -143,8 +143,15 @@ def main():
     parser.add_argument("--top_p",        type=float, default=0.9)
     args = parser.parse_args()
 
+    checkpoint = args.checkpoint
+    if checkpoint is None:
+        checkpoint = _find_latest_checkpoint(DEFAULT_CHECKPOINT_DIRS)
+    if checkpoint is None:
+        print("ERROR: No checkpoint found. Train a model first.")
+        sys.exit(1)
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    generator, tokenizer = load_model(args.model_config, args.checkpoint, device)
+    generator, tokenizer = load_model(args.model_config, checkpoint, device)
     run_gradio(generator, tokenizer, args)
 
 
