@@ -87,10 +87,19 @@ def evaluate_checkpoint(checkpoint_path: str, model_cfg_path: str, tok_path: str
         do_sample=temperature > 0,
     )
 
+    SYSTEM_PROMPT = (
+        "You are Yaya, a helpful and honest AI assistant. "
+        "You answer questions clearly and concisely."
+    )
+
     results = []
     passed = 0
     for question, required in TEST_SUITE:
-        prompt = tok.format_chat([{"role": "user", "content": question}]) + ASSISTANT_TOKEN + "\n"
+        msgs = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": question},
+        ]
+        prompt = tok.format_chat(msgs) + "\n" + ASSISTANT_TOKEN + "\n"
         with torch.no_grad():
             output = gen.generate(prompt, gen_cfg)
         response = output[len(prompt):]
