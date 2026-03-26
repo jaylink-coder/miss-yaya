@@ -1,0 +1,44 @@
+seed: 42
+
+# Focused SFT on clean complete-examples only (11.8k samples, no truncation).
+# Higher LR and more epochs because every training example is complete.
+training:
+  per_device_batch_size: 8
+  gradient_accumulation_steps: 2
+  learning_rate: 5.0e-5
+  weight_decay: 0.1
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 300
+  min_lr_ratio: 0.05
+  max_steps: 15000
+  max_seq_length: 256
+  dtype: float32
+
+checkpointing:
+  save_steps: 1000
+  save_dir: checkpoints/yaya-tiny-sft-focused
+  keep_last_n: 3
+
+logging:
+  log_steps: 100
+  wandb_project: null
+  wandb_run_name: null
+
+eval:
+  eval_steps: 1000
+  eval_samples: 50
+
+data:
+  train_data: data/sft/yaya_instruct_clean.jsonl
+  eval_data: data/sft/yaya_instruct_clean_eval.jsonl
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 0
+
+distributed:
+  strategy: none
+  gradient_checkpointing: false
+  cpu_offload: false
