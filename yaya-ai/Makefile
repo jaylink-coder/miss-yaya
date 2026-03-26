@@ -505,7 +505,7 @@ web-ui:
 
 ## Run continuous learning: convert chat logs → SFT data
 continuous-learn:
-	python scripts/continuous_learn.py --output data/sft/yaya_instruct_clean.jsonl
+	python scripts/continuous_learn.py --output data/sft/yaya_instruct_filtered.jsonl
 
 ## Run self-evaluation benchmark (broader than eval-tiny)
 self-eval:
@@ -513,7 +513,7 @@ self-eval:
 
 ## Full self-improvement cycle: self-eval → self-improve → retrain
 self-improve:
-	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json --output data/sft/yaya_instruct_clean.jsonl
+	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json --output data/sft/yaya_instruct_filtered.jsonl
 
 ## SFT on filtered 12.7k dataset (chess-free: 1.6% chess, rest general Q&A), max_seq=384
 ## Auto-resumes from latest filtered checkpoint; falls back to sft-clean step 2000
