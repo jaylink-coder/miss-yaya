@@ -2,7 +2,7 @@
         test test-model test-data test-inference test-cov test-vision test-training test-all \
         test-agent test-rag test-safety test-serving test-neuroplasticity test-continual \
         test-curriculum test-reward-model test-persistent-memory \
-        sft-tiny sft-tiny-focused sft-tiny-merged dpo-tiny eval-tiny eval-tiny-all eval-loop eval-loop-retrain chat-tiny web-ui continuous-learn self-eval self-improve training-status \
+        sft-tiny sft-tiny-focused sft-tiny-merged sft-tiny-filtered dpo-tiny eval-tiny eval-tiny-all eval-loop eval-loop-retrain chat-tiny web-ui continuous-learn self-eval self-improve training-status \
         lint format typecheck \
         train-tokenizer prepare-data \
         train-1b train-1b-2gpu train-1.5b train-7b \
