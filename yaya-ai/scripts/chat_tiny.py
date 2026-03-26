@@ -92,6 +92,7 @@ def main():
         temperature=args.temperature,
         top_p=args.top_p,
         top_k=args.top_k,
+        repetition_penalty=1.5,   # Prevent degenerate token repetition
         do_sample=args.temperature > 0,
     )
 
