@@ -261,8 +261,33 @@ class Trainer:
 
             if raw_examples is not None:
                 scorer = DifficultyScorer()
-                curriculum_ds = CurriculumDataset(raw_dataset, scorer)
-                curriculum_ds.sort_by_difficulty()
+                # Score the raw text examples for difficulty
+                score_inputs = [
+                    {"text": " ".join(
+                        m.get("content", "") for m in ex.get("messages", [])
+                    )}
+                    for ex in raw_examples
+                ]
+                difficulty_scores = scorer.score_batch(score_inputs)
+
+                # Build a thin dataset wrapper that:
+                #   - holds difficulty scores (for the sampler)
+                #   - delegates __getitem__ to the original InstructionDataset
+                #     (so the DataLoader gets proper tokenized tensors)
+                class _ScoredDataset:
+                    def __init__(self, base_ds, scores):
+                        self.base_ds = base_ds
+                        self.scores = scores
+                        # Keep a sorted index mapping (easy → hard)
+                        order = sorted(range(len(scores)), key=lambda i: scores[i])
+                        self._sorted_to_orig = order
+                        # Remap scores to match sorted order
+                        self.scores = [scores[i] for i in order]
+                    def __len__(self): return len(self.scores)
+                    def __getitem__(self, idx):
+                        return self.base_ds[self._sorted_to_orig[idx]]
+
+                sorted_ds = _ScoredDataset(raw_dataset, difficulty_scores)
 
                 schedule = CurriculumSchedule(
                     total_steps=config.max_steps,
@@ -273,11 +298,11 @@ class Trainer:
                         config, "curriculum_competence_loss_threshold", 2.5
                     ),
                 )
-                self.curriculum_sampler = CurriculumSampler(curriculum_ds, schedule)
+                self.curriculum_sampler = CurriculumSampler(sorted_ds, schedule)
 
                 # Replace dataloader with one backed by the curriculum sampler
                 self.train_dataloader = create_dataloader(
-                    curriculum_ds,
+                    sorted_ds,
                     batch_size=config.per_device_batch_size,
                     num_workers=getattr(config, "num_workers", 0),
                     shuffle=False,          # Curriculum sampler controls ordering
@@ -289,7 +314,7 @@ class Trainer:
                     print(
                         f"Curriculum learning enabled — strategy={strategy}, "
                         f"warmup={warmup} steps, "
-                        f"{len(curriculum_ds)} examples scored and sorted by difficulty."
+                        f"{len(sorted_ds)} examples scored and sorted by difficulty."
                     )
             else:
                 if is_main_process():
