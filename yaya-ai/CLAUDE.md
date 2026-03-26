@@ -11,7 +11,7 @@ make eval-loop           # Eval + augment dataset for failures + retrain prompt
 make chat-tiny           # Interactive CLI chat
 make web-ui              # Gradio web chat
 make dpo-tiny            # DPO alignment (auto-detects best SFT checkpoint)
-make training-status     # Show log tail + checkpoint list
+make training-status     # Show step/loss/checkpoint status (scripts/training_status.py)
 make self-eval           # Broader 16-question benchmark
 make self-improve        # Self-eval + data augmentation
 make continuous-learn    # Convert chat logs → SFT data
