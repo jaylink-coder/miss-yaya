@@ -493,7 +493,7 @@ web-ui:
 
 ## Run continuous learning: convert chat logs → SFT data
 continuous-learn:
-	python scripts/continuous_learn.py
+	python scripts/continuous_learn.py --output data/sft/yaya_instruct_clean.jsonl
 
 ## Run self-evaluation benchmark (broader than eval-tiny)
 self-eval:
