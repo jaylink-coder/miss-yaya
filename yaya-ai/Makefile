@@ -475,13 +475,17 @@ sft-tiny-focused:
 			--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000; \
 	fi
 
-## Evaluate instruction-following quality of best checkpoint
+## Evaluate instruction-following quality of best checkpoint (auto-detects)
 eval-tiny:
 	python scripts/eval_instruction.py
 
+## Evaluate best filtered checkpoint specifically
+eval-filtered:
+	python scripts/eval_instruction.py --checkpoint $$(cat checkpoints/yaya-tiny-sft-filtered/latest 2>/dev/null | xargs -I{} echo checkpoints/yaya-tiny-sft-filtered/{})
+
 ## Evaluate all checkpoints in a directory to track progress
 eval-tiny-all:
-	python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-tiny-sft-focused
+	python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-tiny-sft-filtered
 
 ## Run eval loop: eval → augment dataset → print retrain command
 eval-loop:
