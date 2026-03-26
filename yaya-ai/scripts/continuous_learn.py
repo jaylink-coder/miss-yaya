@@ -84,7 +84,7 @@ def main():
     parser.add_argument('--conversations', type=str,
                         default='data/memory/conversations.jsonl')
     parser.add_argument('--output',        type=str,
-                        default='data/sft/yaya_instruct.jsonl')
+                        default='data/sft/yaya_instruct_filtered.jsonl')
     parser.add_argument('--min_quality',   type=float, default=0.6,
                         help='Minimum quality score to include (0.0-1.0)')
     args = parser.parse_args()
