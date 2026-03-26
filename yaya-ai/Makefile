@@ -450,7 +450,17 @@ dpo-tiny:
 ## First run: uses sft-clean step 2000 as starting weights
 ## Subsequent runs: resumes from latest focused checkpoint
 sft-tiny-focused:
-	@if [ -f checkpoints/yaya-tiny-sft-focused/latest ]; then \
+	@echo "Checking for existing training processes..." && \
+	RUNNING=$$(for pid in $$(ls /proc/ 2>/dev/null | grep -E '^[0-9]+$$'); do \
+		cmd=$$(cat /proc/$$pid/cmdline 2>/dev/null | tr '\0' ' '); \
+		echo "$$cmd" | grep -qi "train_sft" && echo "$$pid"; \
+	done | tr '\n' ' '); \
+	if [ -n "$$RUNNING" ]; then \
+		echo "WARNING: Training processes already running (PIDs: $$RUNNING)"; \
+		echo "Kill them first with: kill $$RUNNING"; \
+		exit 1; \
+	fi && \
+	if [ -f checkpoints/yaya-tiny-sft-focused/latest ]; then \
 		CKPT=$$(cat checkpoints/yaya-tiny-sft-focused/latest); \
 		echo "Resuming from checkpoints/yaya-tiny-sft-focused/$$CKPT"; \
 		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
