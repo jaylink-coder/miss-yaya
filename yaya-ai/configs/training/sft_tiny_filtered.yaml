@@ -17,7 +17,7 @@ training:
   warmup_steps: 300
   min_lr_ratio: 0.05
   max_steps: 15000
-  max_seq_length: 512
+  max_seq_length: 384
   dtype: float32
 
 checkpointing:
