@@ -486,6 +486,14 @@ web-ui:
 continuous-learn:
 	python scripts/continuous_learn.py
 
+## Run self-evaluation benchmark (broader than eval-tiny)
+self-eval:
+	python scripts/self_eval.py
+
+## Full self-improvement cycle: self-eval → self-improve → retrain
+self-improve:
+	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json
+
 ## Show training log tail (monitor background training)
 training-status:
 	@echo "=== sft_focused ===" && tail -10 logs/sft_focused.log 2>/dev/null || echo "(no focused log)"
