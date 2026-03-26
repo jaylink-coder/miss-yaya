@@ -82,6 +82,17 @@ def run_gradio(generator, tokenizer, args):
         os.system(f"{sys.executable} -m pip install gradio -q")
         import gradio as gr
 
+    from scripts.continuous_learn import log_conversation
+
+    gen_cfg = GenerationConfig(
+        max_new_tokens=args.max_tokens,
+        temperature=args.temperature,
+        top_p=args.top_p,
+        top_k=50,
+        repetition_penalty=1.5,
+        do_sample=args.temperature > 0,
+    )
+
     def chat(message, history):
         messages = [{"role": "system", "content": SYSTEM_PROMPT}]
         for user_msg, bot_msg in history:
@@ -90,21 +101,18 @@ def run_gradio(generator, tokenizer, args):
         messages.append({"role": "user", "content": message})
 
         prompt = tokenizer.format_chat(messages) + ASSISTANT_TOKEN + "\n"
-        response = generator.generate(
-            prompt,
-            max_new_tokens=args.max_tokens,
-            temperature=args.temperature,
-            top_p=args.top_p,
-        )
+        full_output = generator.generate(prompt, gen_cfg)
+        response = full_output[len(prompt):]
 
-        if ASSISTANT_TOKEN in response:
-            response = response.split(ASSISTANT_TOKEN)[-1]
-        elif prompt in response:
-            response = response[len(prompt):]
-        for end_tag in [USER_TOKEN, SYSTEM_TOKEN, "</s>"]:
-            response = response.split(end_tag)[0]
+        for stop in [USER_TOKEN, SYSTEM_TOKEN, "</s>", "<|endoftext|>"]:
+            if stop in response:
+                response = response.split(stop)[0]
+        response = response.strip()
 
-        return response.strip()
+        # Log for continuous learning
+        log_conversation(message, response)
+
+        return response
 
     with gr.Blocks(title="Chat with Yaya", theme=gr.themes.Soft()) as demo:
         gr.Markdown("# 💬 Chat with Yaya\nYaya is a custom AI assistant built from scratch.")
