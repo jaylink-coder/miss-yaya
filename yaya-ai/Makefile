@@ -448,12 +448,24 @@ dpo-tiny:
 		--save_steps 500 \
 		--log_steps 50
 
-## SFT on clean complete-examples only (no truncation, 11.8k samples)
+## SFT on clean complete-examples only — auto-resumes from latest focused checkpoint
+## First run: uses sft-clean step 2000 as starting weights
+## Subsequent runs: resumes from latest focused checkpoint
 sft-tiny-focused:
-	PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
-		--model_config configs/model/yaya_tiny.yaml \
-		--train_config configs/training/sft_tiny_focused.yaml \
-		--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000
+	@if [ -f checkpoints/yaya-tiny-sft-focused/latest ]; then \
+		CKPT=$$(cat checkpoints/yaya-tiny-sft-focused/latest); \
+		echo "Resuming from checkpoints/yaya-tiny-sft-focused/$$CKPT"; \
+		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
+			--model_config configs/model/yaya_tiny.yaml \
+			--train_config configs/training/sft_tiny_focused.yaml \
+			--resume checkpoints/yaya-tiny-sft-focused/$$CKPT; \
+	else \
+		echo "No focused checkpoint found, starting from sft-clean step 2000"; \
+		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
+			--model_config configs/model/yaya_tiny.yaml \
+			--train_config configs/training/sft_tiny_focused.yaml \
+			--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000; \
+	fi
 
 ## Evaluate instruction-following quality of best checkpoint
 eval-tiny:
