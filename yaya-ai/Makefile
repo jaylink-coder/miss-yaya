@@ -531,20 +531,10 @@ sft-tiny-filtered:
 	if [ -f checkpoints/yaya-tiny-sft-filtered/latest ]; then \
 		CKPT=$$(cat checkpoints/yaya-tiny-sft-filtered/latest); \
 		echo "Resuming from checkpoints/yaya-tiny-sft-filtered/$$CKPT"; \
-		PYTHONUNBUFFERED=1 nohup python -u scripts/train_sft.py \
-			--model_config configs/model/yaya_tiny.yaml \
-			--train_config configs/training/sft_tiny_filtered.yaml \
-			--resume checkpoints/yaya-tiny-sft-filtered/$$CKPT \
-			>> logs/sft_filtered.log 2>&1 & \
-		echo "Training resumed (PID: $$!), logging to logs/sft_filtered.log"; \
+		powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/sft_tiny_filtered.yaml --resume checkpoints/yaya-tiny-sft-filtered/$$CKPT' -RedirectStandardOutput 'logs\sft_filtered.log' -RedirectStandardError 'logs\sft_filtered_err.log' -WindowStyle Hidden -PassThru -Append; Write-Host PID: \$$(\$$proc.Id)"; \
 	else \
 		echo "No filtered checkpoint found, starting from sft-clean step 2000"; \
-		PYTHONUNBUFFERED=1 nohup python -u scripts/train_sft.py \
-			--model_config configs/model/yaya_tiny.yaml \
-			--train_config configs/training/sft_tiny_filtered.yaml \
-			--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000 \
-			>> logs/sft_filtered.log 2>&1 & \
-		echo "Training started (PID: $$!), logging to logs/sft_filtered.log"; \
+		powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/sft_tiny_filtered.yaml --pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000' -RedirectStandardOutput 'logs\sft_filtered.log' -RedirectStandardError 'logs\sft_filtered_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"; \
 	fi
 
 ## SFT on merged 27k dataset (clean + backup + new QA), max_seq=512
