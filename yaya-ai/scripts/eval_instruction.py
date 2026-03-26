@@ -83,6 +83,7 @@ def evaluate_checkpoint(checkpoint_path: str, model_cfg_path: str, tok_path: str
         temperature=temperature,
         top_k=40,
         top_p=0.9,
+        repetition_penalty=1.5,   # Prevent degenerate token repetition
         do_sample=temperature > 0,
     )
 
