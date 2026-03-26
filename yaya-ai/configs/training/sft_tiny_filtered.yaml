@@ -36,7 +36,7 @@ eval:
 
 data:
   train_data: data/sft/yaya_instruct_filtered.jsonl
-  eval_data: data/sft/yaya_instruct_clean_eval.jsonl
+  eval_data: data/sft/yaya_instruct_filtered_eval.jsonl
   tokenizer_path: data/tokenizer/yaya_tokenizer.model
   num_workers: 0
 
