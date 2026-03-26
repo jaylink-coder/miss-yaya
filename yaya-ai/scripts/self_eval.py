@@ -124,25 +124,43 @@ def score_response(response: str, keywords: list) -> float:
     return round(hits / len(keywords), 2)
 
 
+def _find_latest_checkpoint():
+    for d in DEFAULT_CHECKPOINT_DIRS:
+        latest = os.path.join(d, 'latest')
+        if os.path.exists(latest):
+            with open(latest) as f:
+                name = f.read().strip()
+            path = os.path.join(d, name)
+            if os.path.isdir(path):
+                return path
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_config', type=str, required=True)
-    parser.add_argument('--checkpoint',   type=str, required=True)
+    parser.add_argument('--model_config', type=str, default='configs/model/yaya_tiny.yaml')
+    parser.add_argument('--checkpoint',   type=str, default=None)
+    parser.add_argument('--tokenizer',    type=str, default='data/tokenizer/yaya_tokenizer.model')
     parser.add_argument('--output',       type=str, default='data/eval/self_eval_report.json')
     args = parser.parse_args()
+
+    ckpt = args.checkpoint or _find_latest_checkpoint()
+    if ckpt is None:
+        print('ERROR: No checkpoint found.')
+        sys.exit(1)
 
     os.makedirs(os.path.dirname(args.output), exist_ok=True)
 
     device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print(f'Loading Yaya on {device}...')
+    print(f'Loading Yaya from {ckpt} on {device}...')
 
     model_config = load_model_config(args.model_config)
     model = YayaForCausalLM(model_config)
-    ckpt_mgr = CheckpointManager(save_dir=os.path.dirname(args.checkpoint))
-    ckpt_mgr.load(model, checkpoint_path=args.checkpoint)
+    ckpt_mgr = CheckpointManager(save_dir=os.path.dirname(ckpt))
+    ckpt_mgr.load(model, checkpoint_path=ckpt)
     model.eval().to(device)
 
-    tokenizer = YayaTokenizer('data/tokenizer/yaya_tokenizer.model')
+    tokenizer = YayaTokenizer(args.tokenizer)
     generator = TextGenerator(model, tokenizer, device=device)
 
     print(f'\nRunning self-evaluation on {len(BENCHMARK)} questions...\n')
