@@ -54,7 +54,9 @@ class DPODataset(Dataset):
             for line in f:
                 if line.strip(): self.pairs.append(json.loads(line))
     def _encode(self, prompt, response):
-        text = USER_TOKEN + "\n" + prompt + ASSISTANT_TOKEN + "\n" + response + "</s>"
+        text = (SYSTEM_TOKEN + "\n" + _DPO_SYSTEM + "\n" +
+                USER_TOKEN + "\n" + prompt + "\n" +
+                ASSISTANT_TOKEN + "\n" + response + "</s>")
         ids = self.tokenizer.encode(text)[:self.max_length]
         return torch.tensor(ids, dtype=torch.long)
     def __len__(self): return len(self.pairs)
