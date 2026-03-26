@@ -1,0 +1,46 @@
+seed: 42
+
+# Filtered SFT: chess-free general assistant training.
+# 12,683 examples: 4,943 non-chess clean + 7,470 backup non-chess + 70 new QA + 200 chess.
+# Chess capped at 1.6% (200 examples) to preserve basic chess ability without dominating.
+# max_seq_length=512 to use the longer high-quality backup examples.
+training:
+  per_device_batch_size: 8
+  gradient_accumulation_steps: 2
+  learning_rate: 5.0e-5
+  weight_decay: 0.1
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 300
+  min_lr_ratio: 0.05
+  max_steps: 15000
+  max_seq_length: 512
+  dtype: float32
+
+checkpointing:
+  save_steps: 1000
+  save_dir: checkpoints/yaya-tiny-sft-filtered
+  keep_last_n: 3
+
+logging:
+  log_steps: 100
+  wandb_project: null
+  wandb_run_name: null
+
+eval:
+  eval_steps: 1000
+  eval_samples: 50
+
+data:
+  train_data: data/sft/yaya_instruct_filtered.jsonl
+  eval_data: data/sft/yaya_instruct_clean_eval.jsonl
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 0
+
+distributed:
+  strategy: none
+  gradient_checkpointing: false
+  cpu_offload: false
