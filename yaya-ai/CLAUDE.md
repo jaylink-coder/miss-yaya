@@ -37,7 +37,9 @@ Always use `.venv/Scripts/python.exe` or activate `.venv` first.
 - `SYSTEM_TOKEN = "<|system|>"`
 - `USER_TOKEN = "</|user|>"`  (closing-style, used as prefix)
 - `ASSISTANT_TOKEN = "</|assistant|>"`
-- Prompt construction: `tokenizer.format_chat(history) + ASSISTANT_TOKEN + "\n"`
+- Prompt construction: `tokenizer.format_chat(history) + "\n" + ASSISTANT_TOKEN + "\n"`
+  (The `"\n"` before ASSISTANT_TOKEN is required to match training format: `user_content\n</|assistant|>`)
+  Server.py already does this correctly. Any script using the old format (without leading `\n`) is a bug.
 
 ## Current training state
 - `checkpoints/yaya-tiny/checkpoint-00010000` — pretrain base
