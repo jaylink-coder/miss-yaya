@@ -170,7 +170,7 @@ def main():
     parser.add_argument("--tokenizer",    type=str, default="data/tokenizer/yaya_tokenizer.model")
     parser.add_argument("--temperature",  type=float, default=0.3)
     parser.add_argument("--max_tokens",   type=int,   default=120)
-    parser.add_argument("--output",       type=str,   default="data/sft/yaya_instruct_clean.jsonl")
+    parser.add_argument("--output",       type=str,   default="data/sft/yaya_instruct_filtered.jsonl")
     parser.add_argument("--report",       type=str,   default="data/eval/eval_loop_report.json")
     parser.add_argument("--dry_run",      action="store_true", help="Show what would be added, don't write")
     parser.add_argument("--retrain",      action="store_true", help="Launch focused training after augmenting data")
