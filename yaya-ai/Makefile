@@ -511,8 +511,8 @@ self-eval:
 self-improve:
 	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json --output data/sft/yaya_instruct_clean.jsonl
 
-## SFT on filtered 12.7k dataset (chess-free: 1.6% chess, rest general Q&A), max_seq=512
-## Starts from sft-clean step 2000 weights
+## SFT on filtered 12.7k dataset (chess-free: 1.6% chess, rest general Q&A), max_seq=384
+## Auto-resumes from latest filtered checkpoint; falls back to sft-clean step 2000
 sft-tiny-filtered:
 	@echo "Checking for existing training processes..." && \
 	RUNNING=$$(for pid in $$(ls /proc/ 2>/dev/null | grep -E '^[0-9]+$$'); do \
@@ -524,12 +524,24 @@ sft-tiny-filtered:
 		echo "Kill them first with: kill $$RUNNING"; \
 		exit 1; \
 	fi && \
-	PYTHONUNBUFFERED=1 nohup python -u scripts/train_sft.py \
-		--model_config configs/model/yaya_tiny.yaml \
-		--train_config configs/training/sft_tiny_filtered.yaml \
-		--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000 \
-		>> logs/sft_filtered.log 2>&1 & \
-	echo "Training started (PID: $$!), logging to logs/sft_filtered.log"
+	if [ -f checkpoints/yaya-tiny-sft-filtered/latest ]; then \
+		CKPT=$$(cat checkpoints/yaya-tiny-sft-filtered/latest); \
+		echo "Resuming from checkpoints/yaya-tiny-sft-filtered/$$CKPT"; \
+		PYTHONUNBUFFERED=1 nohup python -u scripts/train_sft.py \
+			--model_config configs/model/yaya_tiny.yaml \
+			--train_config configs/training/sft_tiny_filtered.yaml \
+			--resume checkpoints/yaya-tiny-sft-filtered/$$CKPT \
+			>> logs/sft_filtered.log 2>&1 & \
+		echo "Training resumed (PID: $$!), logging to logs/sft_filtered.log"; \
+	else \
+		echo "No filtered checkpoint found, starting from sft-clean step 2000"; \
+		PYTHONUNBUFFERED=1 nohup python -u scripts/train_sft.py \
+			--model_config configs/model/yaya_tiny.yaml \
+			--train_config configs/training/sft_tiny_filtered.yaml \
+			--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000 \
+			>> logs/sft_filtered.log 2>&1 & \
+		echo "Training started (PID: $$!), logging to logs/sft_filtered.log"; \
+	fi
 
 ## SFT on merged 27k dataset (clean + backup + new QA), max_seq=512
 ## Start from best focused checkpoint, or fall back to sft-clean step 2000
