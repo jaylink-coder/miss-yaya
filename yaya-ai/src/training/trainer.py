@@ -250,24 +250,50 @@ class Trainer:
         # Curriculum learning — difficulty-aware training schedule
         self.curriculum_sampler = None
         if getattr(config, "curriculum_enabled", False):
-            from src.training.curriculum import CurriculumSchedule, CurriculumSampler, CurriculumDataset
-            # CurriculumDataset will be built lazily once we have access to raw examples.
-            # For now, store the schedule config so train() can wire it up.
-            self._curriculum_schedule_kwargs = {
-                "total_steps": config.max_steps,
-                "warmup_easy_steps": getattr(config, "curriculum_warmup_easy_steps", 10_000),
-                "strategy": getattr(config, "curriculum_strategy", "linear"),
-                "easy_ceiling": getattr(config, "curriculum_easy_ceiling", 0.4),
-                "competence_loss_threshold": getattr(
-                    config, "curriculum_competence_loss_threshold", 2.5
-                ),
-            }
-            print(
-                f"Curriculum learning enabled — strategy={self._curriculum_schedule_kwargs['strategy']}, "
-                f"warmup={self._curriculum_schedule_kwargs['warmup_easy_steps']} steps"
+            from src.training.curriculum import (
+                CurriculumSchedule, CurriculumSampler,
+                CurriculumDataset, DifficultyScorer,
             )
-        else:
-            self._curriculum_schedule_kwargs = None
+            from src.data.dataloader import create_dataloader
+
+            raw_dataset = getattr(train_dataloader, "dataset", None)
+            raw_examples = getattr(raw_dataset, "samples", None)
+
+            if raw_examples is not None:
+                scorer = DifficultyScorer()
+                curriculum_ds = CurriculumDataset(raw_dataset, scorer)
+                curriculum_ds.sort_by_difficulty()
+
+                schedule = CurriculumSchedule(
+                    total_steps=config.max_steps,
+                    warmup_easy_steps=getattr(config, "curriculum_warmup_easy_steps", 10_000),
+                    strategy=getattr(config, "curriculum_strategy", "linear"),
+                    easy_ceiling=getattr(config, "curriculum_easy_ceiling", 0.4),
+                    competence_loss_threshold=getattr(
+                        config, "curriculum_competence_loss_threshold", 2.5
+                    ),
+                )
+                self.curriculum_sampler = CurriculumSampler(curriculum_ds, schedule)
+
+                # Replace dataloader with one backed by the curriculum sampler
+                self.train_dataloader = create_dataloader(
+                    curriculum_ds,
+                    batch_size=config.per_device_batch_size,
+                    num_workers=getattr(config, "num_workers", 0),
+                    shuffle=False,          # Curriculum sampler controls ordering
+                    sampler=self.curriculum_sampler,
+                )
+                if is_main_process():
+                    strategy = getattr(config, "curriculum_strategy", "linear")
+                    warmup  = getattr(config, "curriculum_warmup_easy_steps", 10_000)
+                    print(
+                        f"Curriculum learning enabled — strategy={strategy}, "
+                        f"warmup={warmup} steps, "
+                        f"{len(curriculum_ds)} examples scored and sorted by difficulty."
+                    )
+            else:
+                if is_main_process():
+                    print("WARNING: curriculum_enabled=True but dataset has no .samples — skipping.")
 
         # Reward model — lightweight scorer for RLHF / auto-scoring
         self.reward_model = None
