@@ -185,7 +185,8 @@ def main():
         ckpt = args.checkpoint
         if ckpt is None:
             # Auto-find best available checkpoint (focused > clean > v2 > sft)
-            for d in ["checkpoints/yaya-tiny-sft-focused",
+            for d in ["checkpoints/yaya-tiny-sft-filtered",
+                      "checkpoints/yaya-tiny-sft-focused",
                       "checkpoints/yaya-tiny-sft-clean",
                       "checkpoints/yaya-tiny-sft-v2",
                       "checkpoints/yaya-tiny-sft"]:
