@@ -106,7 +106,7 @@ def main():
 
     sft_ckpt = args.sft_checkpoint or _find_sft_checkpoint()
     if sft_ckpt is None:
-        print("ERROR: No SFT checkpoint found. Run 'make sft-tiny-focused' first.")
+        print("ERROR: No SFT checkpoint found. Run 'make sft-tiny-filtered' first.")
         sys.exit(1)
 
     device = "cuda" if torch.cuda.is_available() else "cpu"
