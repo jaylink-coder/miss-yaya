@@ -511,6 +511,34 @@ self-eval:
 self-improve:
 	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json --output data/sft/yaya_instruct_clean.jsonl
 
+## SFT on merged 27k dataset (clean + backup + new QA), max_seq=512
+## Start from best focused checkpoint, or fall back to sft-clean step 2000
+sft-tiny-merged:
+	@echo "Checking for existing training processes..." && \
+	RUNNING=$$(for pid in $$(ls /proc/ 2>/dev/null | grep -E '^[0-9]+$$'); do \
+		cmd=$$(cat /proc/$$pid/cmdline 2>/dev/null | tr '\0' ' '); \
+		echo "$$cmd" | grep -qi "train_sft" && echo "$$pid"; \
+	done | tr '\n' ' '); \
+	if [ -n "$$RUNNING" ]; then \
+		echo "WARNING: Training processes already running (PIDs: $$RUNNING)"; \
+		echo "Kill them first with: kill $$RUNNING"; \
+		exit 1; \
+	fi && \
+	if [ -f checkpoints/yaya-tiny-sft-focused/latest ]; then \
+		CKPT=$$(cat checkpoints/yaya-tiny-sft-focused/latest); \
+		echo "Starting from focused checkpoint: checkpoints/yaya-tiny-sft-focused/$$CKPT"; \
+		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
+			--model_config configs/model/yaya_tiny.yaml \
+			--train_config configs/training/sft_tiny_merged.yaml \
+			--pretrain_checkpoint checkpoints/yaya-tiny-sft-focused/$$CKPT; \
+	else \
+		echo "No focused checkpoint, starting from sft-clean step 2000"; \
+		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
+			--model_config configs/model/yaya_tiny.yaml \
+			--train_config configs/training/sft_tiny_merged.yaml \
+			--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000; \
+	fi
+
 ## Show training log tail + checkpoint status
 training-status:
 	python scripts/training_status.py
