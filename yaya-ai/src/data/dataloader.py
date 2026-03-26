@@ -114,10 +114,10 @@ def create_dataloader(
     Returns:
         Configured DataLoader.
     """
-    sampler = None
     is_iterable = isinstance(dataset, IterableDataset)
 
-    if distributed and not is_iterable:
+    # Caller-provided sampler takes precedence over distributed sampler
+    if sampler is None and distributed and not is_iterable:
         sampler = DistributedSampler(
             dataset,
             num_replicas=world_size,
@@ -125,7 +125,6 @@ def create_dataloader(
             shuffle=shuffle,
             seed=seed,
         )
-        shuffle = False  # Sampler handles shuffling
 
     return DataLoader(
         dataset,
