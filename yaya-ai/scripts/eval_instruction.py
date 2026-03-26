@@ -204,7 +204,7 @@ def main():
         print("\nSummary:")
         for r in reports:
             bar = "█" * int(r["score"] * 20) + "░" * (20 - int(r["score"] * 20))
-        print(f"  Step {r['step']:6d} [{bar}] {r['score']:.0%}")
+            print(f"  Step {r['step']:6d} [{bar}] {r['score']:.0%}")
 
 
 if __name__ == "__main__":
