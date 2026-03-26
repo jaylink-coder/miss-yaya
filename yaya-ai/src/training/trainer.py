@@ -518,6 +518,10 @@ class Trainer:
                     labels=batch["labels"],
                     attention_mask=batch.get("attention_mask"),
                 )
+
+            if batch_idx == 0 and self.epoch == 1 and is_main_process():
+                print(f"[Epoch 1, batch 0] Forward pass complete. Loss={outputs['loss'].item():.4f}",
+                      flush=True)
                 loss = outputs["loss"]
 
                 # EWC continual-learning penalty — resists catastrophic forgetting
