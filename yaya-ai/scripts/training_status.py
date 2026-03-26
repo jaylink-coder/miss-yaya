@@ -11,9 +11,27 @@ import time
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-LOG_FILE = "logs/sft_focused.log"
-CKPT_DIR = "checkpoints/yaya-tiny-sft-focused"
-MAX_STEPS = 15000
+# Auto-detect active log/checkpoint
+_RUNS = [
+    ("logs/sft_filtered.log",  "checkpoints/yaya-tiny-sft-filtered",  15000),
+    ("logs/sft_focused.log",   "checkpoints/yaya-tiny-sft-focused",   15000),
+    ("logs/sft_clean.log",     "checkpoints/yaya-tiny-sft-clean",     20000),
+    ("logs/pretrain_tiny.log", "checkpoints/yaya-tiny",               10000),
+]
+
+import time as _time
+def _pick_run():
+    best = None
+    best_mtime = 0
+    for log, ckpt, steps in _RUNS:
+        if os.path.exists(log):
+            mtime = os.path.getmtime(log)
+            if mtime > best_mtime:
+                best_mtime = mtime
+                best = (log, ckpt, steps)
+    return best or _RUNS[0]
+
+LOG_FILE, CKPT_DIR, MAX_STEPS = _pick_run()
 
 
 def main():
