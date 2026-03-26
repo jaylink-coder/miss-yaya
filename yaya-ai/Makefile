@@ -464,7 +464,7 @@ eval-tiny:
 
 ## Evaluate all checkpoints in a directory to track progress
 eval-tiny-all:
-	python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-tiny-sft-clean
+	python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-tiny-sft-focused
 
 ## Chat interactively with the best available tiny checkpoint
 chat-tiny:
