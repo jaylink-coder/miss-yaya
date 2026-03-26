@@ -128,11 +128,9 @@ evaluate:
 		--benchmarks mmlu,hellaswag
 
 # Serving
+## Serve Yaya REST API (auto-detects best checkpoint)
 serve:
-	python scripts/serve.py \
-		--checkpoint checkpoints/latest \
-		--model_config configs/model/yaya_1_5b.yaml \
-		--port 8000
+	python scripts/serve.py --port 8000
 
 # Interactive generation
 generate:
