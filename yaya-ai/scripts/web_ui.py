@@ -100,7 +100,7 @@ def run_gradio(generator, tokenizer, args):
             messages.append({"role": "assistant", "content": bot_msg})
         messages.append({"role": "user", "content": message})
 
-        prompt = tokenizer.format_chat(messages) + ASSISTANT_TOKEN + "\n"
+        prompt = tokenizer.format_chat(messages) + "\n" + ASSISTANT_TOKEN + "\n"
         full_output = generator.generate(prompt, gen_cfg)
         response = full_output[len(prompt):]
 
