@@ -936,5 +936,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-26T01:39:33.543836"
+  },
+  {
+    "id": 134,
+    "content": "Q426 Halting problem (Turing 1936): undecidable by diagonalisation; no general bug checker or malware detector; equivalent to Godel; Rice's theorem",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T18:38:58.419504"
+  },
+  {
+    "id": 135,
+    "content": "Q427 Dark matter: 27% of universe; rotation curves (Vera Rubin), Bullet Cluster, CMB fit; WIMPs not found; MOND fails clusters",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T18:38:58.450204"
+  },
+  {
+    "id": 136,
+    "content": "Q428 Milgram (1961): 65% delivered max 450V shock; agentic state; incremental compliance; situational > dispositional; changed research ethics",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T18:38:58.480273"
+  },
+  {
+    "id": 137,
+    "content": "Q429 Chemical bonds: ionic (electron transfer), covalent (shared), metallic (electron sea), hydrogen (DNA/water), van der Waals (weakest)",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T18:38:58.514243"
+  },
+  {
+    "id": 138,
+    "content": "Q430 Hard problem of consciousness (Chalmers 1995): why subjective experience? Physicalism/Dennett, dualism, panpsychism, illusionism; IIT, GWT",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T18:38:58.541493"
   }
 ]

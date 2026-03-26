@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 134
+Total entries: 139
 
 ---
 
@@ -271,3 +271,13 @@ Total entries: 134
 **[132]** Q424 Intrinsic vs extrinsic motivation: overjustification effect (Lepper 1973); expected rewards reduce interest; SDT: autonomy/competence/relatedness
 
 **[133]** Q425 Roman fall: multicausal — military overstretch, 3rd century crisis, Huns/Visigoths, economic decline; Byzantium survived to 1453; Heather vs Ward-Perkins vs Goffart
+
+**[134]** Q426 Halting problem (Turing 1936): undecidable by diagonalisation; no general bug checker or malware detector; equivalent to Godel; Rice's theorem
+
+**[135]** Q427 Dark matter: 27% of universe; rotation curves (Vera Rubin), Bullet Cluster, CMB fit; WIMPs not found; MOND fails clusters
+
+**[136]** Q428 Milgram (1961): 65% delivered max 450V shock; agentic state; incremental compliance; situational > dispositional; changed research ethics
+
+**[137]** Q429 Chemical bonds: ionic (electron transfer), covalent (shared), metallic (electron sea), hydrogen (DNA/water), van der Waals (weakest)
+
+**[138]** Q430 Hard problem of consciousness (Chalmers 1995): why subjective experience? Physicalism/Dennett, dualism, panpsychism, illusionism; IIT, GWT

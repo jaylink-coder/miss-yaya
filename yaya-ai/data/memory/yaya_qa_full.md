@@ -5291,3 +5291,108 @@ Consensus: multicausal long unravelling. The real question is why it couldn't ad
 **Rating: 9.0/10**
 
 ---
+
+### Q426 — Computer Science
+**What is the halting problem and why does it matter?**
+
+Turing (1936): no general algorithm can determine whether every program halts or runs forever. Mathematically impossible, not just hard.
+
+Proof by contradiction: assume HALT(P,I) exists. Construct PARADOX: if HALT says it halts, it loops; if HALT says it loops, it halts. Contradiction either way — HALT cannot exist.
+
+Why it matters:
+- Limits of computation: some problems are formally undecidable
+- Software verification: no general program can check arbitrary code for infinite loops
+- Virus detection: perfect general malware detection is provably impossible
+- Equivalent to Godel: Turing's undecidability = Godel's incompleteness — same phenomenon
+- Rice's theorem: any non-trivial semantic property of programs is undecidable
+
+What it doesn't mean: specific programs CAN be verified. Impossibility is for the general case.
+
+**Rating: 9.5/10**
+
+---
+
+### Q427 — Astronomy
+**What is dark matter — and do we actually know it exists?**
+
+Dark matter: ~27% of universe mass-energy; doesn't emit/absorb/reflect light but exerts gravity.
+
+Evidence (indirect but overwhelming):
+1. Galaxy rotation curves (Vera Rubin 1970s): flat curves — outer stars orbit as fast as inner; implies invisible halos
+2. Gravitational lensing: bends more than visible matter explains
+3. Bullet Cluster (2006): colliding galaxy clusters — hot gas slowed by collision, gravitational mass passed through unimpeded
+4. CMB acoustic oscillations fit only with ~27% dark matter
+5. Galaxy formation simulations only work with dark matter
+
+What it isn't: WIMPs not found at LHC; black holes ruled out as dominant component.
+Alternative: MOND (Modified Newtonian Dynamics) — explains rotation curves but fails on clusters and CMB.
+
+Status: extremely confident something real causes these effects. No confirmed particle identity.
+
+**Rating: 9.0/10**
+
+---
+
+### Q428 — Sociology
+**What is the Milgram experiment and what does it tell us about obedience?**
+
+Milgram (Yale, 1961-63): prompted by Holocaust — can ordinary people commit atrocities under authority?
+
+Setup: participants as 'teachers' administer electric shocks (15V-450V XXX) to a 'learner' (confederate) for wrong answers, urged by experimenter in lab coat.
+
+Result: 65% administered maximum 450V. Nobody stopped before 300V.
+
+What it shows:
+- Situational power over character: ordinary people, not sadists, complied
+- Agentic state: people see themselves as instruments of authority; moral responsibility feels transferred
+- Incremental commitment: each step small; prior compliance makes refusal harder
+- Legitimacy of authority: lab coat, Yale, scientific framing reduced questioning
+
+Critiques: Burger (2009) replicated at 70%; ecological validity questioned; Gina Perry found some knew learner was faking.
+
+Legacy: changed research ethics (deception now regulated); illuminates genocide, corporate wrongdoing, everyday compliance.
+
+**Rating: 9.5/10**
+
+---
+
+### Q429 — Chemistry
+**What is a chemical bond and what are the different types?**
+
+A chemical bond is an attractive force holding atoms together. Bond type determines substance properties.
+
+Ionic: electron transfer (metal to non-metal) -> oppositely charged ions. NaCl. High melting point, brittle, conducts when dissolved.
+
+Covalent: shared electrons. Non-metals bonding. Single/double/triple. Polar covalent: unequal sharing (H2O — O pulls electrons). Lower melting points, poor conductors.
+
+Metallic: cations in sea of delocalised electrons. Electrons free to move. Conducts electricity and heat; malleable, ductile.
+
+Hydrogen bonds: not a true bond — electrostatic attraction between H bonded to F/O/N and another F/O/N. Responsible for water's high boiling point, surface tension, ice floating, DNA base pairing, protein folding.
+
+Van der Waals: temporary dipole-induced dipole. Weakest. Why noble gases liquify; why geckos stick to walls.
+
+Strength: ionic ≈ covalent > metallic >> hydrogen >> van der Waals.
+
+**Rating: 8.5/10**
+
+---
+
+### Q430 — Philosophy
+**What is consciousness and why is it so hard to explain?**
+
+Hard problem (Chalmers 1995): why does physical brain activity produce subjective experience — the redness of red, painfulness of pain? Distinct from 'easy problems' (attention, memory, behaviour).
+
+Why hard: even complete neuroscience of colour processing wouldn't explain why there's something it FEELS like to see red. Philosophical zombie (physically identical, no inner experience) seems conceivable — suggests consciousness isn't logically entailed by physical facts.
+
+Major positions:
+1. Physicalism/Materialism: consciousness is brain activity; hard problem is confused (Dennett: consciousness is a 'user illusion')
+2. Dualism (Descartes): mind and matter distinct substances. Problem: how do they interact?
+3. Property dualism: one substance with physical and phenomenal properties
+4. Panpsychism: consciousness fundamental and ubiquitous; combination problem: how do micro-experiences unify?
+5. Illusionism (Frankish): phenomenal consciousness is an introspective illusion
+
+Scientific approaches: Global Workspace Theory (Baars), Integrated Information Theory (Tononi IIT), Higher Order Theories. None solves the hard problem.
+
+**Rating: 9.5/10**
+
+---
