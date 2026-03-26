@@ -472,7 +472,8 @@ chat-tiny:
 
 ## Show training log tail (monitor background training)
 training-status:
-	@tail -20 logs/sft_clean.log 2>/dev/null || echo "No active training log found."
+	@echo "=== sft_focused ===" && tail -10 logs/sft_focused.log 2>/dev/null || echo "(no focused log)"
+	@echo "=== sft_clean ===" && tail -5 logs/sft_clean.log 2>/dev/null || echo "(no clean log)"
 
 # Cleanup
 clean:
