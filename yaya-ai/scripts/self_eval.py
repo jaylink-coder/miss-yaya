@@ -93,19 +93,27 @@ SYSTEM_PROMPT = (
 )
 
 
-def generate_response(generator, tokenizer, question: str, max_tokens: int = 150) -> str:
+_GEN_CFG = GenerationConfig(
+    max_new_tokens=150,
+    temperature=0.3,
+    top_p=0.9,
+    top_k=40,
+    repetition_penalty=1.5,
+    do_sample=True,
+)
+
+
+def generate_response(generator, tokenizer, question: str) -> str:
     history = [
         {'role': 'system', 'content': SYSTEM_PROMPT},
         {'role': 'user',   'content': question},
     ]
-    prompt = tokenizer.format_chat(history) + '<|assistant|>\n'
-    response = generator.generate(prompt, max_new_tokens=max_tokens, temperature=0.3, top_p=0.9)
-    if '<|assistant|>' in response:
-        response = response.split('<|assistant|>')[-1]
-    elif prompt in response:
-        response = response[len(prompt):]
-    for stop in ['<|user|>', '<|system|>', '</s>']:
-        response = response.split(stop)[0]
+    prompt = tokenizer.format_chat(history) + ASSISTANT_TOKEN + '\n'
+    full_output = generator.generate(prompt, _GEN_CFG)
+    response = full_output[len(prompt):]
+    for stop in [USER_TOKEN, SYSTEM_TOKEN, '</s>', '<|endoftext|>']:
+        if stop in response:
+            response = response.split(stop)[0]
     return response.strip()
 
 
