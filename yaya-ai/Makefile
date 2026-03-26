@@ -501,7 +501,7 @@ self-eval:
 
 ## Full self-improvement cycle: self-eval → self-improve → retrain
 self-improve:
-	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json
+	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json --output data/sft/yaya_instruct_clean.jsonl
 
 ## Show training log tail + checkpoint status
 training-status:
