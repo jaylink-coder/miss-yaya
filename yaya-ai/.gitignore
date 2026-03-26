@@ -42,8 +42,9 @@ Thumbs.db
 # Jupyter
 .ipynb_checkpoints/
 
-# Backup data files
+# Backup and generated data files (not committed — derive from source files)
 data/sft/*_backup*.jsonl
+data/sft/yaya_instruct_merged.jsonl
 
 # Generated eval reports and conversation logs
 data/eval/
