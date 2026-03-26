@@ -155,6 +155,9 @@ def main():
 
         print(f"Yaya: {response}\n")
 
+        # Log for continuous learning
+        log_conversation(user_input, response)
+
         conversation.append({"role": "user", "content": user_input})
         conversation.append({"role": "assistant", "content": response})
 
