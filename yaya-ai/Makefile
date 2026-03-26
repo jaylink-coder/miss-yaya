@@ -451,6 +451,21 @@ dpo-tiny:
 		--lr 5e-7 \
 		--max_steps 2000
 
+## SFT on clean complete-examples only (no truncation, 11.8k samples)
+sft-tiny-focused:
+	PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
+		--model_config configs/model/yaya_tiny.yaml \
+		--train_config configs/training/sft_tiny_focused.yaml \
+		--pretrain_checkpoint checkpoints/yaya-tiny/checkpoint-00010000
+
+## Evaluate instruction-following quality of best checkpoint
+eval-tiny:
+	python scripts/eval_instruction.py
+
+## Evaluate all checkpoints in a directory to track progress
+eval-tiny-all:
+	python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-tiny-sft-clean
+
 ## Chat interactively with the best available tiny checkpoint
 chat-tiny:
 	python scripts/chat_tiny.py
