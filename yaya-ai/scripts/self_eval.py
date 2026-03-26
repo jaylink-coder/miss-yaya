@@ -108,7 +108,7 @@ def generate_response(generator, tokenizer, question: str) -> str:
         {'role': 'system', 'content': SYSTEM_PROMPT},
         {'role': 'user',   'content': question},
     ]
-    prompt = tokenizer.format_chat(history) + ASSISTANT_TOKEN + '\n'
+    prompt = tokenizer.format_chat(history) + '\n' + ASSISTANT_TOKEN + '\n'
     full_output = generator.generate(prompt, _GEN_CFG)
     response = full_output[len(prompt):]
     for stop in [USER_TOKEN, SYSTEM_TOKEN, '</s>', '<|endoftext|>']:
