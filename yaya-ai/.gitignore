@@ -46,6 +46,7 @@ Thumbs.db
 data/sft/*_backup*.jsonl
 data/sft/yaya_instruct_merged.jsonl
 data/sft/yaya_instruct_filtered.jsonl
+data/sft/yaya_instruct_filtered_eval.jsonl
 
 # Generated eval reports and conversation logs
 data/eval/
