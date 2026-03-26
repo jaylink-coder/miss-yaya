@@ -441,15 +441,12 @@ sft-tiny:
 		--train_config configs/training/sft_tiny_clean.yaml \
 		--pretrain_checkpoint checkpoints/yaya-tiny/checkpoint-00010000
 
-## Run DPO alignment after SFT (uses combined DPO dataset)
+## Run DPO alignment after SFT (auto-detects best SFT checkpoint)
 dpo-tiny:
 	PYTHONUNBUFFERED=1 python -u scripts/train_dpo.py \
-		--model_config configs/model/yaya_tiny.yaml \
-		--sft_checkpoint checkpoints/yaya-tiny-sft-clean/latest \
-		--dpo_data data/sft/yaya_dpo_combined.jsonl \
-		--save_dir checkpoints/yaya-tiny-dpo \
-		--lr 5e-7 \
-		--max_steps 2000
+		--max_steps 2000 \
+		--save_steps 500 \
+		--log_steps 50
 
 ## SFT on clean complete-examples only (no truncation, 11.8k samples)
 sft-tiny-focused:
