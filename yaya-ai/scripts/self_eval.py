@@ -5,9 +5,8 @@ Yaya tests herself on a benchmark of questions, scores her own responses,
 identifies weak areas, and saves a report.
 
 Usage:
-    python scripts/self_eval.py \
-        --model_config configs/model/yaya_125m.yaml \
-        --checkpoint checkpoints/yaya-125m-sft/checkpoint-XXXXXXXX
+    python scripts/self_eval.py
+    python scripts/self_eval.py --checkpoint checkpoints/yaya-tiny-sft-focused/checkpoint-00005000
 """
 
 import argparse
@@ -15,6 +14,11 @@ import sys
 import os
 import json
 from datetime import datetime
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
