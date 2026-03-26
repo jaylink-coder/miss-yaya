@@ -1,4 +1,9 @@
-"""DPO training for Yaya alignment (simplified RLHF)."""
+"""DPO training for Yaya alignment (simplified RLHF).
+
+Usage:
+    python scripts/train_dpo.py                         # auto-finds best SFT ckpt
+    python scripts/train_dpo.py --sft_checkpoint checkpoints/yaya-tiny-sft-focused/checkpoint-00005000
+"""
 import argparse, sys, os, json
 import torch
 import torch.nn.functional as F
@@ -15,6 +20,25 @@ from src.utils.config import load_model_config
 from src.model.yaya_model import YayaForCausalLM
 from src.tokenizer.tokenizer import YayaTokenizer, USER_TOKEN, ASSISTANT_TOKEN
 from src.training.checkpointing import CheckpointManager
+
+DEFAULT_SFT_DIRS = [
+    "checkpoints/yaya-tiny-sft-focused",
+    "checkpoints/yaya-tiny-sft-clean",
+    "checkpoints/yaya-tiny-sft-v2",
+    "checkpoints/yaya-tiny-sft",
+]
+
+
+def _find_sft_checkpoint():
+    for d in DEFAULT_SFT_DIRS:
+        latest = os.path.join(d, "latest")
+        if os.path.exists(latest):
+            with open(latest) as f:
+                name = f.read().strip()
+            path = os.path.join(d, name)
+            if os.path.isdir(path):
+                return path
+    return None
 
 BETA = 0.1
 
