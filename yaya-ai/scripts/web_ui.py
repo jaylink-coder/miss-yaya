@@ -3,9 +3,8 @@
 Runs a local web server with a chat interface in the browser.
 
 Usage:
-    python scripts/web_ui.py \
-        --model_config configs/model/yaya_125m.yaml \
-        --checkpoint checkpoints/yaya-125m-sft/checkpoint-XXXXXXXX
+    python scripts/web_ui.py
+    python scripts/web_ui.py --checkpoint checkpoints/yaya-tiny-sft-focused/checkpoint-00005000
 
 Then open http://localhost:7860 in your browser.
 """
@@ -13,6 +12,11 @@ Then open http://localhost:7860 in your browser.
 import argparse
 import sys
 import os
+
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
