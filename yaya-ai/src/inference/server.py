@@ -38,7 +38,7 @@ if FASTAPI_AVAILABLE:
         temperature: float = Field(default=0.7, ge=0.0, le=2.0)
         top_p: float = Field(default=0.9, ge=0.0, le=1.0)
         top_k: int = Field(default=50, ge=0)
-        repetition_penalty: float = Field(default=1.1, ge=1.0, le=2.0)
+        repetition_penalty: float = Field(default=1.5, ge=1.0, le=2.0)
         stream: bool = False
         session_id: Optional[str] = None  # For persistent memory: same id = same session
 
