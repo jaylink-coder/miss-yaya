@@ -25,9 +25,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import torch
 from src.utils.config import load_model_config
 from src.model.yaya_model import YayaForCausalLM
-from src.tokenizer.tokenizer import YayaTokenizer
-from src.inference.generator import TextGenerator
+from src.tokenizer.tokenizer import YayaTokenizer, ASSISTANT_TOKEN, USER_TOKEN, SYSTEM_TOKEN
+from src.inference.generator import TextGenerator, GenerationConfig
 from src.training.checkpointing import CheckpointManager
+
+DEFAULT_CHECKPOINT_DIRS = [
+    "checkpoints/yaya-tiny-sft-focused",
+    "checkpoints/yaya-tiny-sft-clean",
+    "checkpoints/yaya-tiny-sft-v2",
+    "checkpoints/yaya-tiny-sft",
+    "checkpoints/yaya-tiny",
+]
 
 # ── Benchmark questions by category ──────────────────────────────────────────
 BENCHMARK = [
