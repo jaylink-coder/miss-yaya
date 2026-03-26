@@ -566,6 +566,12 @@ class Trainer:
                 self.last_train_loss = accumulation_loss
                 accumulation_loss = 0.0
 
+                # Update curriculum schedule based on current step and loss
+                if self.curriculum_sampler is not None:
+                    self.curriculum_sampler.update_step(
+                        self.global_step, self.last_train_loss
+                    )
+
                 # Evaluate
                 if (
                     self.eval_dataloader is not None
