@@ -505,9 +505,22 @@ self-improve:
 
 ## Show training log tail + checkpoint status
 training-status:
-	@echo "=== sft_focused (last 10 lines) ===" && tail -10 logs/sft_focused.log 2>/dev/null || echo "(no focused log)"
-	@echo "" && echo "=== Checkpoints ===" && ls -la checkpoints/yaya-tiny-sft-focused/ 2>/dev/null || echo "(no focused checkpoints)"
-	@echo "" && echo "=== sft_clean (last 3 lines) ===" && tail -3 logs/sft_clean.log 2>/dev/null || echo "(no clean log)"
+	@echo "=== Training Progress ===" && \
+	python -c "\
+import re, os, time;\
+log='logs/sft_focused.log';\
+f=open(log,'rb') if os.path.exists(log) else None;\
+data=f.read().decode('utf-8',errors='replace') if f else '';\
+steps=re.findall(r'Step\s+(\d+)\s*\|\s*Loss:\s*([\d.]+)',data);\
+if steps:\
+  s,l=max(steps,key=lambda x:int(x[0]));\
+  mtime=os.path.getmtime(log);\
+  age=int(time.time()-mtime);\
+  print(f'  Latest step: {s} | Loss: {l} | Log updated: {age}s ago');\
+else: print('  No steps logged yet')\
+" 2>/dev/null || echo "  (log not found)"
+	@echo "" && echo "=== Checkpoints ===" && ls -lh checkpoints/yaya-tiny-sft-focused/ 2>/dev/null || echo "(no focused checkpoints)"
+	@echo "" && echo "=== Active training PIDs ===" && tasklist 2>/dev/null | grep python | awk '{print "  PID " $$2 " | " $$5 " KB"}' || echo "(no python processes)"
 
 # Cleanup
 clean:
