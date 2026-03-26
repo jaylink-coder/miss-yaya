@@ -18,10 +18,13 @@ if hasattr(sys.stderr, "reconfigure"):
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from src.utils.config import load_model_config
 from src.model.yaya_model import YayaForCausalLM
-from src.tokenizer.tokenizer import YayaTokenizer, USER_TOKEN, ASSISTANT_TOKEN
+from src.tokenizer.tokenizer import YayaTokenizer, SYSTEM_TOKEN, USER_TOKEN, ASSISTANT_TOKEN
 from src.training.checkpointing import CheckpointManager
 
+_DPO_SYSTEM = "You are Yaya, a helpful and honest AI assistant. You answer questions clearly and concisely."
+
 DEFAULT_SFT_DIRS = [
+    "checkpoints/yaya-tiny-sft-filtered",
     "checkpoints/yaya-tiny-sft-focused",
     "checkpoints/yaya-tiny-sft-clean",
     "checkpoints/yaya-tiny-sft-v2",
