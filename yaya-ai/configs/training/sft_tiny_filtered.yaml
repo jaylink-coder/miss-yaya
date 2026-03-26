@@ -3,7 +3,7 @@ seed: 42
 # Filtered SFT: chess-free general assistant training.
 # 12,683 examples: 4,943 non-chess clean + 7,470 backup non-chess + 70 new QA + 200 chess.
 # Chess capped at 1.6% (200 examples) to preserve basic chess ability without dominating.
-# max_seq_length=512 to use the longer high-quality backup examples.
+# max_seq_length=384 covers 90% of examples without truncation; 2x faster than 512.
 training:
   per_device_batch_size: 8
   gradient_accumulation_steps: 2
