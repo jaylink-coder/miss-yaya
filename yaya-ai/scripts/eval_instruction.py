@@ -175,8 +175,9 @@ def main():
     else:
         ckpt = args.checkpoint
         if ckpt is None:
-            # Auto-find best available checkpoint
-            for d in ["checkpoints/yaya-tiny-sft-clean",
+            # Auto-find best available checkpoint (focused > clean > v2 > sft)
+            for d in ["checkpoints/yaya-tiny-sft-focused",
+                      "checkpoints/yaya-tiny-sft-clean",
                       "checkpoints/yaya-tiny-sft-v2",
                       "checkpoints/yaya-tiny-sft"]:
                 latest = os.path.join(d, "latest")
