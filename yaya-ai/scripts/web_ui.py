@@ -22,11 +22,33 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import torch
 from src.tokenizer.tokenizer import ASSISTANT_TOKEN, USER_TOKEN, SYSTEM_TOKEN
+from src.inference.generator import GenerationConfig
 
 SYSTEM_PROMPT = (
     "You are Yaya, a helpful and friendly AI assistant. "
     "You answer questions clearly, tell jokes when asked, and are always honest."
 )
+
+DEFAULT_CHECKPOINT_DIRS = [
+    "checkpoints/yaya-tiny-sft-focused",
+    "checkpoints/yaya-tiny-sft-clean",
+    "checkpoints/yaya-tiny-sft-v2",
+    "checkpoints/yaya-tiny-sft",
+    "checkpoints/yaya-tiny",
+]
+
+
+def _find_latest_checkpoint(dirs):
+    for d in dirs:
+        if os.path.isdir(d):
+            latest = os.path.join(d, "latest")
+            if os.path.exists(latest):
+                with open(latest) as f:
+                    name = f.read().strip()
+                path = os.path.join(d, name)
+                if os.path.isdir(path):
+                    return path
+    return None
 
 
 def load_model(model_config_path, checkpoint_path, device):
@@ -35,8 +57,9 @@ def load_model(model_config_path, checkpoint_path, device):
     from src.tokenizer.tokenizer import YayaTokenizer
     from src.inference.generator import TextGenerator
     from src.training.checkpointing import CheckpointManager
+    from src.agent.persistent_memory import SessionMemory
 
-    print(f"Loading Yaya on {device}...")
+    print(f"Loading Yaya from {checkpoint_path} on {device}...")
     model_config = load_model_config(model_config_path)
     model = YayaForCausalLM(model_config)
 
@@ -45,7 +68,8 @@ def load_model(model_config_path, checkpoint_path, device):
     model.eval().to(device)
 
     tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
-    generator = TextGenerator(model, tokenizer, device=device)
+    memory = SessionMemory(store_dir="data/memory", session_id="web_ui")
+    generator = TextGenerator(model, tokenizer, device=device, memory=memory)
     print("Yaya ready.")
     return generator, tokenizer
 
