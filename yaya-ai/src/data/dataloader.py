@@ -95,6 +95,7 @@ def create_dataloader(
     seed: int = 42,
     drop_last: bool = True,
     pin_memory: bool = True,
+    sampler=None,
 ) -> DataLoader:
     """Create a DataLoader with optional distributed sampling.
 
