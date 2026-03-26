@@ -491,10 +491,11 @@ self-eval:
 self-improve:
 	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json
 
-## Show training log tail (monitor background training)
+## Show training log tail + checkpoint status
 training-status:
-	@echo "=== sft_focused ===" && tail -10 logs/sft_focused.log 2>/dev/null || echo "(no focused log)"
-	@echo "=== sft_clean ===" && tail -5 logs/sft_clean.log 2>/dev/null || echo "(no clean log)"
+	@echo "=== sft_focused (last 10 lines) ===" && tail -10 logs/sft_focused.log 2>/dev/null || echo "(no focused log)"
+	@echo "" && echo "=== Checkpoints ===" && ls -la checkpoints/yaya-tiny-sft-focused/ 2>/dev/null || echo "(no focused checkpoints)"
+	@echo "" && echo "=== sft_clean (last 3 lines) ===" && tail -3 logs/sft_clean.log 2>/dev/null || echo "(no clean log)"
 
 # Cleanup
 clean:
