@@ -86,36 +86,61 @@ def dpo_loss(policy, ref, chosen, rejected):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_config", required=True)
-    parser.add_argument("--sft_checkpoint", required=True)
-    parser.add_argument("--dpo_data", default="data/sft/yaya_dpo_train.jsonl")
-    parser.add_argument("--save_dir", default="checkpoints/yaya-dpo")
-    parser.add_argument("--lr", type=float, default=5e-7)
-    parser.add_argument("--max_steps", type=int, default=1000)
-    parser.add_argument("--batch_size", type=int, default=2)
+    parser.add_argument("--model_config",   type=str, default="configs/model/yaya_tiny.yaml")
+    parser.add_argument("--sft_checkpoint", type=str, default=None,
+                        help="SFT checkpoint to start from (auto-detected if omitted)")
+    parser.add_argument("--dpo_data",       type=str, default="data/sft/yaya_dpo_combined.jsonl")
+    parser.add_argument("--tokenizer",      type=str, default="data/tokenizer/yaya_tokenizer.model")
+    parser.add_argument("--save_dir",       type=str, default="checkpoints/yaya-tiny-dpo")
+    parser.add_argument("--lr",             type=float, default=5e-7)
+    parser.add_argument("--max_steps",      type=int, default=1000)
+    parser.add_argument("--batch_size",     type=int, default=2)
+    parser.add_argument("--log_steps",      type=int, default=50)
+    parser.add_argument("--save_steps",     type=int, default=500)
     args = parser.parse_args()
+
+    sft_ckpt = args.sft_checkpoint or _find_sft_checkpoint()
+    if sft_ckpt is None:
+        print("ERROR: No SFT checkpoint found. Run 'make sft-tiny-focused' first.")
+        sys.exit(1)
+
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    print(f"DPO on {device}")
+    print(f"DPO training on {device}")
+    print(f"SFT checkpoint: {sft_ckpt}")
+    print(f"DPO data: {args.dpo_data}")
+
     mc = load_model_config(args.model_config)
+
+    # Policy model (will be trained)
     policy = YayaForCausalLM(mc)
-    ckpt = CheckpointManager(save_dir=os.path.dirname(args.sft_checkpoint))
-    ckpt.load(policy, checkpoint_path=args.sft_checkpoint)
+    loader_mgr = CheckpointManager(save_dir=os.path.dirname(sft_ckpt))
+    loader_mgr.load(policy, checkpoint_path=sft_ckpt)
     policy.to(device)
+
+    # Reference model (frozen SFT weights)
     ref = YayaForCausalLM(mc)
-    ckpt.load(ref, checkpoint_path=args.sft_checkpoint)
+    loader_mgr.load(ref, checkpoint_path=sft_ckpt)
     ref.to(device).eval()
-    for p in ref.parameters(): p.requires_grad_(False)
-    tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
+    for p in ref.parameters():
+        p.requires_grad_(False)
+
+    tokenizer = YayaTokenizer(args.tokenizer)
     dataset = DPODataset(args.dpo_data, tokenizer)
     loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=pad_collate)
-    optimizer = torch.optim.AdamW(policy.parameters(), lr=args.lr, betas=(0.9,0.95), weight_decay=0.1)
-    print(f"DPO pairs: {len(dataset)}")
-    os.makedirs(args.save_dir, exist_ok=True)
+    optimizer = torch.optim.AdamW(policy.parameters(), lr=args.lr, betas=(0.9, 0.95), weight_decay=0.1)
+
+    print(f"DPO pairs: {len(dataset)}, max_steps: {args.max_steps}, lr: {args.lr}")
+
+    ckpt_mgr = CheckpointManager(save_dir=args.save_dir, keep_last_n=3)
     step = 0
     policy.train()
+    running_loss = 0.0
+    running_acc = 0.0
+
     while step < args.max_steps:
         for batch in loader:
-            if step >= args.max_steps: break
+            if step >= args.max_steps:
+                break
             chosen = batch["chosen"].to(device)
             rejected = batch["rejected"].to(device)
             loss, acc = dpo_loss(policy, ref, chosen, rejected)
@@ -124,12 +149,22 @@ def main():
             torch.nn.utils.clip_grad_norm_(policy.parameters(), 1.0)
             optimizer.step()
             step += 1
-            if step % 50 == 0:
-                print(f"Step {step:4d} | Loss: {loss.item():.4f} | Acc: {acc.item():.2%}")
-    sp = os.path.join(args.save_dir, "checkpoint-final")
-    os.makedirs(sp, exist_ok=True)
-    torch.save(policy.state_dict(), os.path.join(sp, "model.pt"))
-    print(f"Saved to {sp}")
+            running_loss += loss.item()
+            running_acc += acc.item()
+
+            if step % args.log_steps == 0:
+                avg_loss = running_loss / args.log_steps
+                avg_acc = running_acc / args.log_steps
+                print(f"Step {step:5d} | Loss: {avg_loss:.4f} | Acc: {avg_acc:.2%}")
+                running_loss = 0.0
+                running_acc = 0.0
+
+            if step % args.save_steps == 0:
+                ckpt_mgr.save(policy, optimizer=None, step=step, loss=loss.item())
+
+    # Save final checkpoint
+    ckpt_mgr.save(policy, optimizer=None, step=step, loss=loss.item())
+    print(f"DPO training complete. Checkpoint saved to {args.save_dir}")
 
 if __name__ == "__main__":
     main()
