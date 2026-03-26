@@ -26,23 +26,50 @@ from src.inference.server import create_app
 from src.training.checkpointing import CheckpointManager
 
 
+DEFAULT_CHECKPOINT_DIRS = [
+    "checkpoints/yaya-tiny-sft-focused",
+    "checkpoints/yaya-tiny-sft-clean",
+    "checkpoints/yaya-tiny-sft",
+    "checkpoints/yaya-tiny",
+]
+
+
+def _find_latest_checkpoint():
+    for d in DEFAULT_CHECKPOINT_DIRS:
+        latest = os.path.join(d, "latest")
+        if os.path.exists(latest):
+            with open(latest) as f:
+                name = f.read().strip()
+            path = os.path.join(d, name)
+            if os.path.isdir(path):
+                return path
+    return None
+
+
 def main():
     parser = argparse.ArgumentParser(description="Serve Yaya model API")
-    parser.add_argument("--checkpoint", type=str, required=True, help="Checkpoint path")
-    parser.add_argument("--model_config", type=str, required=True, help="Model config YAML")
+    parser.add_argument("--checkpoint",  type=str, default=None, help="Checkpoint path (auto-detected)")
+    parser.add_argument("--model_config", type=str, default="configs/model/yaya_tiny.yaml")
     parser.add_argument("--tokenizer_path", type=str, default="data/tokenizer/yaya_tokenizer.model")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Server host")
     parser.add_argument("--port", type=int, default=8000, help="Server port")
-    parser.add_argument("--device", type=str, default="cuda", help="Device")
+    parser.add_argument("--device", type=str, default=None, help="Device (auto-detected)")
     args = parser.parse_args()
 
+    checkpoint = args.checkpoint or _find_latest_checkpoint()
+    if checkpoint is None:
+        print("ERROR: No checkpoint found. Train a model first.")
+        sys.exit(1)
+
+    device = args.device or ("cuda" if torch.cuda.is_available() else "cpu")
+
     # Load model
-    print("Loading model...")
+    print(f"Loading model from {checkpoint} on {device}...")
     model_config = load_model_config(args.model_config)
     model = YayaForCausalLM(model_config)
 
-    ckpt_manager = CheckpointManager(save_dir=os.path.dirname(args.checkpoint))
-    ckpt_manager.load(model, checkpoint_path=args.checkpoint)
+    ckpt_manager = CheckpointManager(save_dir=os.path.dirname(checkpoint))
+    ckpt_manager.load(model, checkpoint_path=checkpoint)
     model = model.to(args.device)
     model.eval()
 
