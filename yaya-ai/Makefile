@@ -478,6 +478,14 @@ eval-loop-retrain:
 chat-tiny:
 	python scripts/chat_tiny.py
 
+## Launch Gradio web chat UI
+web-ui:
+	python scripts/web_ui.py
+
+## Run continuous learning: convert chat logs → SFT data
+continuous-learn:
+	python scripts/continuous_learn.py
+
 ## Show training log tail (monitor background training)
 training-status:
 	@echo "=== sft_focused ===" && tail -10 logs/sft_focused.log 2>/dev/null || echo "(no focused log)"
