@@ -141,7 +141,7 @@ def main():
         history = ([{"role": "system", "content": SYSTEM_PROMPT}]
                    + conversation
                    + [{"role": "user", "content": user_input}])
-        prompt = tokenizer.format_chat(history) + ASSISTANT_TOKEN + "\n"
+        prompt = tokenizer.format_chat(history) + "\n" + ASSISTANT_TOKEN + "\n"
 
         # Generate (memory injected automatically by generator)
         full_output = generator.generate(prompt, gen_config)
