@@ -456,7 +456,7 @@ sft-tiny-focused:
 	PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
 		--model_config configs/model/yaya_tiny.yaml \
 		--train_config configs/training/sft_tiny_focused.yaml \
-		--pretrain_checkpoint checkpoints/yaya-tiny/checkpoint-00010000
+		--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000
 
 ## Evaluate instruction-following quality of best checkpoint
 eval-tiny:
