@@ -466,6 +466,14 @@ eval-tiny:
 eval-tiny-all:
 	python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-tiny-sft-focused
 
+## Run eval loop: eval → augment dataset → print retrain command
+eval-loop:
+	python scripts/eval_loop.py
+
+## Run eval loop and immediately launch focused retraining
+eval-loop-retrain:
+	python scripts/eval_loop.py --retrain
+
 ## Chat interactively with the best available tiny checkpoint
 chat-tiny:
 	python scripts/chat_tiny.py
