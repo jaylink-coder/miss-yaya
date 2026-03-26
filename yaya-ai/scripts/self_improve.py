@@ -76,7 +76,7 @@ IMPROVEMENT_DATA = {
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--eval_report', type=str, default='data/eval/self_eval_report.json')
-    parser.add_argument('--output',      type=str, default='data/sft/yaya_instruct.jsonl')
+    parser.add_argument('--output',      type=str, default='data/sft/yaya_instruct_filtered.jsonl')
     parser.add_argument('--all',         action='store_true', help='Add examples for all categories')
     args = parser.parse_args()
 
