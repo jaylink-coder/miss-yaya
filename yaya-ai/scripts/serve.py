@@ -70,21 +70,21 @@ def main():
 
     ckpt_manager = CheckpointManager(save_dir=os.path.dirname(checkpoint))
     ckpt_manager.load(model, checkpoint_path=checkpoint)
-    model = model.to(args.device)
+    model = model.to(device)
     model.eval()
 
     # Load tokenizer
     tokenizer = YayaTokenizer(args.tokenizer_path)
 
     # Create generator
-    generator = TextGenerator(model=model, tokenizer=tokenizer, device=args.device)
+    generator = TextGenerator(model=model, tokenizer=tokenizer, device=device)
 
     # Create and run app
     app = create_app(generator, model_name=model_config.model_name)
 
     print(f"Starting server on {args.host}:{args.port}")
     print(f"  Model: {model_config.model_name}")
-    print(f"  Device: {args.device}")
+    print(f"  Device: {device}")
     print(f"  API docs: http://{args.host}:{args.port}/docs")
 
     import uvicorn
