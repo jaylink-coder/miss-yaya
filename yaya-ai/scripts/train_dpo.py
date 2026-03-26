@@ -1,8 +1,8 @@
 """DPO training for Yaya alignment (simplified RLHF).
 
 Usage:
-    python scripts/train_dpo.py                         # auto-finds best SFT ckpt
-    python scripts/train_dpo.py --sft_checkpoint checkpoints/yaya-tiny-sft-focused/checkpoint-00005000
+    python scripts/train_dpo.py                         # auto-finds best SFT ckpt (filtered > focused > clean)
+    python scripts/train_dpo.py --sft_checkpoint checkpoints/yaya-tiny-sft-filtered/latest
 """
 import argparse, sys, os, json
 import torch
