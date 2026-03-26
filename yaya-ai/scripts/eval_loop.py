@@ -271,7 +271,8 @@ def main():
             print("\nLaunching focused training...")
             subprocess.Popen(
                 [sys.executable, "scripts/train_sft.py",
-                 "--config", "configs/training/sft_tiny_focused.yaml",
+                 "--model_config", "configs/model/yaya_tiny.yaml",
+                 "--train_config", "configs/training/sft_tiny_focused.yaml",
                  "--pretrain_checkpoint", ckpt],
                 cwd=os.getcwd(),
             )
