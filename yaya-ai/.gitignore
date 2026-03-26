@@ -44,3 +44,7 @@ Thumbs.db
 
 # Backup data files
 data/sft/*_backup*.jsonl
+
+# Generated eval reports and conversation logs
+data/eval/
+data/memory/
