@@ -971,5 +971,180 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-26T18:38:58.541493"
+  },
+  {
+    "id": 139,
+    "content": "Q431 Epigenetics: DNA methylation/histone modification/ncRNA; Dutch Hunger Winter; HPA axis stress marks; transgenerational inheritance (Overkalix)",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T20:10:15.772482"
+  },
+  {
+    "id": 140,
+    "content": "Q432 Game theory: Nash equilibrium, Prisoner's Dilemma; explains arms races, auctions (Milgrom Nobel 2020), ESS; limits: ultimatum game, tit-for-tat",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T20:10:15.805432"
+  },
+  {
+    "id": 141,
+    "content": "Q433 Nuclear fission: mass defect -> E=mc^2 -> 200 MeV/reaction (50M x coal); chain reaction k>=1; critical mass 52kg U-235; binding energy curve, iron-56",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T20:10:15.831109"
+  },
+  {
+    "id": 142,
+    "content": "Q434 Great literature: longevity/complexity/empathic depth (Mar & Oatley ToM); Bloom aesthetic value; Bourdieu class distinction; intersubjective standard",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T20:10:15.858938"
+  },
+  {
+    "id": 143,
+    "content": "Q435 Sleep: NREM/REM cycles; memory consolidation, glymphatic clearance (Nedergaard 2013, amyloid-beta), synaptic homeostasis (Tononi), ghrelin/leptin",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-26T20:10:15.886883"
+  },
+  {
+    "id": 144,
+    "content": "Q436 Cold War 1947-1991: Cuban Missile Crisis, Vietnam, Afghanistan; ended via economic exhaustion, Gorbachev, 1989 revolutions, Berlin Wall Nov 9 1989",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T10:54:04.517592"
+  },
+  {
+    "id": 145,
+    "content": "Q437 Internet: IP packets + TCP reliable delivery + UDP fast; DNS name->IP; BGP routing; ~400 submarine cables; HTTPS = HTTP + TLS",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T10:54:04.544169"
+  },
+  {
+    "id": 146,
+    "content": "Q438 Microbiome: 38T microbes, gut 1.5kg; SCFAs/butyrate, immune training, gut-brain axis, colonisation resistance; FMT 90% for C.diff; probiotics overhyped",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T10:54:04.570722"
+  },
+  {
+    "id": 147,
+    "content": "Q439 Free will: hard determinism (Pereboom), libertarian, compatibilism (Hume/Frankfurt/Dennett majority); Libet 350ms readiness potential; rehabilitation vs retribution",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T10:54:04.598330"
+  },
+  {
+    "id": 148,
+    "content": "Q440 Infinity sizes (Cantor 1873): countable aleph-0, uncountable reals; diagonal argument; power set always larger; Continuum Hypothesis independent of ZFC",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T10:54:04.626764"
+  },
+  {
+    "id": 149,
+    "content": "Q441 Default mode network: active at rest; self-reference/mind-wandering/ToM; hyperactive in depression (rumination); reduced by meditation; amyloid in Alzheimer's",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:06:41.766435"
+  },
+  {
+    "id": 150,
+    "content": "Q442 Double-slit: electrons show interference pattern unobserved; measurement destroys it; wave-particle duality, superposition, wavefunction collapse; Feynman 'only mystery'",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:06:41.818764"
+  },
+  {
+    "id": 151,
+    "content": "Q442 Inflation: demand-pull/cost-push/wage-price spiral/monetary (Friedman); expectations self-fulfilling; 2% target avoids deflation; Phillips Curve breaks in stagflation",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:06:41.865787"
+  },
+  {
+    "id": 152,
+    "content": "Q444 Scientific Revolution 1543-1687: Copernicus/Kepler/Galileo/Vesalius/Harvey/Newton; empirical+math over authority; Kuhn paradigm shifts",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:06:41.916489"
+  },
+  {
+    "id": 153,
+    "content": "Q445 Attachment theory (Bowlby/Ainsworth): secure/anxious/avoidant/disorganised; Strange Situation; internal working models; earned security possible",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:06:41.958670"
+  },
+  {
+    "id": 154,
+    "content": "Q446 Climate change: IPCC AR6 +1.1C, unequivocal human causation; CO2 420ppm; greenhouse physics Arrhenius 1896; sea level +20cm; 97% consensus",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:14:48.935230"
+  },
+  {
+    "id": 155,
+    "content": "Q447 Derivative: instantaneous rate of change, tangent slope; uses: Maxwell/Schrodinger, gradient descent/backpropagation, marginal cost, disease models",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:14:48.968982"
+  },
+  {
+    "id": 156,
+    "content": "Q448 Structural racism: disparate outcomes without racist intent; redlining wealth gap, Bertrand Mullainathan 50% fewer callbacks, healthcare undertreated",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:14:49.003386"
+  },
+  {
+    "id": 157,
+    "content": "Q449 Special relativity: time dilation (GPS 38us/day), E=mc^2, length contraction; GR: curved spacetime = gravity; LIGO waves 2015, Eddington lensing 1919",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:14:49.038975"
+  },
+  {
+    "id": 158,
+    "content": "Q450 Magical realism: supernatural as matter-of-fact; Garcia Marquez One Hundred Years 1967; Latin America: oral tradition, Indigenous cosmology, political repression",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:14:49.077982"
+  },
+  {
+    "id": 159,
+    "content": "Q451 Earthquakes: fault slip at tectonic boundaries; Mw log scale; destructiveness = depth+soil+buildings; subduction = largest; no reliable prediction",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:25:16.355217"
+  },
+  {
+    "id": 160,
+    "content": "Q452 Antibiotic resistance: beta-lactamases, efflux pumps, target modification; horizontal gene transfer; 1.27M deaths/year now; ESKAPE pathogens; pipeline dry",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:25:16.391319"
+  },
+  {
+    "id": 161,
+    "content": "Q453 Bystander effect (Darley & Latane 1968): diffusion of responsibility, pluralistic ignorance; 85% alone vs 31% with others; overcome by direct assignment",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:25:16.424950"
+  },
+  {
+    "id": 162,
+    "content": "Q454 Dark matter: 27% of universe; rotation curves, Bullet Cluster, CMB peaks as evidence; WIMPs/axions as candidates; particle nature unknown",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:25:16.454976"
+  },
+  {
+    "id": 163,
+    "content": "Q455 Shakespeare: 37 plays, 1700 words coined; psychological depth predating psychology; Hamlet/Macbeth/Lear on universal drives; First Folio preserved 18 plays",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:25:16.483945"
   }
 ]

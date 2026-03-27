@@ -5396,3 +5396,544 @@ Scientific approaches: Global Workspace Theory (Baars), Integrated Information T
 **Rating: 9.5/10**
 
 ---
+
+### Q431 — Biology
+**What is epigenetics and how does environment affect gene expression?**
+
+Epigenetics: heritable changes in gene expression without DNA sequence changes. The genome is fixed; the epigenome is dynamic.
+
+Core mechanisms:
+- DNA methylation: methyl groups silence genes (CpG sites). Passed through cell division.
+- Histone modification: acetylation/methylation of histone tails changes DNA packing — loose=expressed, tight=silenced
+- Non-coding RNA: microRNAs regulate transcription/translation
+
+Environmental effects:
+- Diet: folate/B12 donate methyl groups. Dutch Hunger Winter (1944-45): starved mothers' children had altered methylation decades later — higher obesity and heart disease rates
+- Stress: glucocorticoids alter HPA axis methylation — lifelong altered stress reactivity
+- Toxins: BPA, tobacco, air pollution alter methylation
+- Exercise: induces epigenetic changes in muscle metabolism genes
+
+Transgenerational inheritance: some marks survive reprogramming (Overkalix cohort — grandfather food supply predicts grandson mortality). Mechanistically controversial.
+
+**Rating: 9.0/10**
+
+---
+
+### Q432 — Economics
+**What is game theory and what has it explained?**
+
+Game theory: mathematical study of strategic interaction among rational agents. Von Neumann & Morgenstern (1944); Nash equilibrium (1950).
+
+Nash Equilibrium: no player can improve outcome by unilaterally changing strategy. Not necessarily the best collective outcome.
+
+Prisoner's Dilemma: both defecting is Nash equilibrium even though mutual cooperation is better — individually rational choices produce collectively bad outcomes.
+
+What it explains:
+- Arms races (defect-defect equilibrium)
+- Auction design: Vickrey auctions, spectrum auctions (Nobel 2020, Milgrom & Wilson)
+- Evolutionary biology: hawk-dove game, evolutionarily stable strategies (Maynard Smith)
+- Voting theory, trade negotiations, antibiotic resistance (each patient defects by demanding antibiotics)
+
+Limits: assumes rationality; people reject unfair offers even at personal cost (ultimatum game); tit-for-tat wins in repeated games (Axelrod tournaments).
+
+**Rating: 9.0/10**
+
+---
+
+### Q433 — Physics
+**How does nuclear fission work and why does it release so much energy?**
+
+Nuclear fission: heavy nucleus (U-235 or Pu-239) splits into two smaller nuclei + 2-3 neutrons + energy.
+
+Why so much energy: products weigh LESS than original (mass defect ~0.1%). Missing mass converted to energy via E=mc^2. U-235 releases ~200 MeV per fission vs few eV for coal — ~50 million times more energy per reaction.
+
+Chain reaction: neutron strikes U-235 -> unstable U-236 -> splits -> 200 MeV + 2-3 neutrons -> each strikes another U-235. If each fission produces >= 1 subsequent: reaction sustains. Critical mass for pure U-235: ~52 kg sphere.
+
+Reactor vs bomb:
+- Reactor: controlled (k≈1), control rods absorb neutrons, moderator slows them
+- Bomb: supercritical (k>>1), exponential chain reaction in microseconds
+
+Binding energy curve: iron-56 has highest binding energy per nucleon. Heavier nuclei release energy by fission; lighter by fusion.
+
+**Rating: 9.5/10**
+
+---
+
+### Q434 — Literature
+**What makes great literature great — is there an objective standard?**
+
+Contested but not without structure.
+
+Arguments for objective standards:
+- Longevity: works surviving centuries across cultures generate inexhaustible new interpretations
+- Formal complexity: density of language, structural sophistication, earned ambiguity
+- Cognitive depth: literary fiction readers score higher on theory of mind tasks (Mar & Oatley research)
+- Bloom's aesthetic value: surprise that becomes inevitable; strong misreading
+
+Arguments against:
+- Canons excluded women and non-Western voices — 'greatness' tracked power
+- Reader response (Iser, Fish): meaning is relational, completed by the reader
+- Bourdieu: literary taste is class distinction, not intrinsic merit
+
+Middle ground: quality judgments are intersubjective — built through critical conversation over time. Some texts reward rereading across centuries; that persistence is evidence of something, if not proof of absolute value.
+
+**Rating: 8.5/10**
+
+---
+
+### Q435 — Neuroscience
+**How does sleep work and why do we need it?**
+
+Sleep is active and essential — rats deprived die in ~3 weeks.
+
+Architecture (90-min cycles, 4-6/night):
+- NREM 1/2: light sleep, sleep spindles
+- NREM 3 (slow-wave): delta waves, most restorative
+- REM: dreaming, brain nearly as active as waking, muscle atonia
+Early cycles: more deep sleep. Later cycles: more REM.
+
+Why we need it:
+- Memory consolidation: hippocampus replays experiences -> transfers to neocortex for long-term storage
+- Glymphatic clearance (Nedergaard 2013): brain cells shrink 60%, CSF flushes amyloid-beta and other metabolic waste
+- Immune function: cytokine production, immune suppression without sleep
+- Synaptic homeostasis (Tononi/Cirelli): waking strengthens synapses; sleep downscales them
+- Metabolic: deprivation increases ghrelin (hunger), decreases leptin (satiety)
+
+Sleep debt not infinitely recoverable. Caffeine masks impairment without restoring function.
+
+**Rating: 9.5/10**
+
+---
+
+### Q436 — History
+**What was the Cold War and why did it end?**
+
+Cold War (1947-1991): ideological and geopolitical standoff between US (liberal capitalism) and USSR (Marxist-Leninism). No direct military conflict between superpowers.
+
+Key crises: Cuban Missile Crisis (1962) — 13-day standoff, closest to nuclear war; Vietnam (US defeat 1975); Afghanistan 1979-89 (Soviet Vietnam).
+
+Why it ended:
+1. Economic exhaustion: Soviet command economy couldn't match US military spending; consumer shortages, oil revenue collapse after 1985
+2. Gorbachev's reforms: glasnost + perestroika — intended to save the system, released forces he couldn't control
+3. 1989 revolutions: Poland, Hungary, Czechoslovakia, East Germany, Romania — dominoes in months; Berlin Wall fell Nov 9 1989
+4. Nationalist movements: Baltic states, Ukraine, Soviet republics pushed independence
+5. Reagan's military pressure (contested): defence buildup may have accelerated Soviet economic strain
+
+USSR dissolved December 25 1991. Gorbachev resigned.
+
+**Rating: 9.0/10**
+
+---
+
+### Q437 — Computer Science
+**How does the internet actually work?**
+
+The internet is a global network of networks connected by agreed-upon protocols — not a single thing but a set of standards.
+
+Physical: fibre optic cables (~400 submarine cables carry ~99% of intercontinental traffic), copper, wireless, data centres, routers, ISPs.
+
+Key protocols:
+- IP: every device has an address; breaks data into packets routed independently; reassembled at destination
+- TCP: reliable delivery over IP — acknowledges packets, requests retransmission, reorders out-of-sequence
+- UDP: fast, no delivery guarantee — video streaming, gaming
+- DNS: translates domain names to IP addresses; hierarchical distributed database
+- HTTP/HTTPS: web pages; HTTPS adds TLS encryption
+
+Routing: BGP (Border Gateway Protocol) lets autonomous systems (ISPs, companies) exchange routing info. Packets hop router to router.
+
+The cloud: other people's computers (data centres) running your software.
+
+**Rating: 8.5/10**
+
+---
+
+### Q438 — Biology
+**What is the microbiome and how does it affect health?**
+
+Human microbiome: ~38 trillion microorganisms (bacteria/archaea/fungi/viruses) — roughly equal to human cell count. Gut microbiome (~1.5 kg, mostly colon) is most studied.
+
+What it does:
+- Ferments dietary fibre into short-chain fatty acids (butyrate/propionate/acetate) — primary fuel for colon cells, anti-inflammatory
+- Trains immune system: early colonisation shapes immune development; germ-free mice have underdeveloped immunity
+- Produces vitamins: B12, K2, B vitamins
+- Gut-brain axis: vagus nerve + metabolites + immune signals link gut to brain
+- Colonisation resistance: outcompetes pathogens
+
+Dysbiosis: antibiotics -> C. difficile overgrowth; associated with IBD, obesity, T2D, depression (correlational).
+
+FMT (faecal microbiota transplant): >90% cure rate for recurrent C. difficile. Experimental for other conditions.
+
+Caution: most probiotic products have weak evidence for healthy individuals.
+
+**Rating: 9.0/10**
+
+---
+
+### Q439 — Philosophy
+**What is free will and is it compatible with determinism?**
+
+Determinism: every event including decisions is the inevitable result of prior causes + physical laws.
+
+Three positions:
+1. Hard determinism: determinism true AND free will is an illusion. Retributive punishment incoherent. (Pereboom)
+2. Libertarian free will: genuine free will exists outside determinism. Quantum indeterminacy invoked — but randomness ≠ agency.
+3. Compatibilism (majority view): free will = acting according to own desires/reasoning, free from coercion. Doesn't require 'could have done otherwise.' Frankfurt cases: moral responsibility doesn't require alternative possibilities. (Hume, Frankfurt, Dennett)
+
+Neuroscience: Libet (1983) — readiness potential precedes conscious decision by ~350ms. Suggests decision before 'we' decide. Critiqued: measured simple wrist flick, not complex decisions.
+
+Practical: compatibilism preserves moral responsibility; hard determinism supports rehabilitation over retribution.
+
+**Rating: 9.5/10**
+
+---
+
+### Q440 — Mathematics
+**What is infinity and are there different sizes of it?**
+
+Yes — Cantor (1873) proved some infinities are strictly larger than others.
+
+Countable infinity (aleph-0): integers are infinite. Rational numbers are ALSO countably infinite — Cantor showed a bijection with integers by diagonal enumeration. Surprising: as many rationals as integers.
+
+Uncountable infinity: real numbers are strictly larger. Cantor's diagonal argument: assume a complete list of reals between 0 and 1. Construct a number differing from the nth number at the nth digit. This new number isn't in the list — no complete list exists. Reals are uncountably infinite, aleph-1 > aleph-0.
+
+Hierarchy: 2^(aleph-0) > aleph-0. Power set of any infinite set is strictly larger. Infinitely many distinct infinities.
+
+Continuum Hypothesis: is there an infinity between aleph-0 and the reals? Godel (1940) + Cohen (1963) proved it's INDEPENDENT of ZFC — can't be proved or disproved from standard axioms.
+
+Practical: most functions are uncomputable (countably many programs, uncountably many functions).
+
+**Rating: 9.5/10**
+
+---
+
+### Q441 — Neuroscience
+**What is the default mode network and what does it do?**
+
+Default mode network (DMN): brain regions MORE active during rest than focused tasks — identified when PET/fMRI researchers noticed consistent deactivations during tasks.
+
+Key regions: medial prefrontal cortex, posterior cingulate cortex, precuneus, angular gyrus, hippocampus.
+
+What it does: mind-wandering/daydreaming; self-referential processing; theory of mind (mentalising); autobiographical memory retrieval; prospection (simulating future).
+
+Why it matters:
+- Depression: DMN hyperactive — rumination = excessive medial PFC activity
+- Meditation: experienced meditators show reduced DMN activity; stronger disengagement
+- Alzheimer's: amyloid-beta deposits preferentially in DMN hubs
+
+Anticorrelation: DMN and task-positive (dorsal attention) network are anticorrelated — one active, the other suppressed.
+
+**Rating: 9.0/10**
+
+---
+
+### Q442 — Physics
+**What is the double-slit experiment and what does it prove?**
+
+Feynman: the double-slit experiment contains 'the only mystery' of quantum mechanics.
+
+Quantum version: fire electrons one at a time at two slits -> over time, interference pattern builds (alternating bands) — as if each electron passes through BOTH slits simultaneously.
+
+Measurement paradox: place detector at slits to observe which slit -> interference pattern DISAPPEARS. Electrons behave like classical particles.
+
+What it proves:
+1. Wave-particle duality: quantum objects show both wave (interference) and particle (individual detection) properties
+2. Superposition: unobserved electron is in superposition of both paths
+3. Observation collapses wavefunction: interaction with macroscopic system forces definite outcome
+4. Non-locality: quantum state spread across both slits simultaneously
+
+Interpretation problem: Copenhagen (don't ask), Many-Worlds (universe branches), Pilot Wave (hidden variable). Still contested.
+
+**Rating: 9.5/10**
+
+---
+
+### Q443 — Economics
+**What is inflation and what causes it?**
+
+Inflation: sustained increase in general price level / decline in purchasing power of money.
+
+Measured by: CPI (consumer basket), PCE (Fed's preferred), PPI (producer prices). Core excludes food/energy.
+
+Causes:
+1. Demand-pull: too much money chasing too few goods (2021-22 stimulus + supply constraints)
+2. Cost-push: supply shocks raise production costs (1973 oil embargo -> stagflation)
+3. Wage-price spiral: expected inflation -> wage demands -> price rises -> validates expectations (1970s)
+4. Monetary (Friedman): inflation is always and everywhere a monetary phenomenon — excess money growth. Hyperinflations (Weimar 1923, Zimbabwe 2008) always monetary.
+
+Expectations crucial: if 5% expected, 5% negotiated, 5% occurs. Anchoring expectations is central banking's core job.
+
+Why 2% target: deflation worse — Fisher debt deflation spiral; 2% buffer lets central banks cut real rates.
+
+Phillips Curve: inflation-unemployment tradeoff; stagflation showed it can break down.
+
+**Rating: 9.0/10**
+
+---
+
+### Q444 — History
+**What was the Scientific Revolution and who drove it?**
+
+Scientific Revolution (~1543-1687): replaced Aristotelian authority with empirical observation and mathematical description.
+
+Key figures:
+- Copernicus (1543): heliocentric model, removed Earth from centre
+- Tycho Brahe: 20 years of precise naked-eye astronomical data
+- Kepler: used Brahe's data -> three laws of planetary motion (elliptical orbits)
+- Galileo: telescope (Jupiter's moons, Venus phases), mathematical motion, inertia; Church conflict
+- Vesalius (1543): dissection-based human anatomy, overturned Galen
+- Harvey (1628): circulation of blood — experimental proof
+- Newton (1687): Principia — universal gravitation, three laws of motion, unified terrestrial and celestial mechanics. The capstone.
+
+What changed: empirical + mathematical over ancient authority; geocentric -> heliocentric infinite universe; observer is authoritative.
+
+Kuhn (Structure of Scientific Revolutions): paradigm shifts are discontinuous. Others argue continuity with medieval and Islamic science.
+
+**Rating: 9.0/10**
+
+---
+
+### Q445 — Psychology
+**What is attachment theory and how does early bonding shape adult life?**
+
+Bowlby (1950s-70s): evolved attachment system — innate need for close bonds with caregivers, critical for survival and development.
+
+Ainsworth's Strange Situation (1970s): separate 12-month-olds briefly, observe reunion:
+
+1. Secure (~65%): distressed on separation, comforted on return. Reliably responsive caregiver. -> Adults: comfortable with intimacy, good emotion regulation.
+2. Anxious/Ambivalent (~15%): intensely distressed, not easily comforted (clingy/angry). Inconsistent caregiver. -> Adults: preoccupied with relationships, fear abandonment.
+3. Avoidant (~20%): appear unconcerned but physiologically stressed (suppress expression). Consistently rejecting caregiver. -> Adults: uncomfortable with closeness, dismissive.
+4. Disorganised: contradictory approach/avoid. Frightened/frightening caregiver (abuse/trauma). Strongest predictor of psychopathology.
+
+Internal working models: mental representations of self/others formed from early experience — shape all future relationships.
+
+Continuity vs change: moderately stable but not fixed. Therapy and new relationships can shift patterns. Earned security is real.
+
+**Rating: 9.0/10**
+
+---
+
+### Q446 — Ecology
+**What is climate change and how confident are scientists?**
+
+Climate change: long-term shift in global temperatures primarily driven by human GHG emissions since ~1750.
+
+IPCC AR6 (2021): +1.1C above pre-industrial; human causation 'unequivocal'; CO2 at 420ppm (highest in 3M years); warming rate fastest in 65M years.
+
+Mechanism: CO2/CH4/N2O absorb outgoing infrared, re-emit in all directions -> more energy trapped. Physics: Fourier (1824), Tyndall (1859), Arrhenius (1896) calculated ~5C per CO2 doubling.
+
+Evidence (independent, all consistent): surface temperature records; ocean heat rising; sea level +20cm since 1900; Arctic ice declining; glaciers retreating; species range shifts; isotope fingerprinting proves fossil fuel origin.
+
+Projections: each 0.5C matters — coral reefs, extreme heat, food security scale nonlinearly.
+
+Consensus: 97%+ of climate scientists; every national academy of science worldwide.
+
+**Rating: 9.5/10**
+
+---
+
+### Q447 — Mathematics
+**What is a derivative intuitively, and what are its real-world uses?**
+
+Derivative: instantaneous rate of change — slope of the tangent line at a point. f'(x) = lim[h->0] (f(x+h)-f(x))/h.
+
+Physically: position -> velocity -> acceleration (each a derivative of the prior).
+
+Real-world uses:
+- Physics: Maxwell's equations, Schrodinger equation, Newton's laws — all differential equations
+- Optimisation: f'(x)=0 at maxima/minima — profit, efficiency, aerodynamics
+- Machine learning: gradient descent trains neural networks by computing derivative of loss with respect to weights; backpropagation uses chain rule
+- Economics: marginal cost/revenue = derivatives; optimal production where they're equal
+- Medicine: drug concentration rates, disease spread (dN/dt = rN)
+
+Chain rule: derivative of f(g(x)) = f'(g(x)) * g'(x). Foundation of backpropagation.
+
+**Rating: 9.0/10**
+
+---
+
+### Q448 — Sociology
+**What is structural racism and how does it differ from individual prejudice?**
+
+Individual racism: personal prejudiced beliefs or biased actions.
+
+Structural racism: racial inequality embedded in laws, institutions, policies producing racially disparate outcomes WITHOUT requiring individual racist intent.
+
+Examples:
+- Redlining (US 1930s-60s): federal maps denied mortgages in Black neighbourhoods -> no homeownership -> no wealth accumulation -> compounding wealth gap for generations
+- Employment: audit studies (identical CVs, different names) — 'Black-sounding' names get 50% fewer callbacks (Bertrand & Mullainathan 2004)
+- Criminal justice: same offences produce harsher sentences for Black defendants
+- Healthcare: Black patients systematically undertreated for pain
+- Intergenerational: neighbourhood/school/wealth partly determined by prior generations' access to biased systems
+
+Why 'without intent' matters: property-tax school funding isn't individually racist, but if property values were shaped by redlining, outcomes are racially unequal.
+
+Controversy: critics argue it blurs causation and removes individual agency.
+
+**Rating: 8.5/10**
+
+---
+
+### Q449 — Physics
+**What is relativity and what does it actually say?**
+
+Special Relativity (Einstein 1905): two postulates: (1) laws of physics identical in all inertial frames; (2) speed of light c constant for all observers.
+
+Consequences (all verified):
+- Time dilation: moving clocks run slow. GPS must correct 38 microseconds/day or errors reach 10km/day
+- Length contraction: objects moving relative to you are shorter
+- Relativity of simultaneity: simultaneous in one frame may not be in another
+- E=mc^2: mass-energy equivalence; tiny mass = enormous energy; foundation of nuclear power
+- Speed limit: nothing with mass can reach c
+
+General Relativity (1915): mass-energy curves spacetime; objects follow geodesics through curved spacetime — what we observe as gravity.
+
+Verified: gravitational lensing (Eddington 1919), gravitational waves (LIGO 2015), black holes, GPS corrections, perihelion of Mercury.
+
+**Rating: 9.5/10**
+
+---
+
+### Q450 — Literature
+**What is magical realism and why did it emerge from Latin America?**
+
+Magical realism: magical elements presented matter-of-factly in realistic narrative — no explanation, no surprise. A character ascends to heaven while doing laundry; recorded as unremarkably as weather.
+
+Features: magical accepted without question; realistic political/historical context; circular time; permeable line between dream/myth/reality.
+
+Key authors:
+- Garcia Marquez: One Hundred Years of Solitude (1967) — defining text; Buendia family; insomnia plague; yellow butterflies; Macondo
+- Isabel Allende: House of the Spirits — Chile, political violence, clairvoyance
+- Toni Morrison: Beloved — slavery's trauma; ghost literal and metaphorical
+- Salman Rushdie: Midnight's Children — India's partition
+- Borges: labyrinths, infinite libraries — proto-magical realism
+
+Why Latin America: oral traditions blend myth and fact; Indigenous cosmologies where spirits coexist with humans; political repression made direct critique dangerous — magical displacement allowed critique of dictatorship; hybrid Indigenous/African/European cultures produced hybrid epistemologies.
+
+Garcia Marquez on grandmother: 'She told the most atrocious things without batting an eyelid.'
+
+**Rating: 9.0/10**
+
+---
+
+### Q451 — Geology
+**How do earthquakes happen, and what determines their destructiveness?**
+
+Earthquakes occur when stress accumulated along fault lines releases suddenly, sending seismic waves through the Earth.
+
+**Plate tectonics basis**: Earth's lithosphere is divided into ~15 major plates. At boundaries, plates converge, diverge, or slide past each other. Friction locks faults -- stress builds for decades, centuries. When friction is overcome, fault slips -- earthquake.
+
+**Types of faults**: Strike-slip (San Andreas -- horizontal motion); thrust/reverse (Himalayas -- compression); normal (Basin and Range -- extension). Subduction zones (oceanic plate under continental) produce megathrust quakes -- the largest type (Tohoku 2011, Mw 9.0; Valdivia 1960, Mw 9.5).
+
+**Magnitude**: Moment magnitude (Mw) measures total energy released. Log scale -- Mw 7 releases ~32x more energy than Mw 6. Mw 9 is approx. 1000x Mw 7.
+
+**Destructiveness factors**:
+1. Depth: shallow (<70km) = more damage at surface
+2. Distance from epicentre
+3. Soil type: soft sediment amplifies shaking (Mexico City 1985)
+4. Building quality: 2010 Haiti (Mw 7.0) killed 200k; 2011 Christchurch (Mw 6.3) killed 185 -- same magnitude, opposite building standards
+5. Tsunami potential: submarine earthquakes displace water
+
+**Prediction**: no reliable short-term prediction exists. Long-term probabilistic forecasts (UCERF for California) estimate 63% chance of Mw 6.7+ in Bay Area within 30 years.
+
+**Rating: 9.0/10**
+
+---
+
+### Q452 — Medicine
+**What is antibiotic resistance and how serious is the threat?**
+
+Antibiotic resistance occurs when bacteria evolve mechanisms to survive drugs that once killed them.
+
+**Mechanisms**:
+1. Enzyme production: beta-lactamases destroy penicillin ring
+2. Efflux pumps: bacteria actively expel antibiotics
+3. Target modification: MRSA alters penicillin-binding proteins
+4. Reduced permeability: gram-negatives limit drug entry
+
+**How resistance spreads**: horizontal gene transfer -- bacteria share resistance genes via plasmids (not just vertical inheritance). One resistant bacterium can share its resistance with unrelated species rapidly.
+
+**Scale of the problem**: WHO labels AMR a top-10 global health threat. 2019: ~1.27 million deaths directly attributable to AMR (Lancet). By 2050: projections of 10 million deaths/year (O'Neill Review 2016) if unchecked -- exceeding cancer.
+
+**Key culprits**: ESKAPE pathogens (Enterococcus, Staph aureus, Klebsiella, Acinetobacter, Pseudomonas, Enterobacter). CRE (carbapenem-resistant Enterobacteriaceae) resistant to last-resort antibiotics.
+
+**Drivers**: overprescribing in humans; massive agricultural use (70% of all antibiotics); incomplete courses; poor infection control.
+
+**Solutions**: new antibiotic development (dry pipeline -- low profit); phage therapy; antibiotic stewardship; vaccines reducing infection rates; rapid diagnostics.
+
+**Rating: 9.5/10**
+
+---
+
+### Q453 — Psychology
+**What is the bystander effect and why does it happen?**
+
+The bystander effect: people are less likely to help in an emergency when others are present.
+
+**Origin**: Kitty Genovese (1964) -- stabbed outside her Queens apartment; 38 witnesses reportedly did nothing. Motivated Darley & Latane's classic experiments.
+
+**Experiment (1968)**: subject alone or with confederates hears someone having a seizure via intercom. Alone: 85% helped within 52 seconds. With 4 others: only 31% helped within 3 minutes.
+
+**Mechanisms**:
+1. **Diffusion of responsibility**: 'someone else will help' -- responsibility divided among observers
+2. **Pluralistic ignorance**: everyone looks calm so everyone assumes it's not an emergency so nobody acts
+3. **Evaluation apprehension**: fear of looking foolish if wrong about emergency
+4. **Ambiguity reduction**: unclear situations -- look to others -- see inaction -- assume no problem
+
+**Reversals**: bystander effect weakens when:
+- Emergency is unambiguous (blood, fire)
+- Bystander has relevant expertise
+- Victim is similar to helper
+- Direct eye contact with victim
+- You point at specific person: 'You in the red -- call 911'
+
+**Genovese note**: the '38 witnesses saw everything' story was exaggerated by media. Few had full view. Mechanism still real, origin story partly myth.
+
+**Rating: 9.0/10**
+
+---
+
+### Q454 — Astronomy
+**What is dark matter and what is the evidence for it?**
+
+Dark matter: non-luminous mass that does not interact electromagnetically but does exert gravity. Makes up ~27% of universe's energy budget (ordinary matter ~5%, dark energy ~68%).
+
+**Evidence**:
+1. **Galaxy rotation curves** (Rubin 1970s): stars at galaxy edges orbit faster than Newtonian gravity from visible matter predicts. Flat rotation curve implies invisible mass halo
+2. **Galaxy clusters**: cluster mass from gravitational lensing far exceeds visible mass. Bullet Cluster (2006): collision of two clusters -- hot gas (visible) slowed by interaction; dark matter (lensing map) passed straight through
+3. **CMB**: acoustic peaks in cosmic microwave background fit perfectly only with ~27% dark matter component
+4. **Large-scale structure**: galaxies form along filaments consistent with cold dark matter simulations (LCDM)
+
+**What it might be**:
+- WIMPs (weakly interacting massive particles) -- theoretically motivated, null results at LHC and direct detection experiments (LUX, XENONnT)
+- Axions -- very light, QCD-motivated; ALP experiments ongoing
+- Primordial black holes -- LIGO constraints limit contribution
+- Sterile neutrinos
+
+**Alternative**: MOND (modified Newtonian dynamics) -- adjust gravity instead. Explains rotation curves but fails at cluster scales.
+
+**Status**: dark matter existence extremely well-supported; its particle nature unknown. A top unsolved problem in physics.
+
+**Rating: 9.5/10**
+
+---
+
+### Q455 — Literature
+**What makes Shakespeare's work so enduringly significant?**
+
+Shakespeare (1564-1616) wrote 37 plays, 154 sonnets, and long poems across comedy, tragedy, history, and romance -- in 20 years of active writing.
+
+**Language**: coined or first-recorded ~1,700 words (bedroom, lonely, generous, obscene, swagger). Blank verse (iambic pentameter) flexible enough for noble and colloquial speech alike. Puns, wordplay, metaphor density unprecedented.
+
+**Psychological depth**: characters reason, contradict themselves, change. Hamlet contemplates inaction; Macbeth understands his own corruption; Iago is evil and self-aware about it; Lear learns through suffering. Predates psychology as field by 300 years but maps inner life precisely.
+
+**Universality**: tragedies turn on jealousy (Othello), ambition (Macbeth), indecision (Hamlet), family (Lear) -- universal drives. No setting-specific politics that date the work.
+
+**Influence**: largest influence on English language after King James Bible. Freud used Hamlet to develop Oedipal theory. Harold Bloom argued Shakespeare 'invented the human' -- modern Western self-conception.
+
+**Survival bias note**: we have ~3,000 plays from Elizabethan era; most lost. Shakespeare's survived partly due to the First Folio (1623), compiled by actors who preserved 18 plays that would otherwise be lost.
+
+**Ongoing relevance**: performed in every country; adapted across cultures (Kurosawa's Ran = King Lear; 10 Things I Hate About You = Taming of the Shrew). The plays scale across contexts because they're about humans, not Tudor politics.
+
+**Rating: 9.0/10**
+
+---

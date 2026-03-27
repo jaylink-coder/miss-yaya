@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 139
+Total entries: 164
 
 ---
 
@@ -281,3 +281,53 @@ Total entries: 139
 **[137]** Q429 Chemical bonds: ionic (electron transfer), covalent (shared), metallic (electron sea), hydrogen (DNA/water), van der Waals (weakest)
 
 **[138]** Q430 Hard problem of consciousness (Chalmers 1995): why subjective experience? Physicalism/Dennett, dualism, panpsychism, illusionism; IIT, GWT
+
+**[139]** Q431 Epigenetics: DNA methylation/histone modification/ncRNA; Dutch Hunger Winter; HPA axis stress marks; transgenerational inheritance (Overkalix)
+
+**[140]** Q432 Game theory: Nash equilibrium, Prisoner's Dilemma; explains arms races, auctions (Milgrom Nobel 2020), ESS; limits: ultimatum game, tit-for-tat
+
+**[141]** Q433 Nuclear fission: mass defect -> E=mc^2 -> 200 MeV/reaction (50M x coal); chain reaction k>=1; critical mass 52kg U-235; binding energy curve, iron-56
+
+**[142]** Q434 Great literature: longevity/complexity/empathic depth (Mar & Oatley ToM); Bloom aesthetic value; Bourdieu class distinction; intersubjective standard
+
+**[143]** Q435 Sleep: NREM/REM cycles; memory consolidation, glymphatic clearance (Nedergaard 2013, amyloid-beta), synaptic homeostasis (Tononi), ghrelin/leptin
+
+**[144]** Q436 Cold War 1947-1991: Cuban Missile Crisis, Vietnam, Afghanistan; ended via economic exhaustion, Gorbachev, 1989 revolutions, Berlin Wall Nov 9 1989
+
+**[145]** Q437 Internet: IP packets + TCP reliable delivery + UDP fast; DNS name->IP; BGP routing; ~400 submarine cables; HTTPS = HTTP + TLS
+
+**[146]** Q438 Microbiome: 38T microbes, gut 1.5kg; SCFAs/butyrate, immune training, gut-brain axis, colonisation resistance; FMT 90% for C.diff; probiotics overhyped
+
+**[147]** Q439 Free will: hard determinism (Pereboom), libertarian, compatibilism (Hume/Frankfurt/Dennett majority); Libet 350ms readiness potential; rehabilitation vs retribution
+
+**[148]** Q440 Infinity sizes (Cantor 1873): countable aleph-0, uncountable reals; diagonal argument; power set always larger; Continuum Hypothesis independent of ZFC
+
+**[149]** Q441 Default mode network: active at rest; self-reference/mind-wandering/ToM; hyperactive in depression (rumination); reduced by meditation; amyloid in Alzheimer's
+
+**[150]** Q442 Double-slit: electrons show interference pattern unobserved; measurement destroys it; wave-particle duality, superposition, wavefunction collapse; Feynman 'only mystery'
+
+**[151]** Q442 Inflation: demand-pull/cost-push/wage-price spiral/monetary (Friedman); expectations self-fulfilling; 2% target avoids deflation; Phillips Curve breaks in stagflation
+
+**[152]** Q444 Scientific Revolution 1543-1687: Copernicus/Kepler/Galileo/Vesalius/Harvey/Newton; empirical+math over authority; Kuhn paradigm shifts
+
+**[153]** Q445 Attachment theory (Bowlby/Ainsworth): secure/anxious/avoidant/disorganised; Strange Situation; internal working models; earned security possible
+
+**[154]** Q446 Climate change: IPCC AR6 +1.1C, unequivocal human causation; CO2 420ppm; greenhouse physics Arrhenius 1896; sea level +20cm; 97% consensus
+
+**[155]** Q447 Derivative: instantaneous rate of change, tangent slope; uses: Maxwell/Schrodinger, gradient descent/backpropagation, marginal cost, disease models
+
+**[156]** Q448 Structural racism: disparate outcomes without racist intent; redlining wealth gap, Bertrand Mullainathan 50% fewer callbacks, healthcare undertreated
+
+**[157]** Q449 Special relativity: time dilation (GPS 38us/day), E=mc^2, length contraction; GR: curved spacetime = gravity; LIGO waves 2015, Eddington lensing 1919
+
+**[158]** Q450 Magical realism: supernatural as matter-of-fact; Garcia Marquez One Hundred Years 1967; Latin America: oral tradition, Indigenous cosmology, political repression
+
+**[159]** Q451 Earthquakes: fault slip at tectonic boundaries; Mw log scale; destructiveness = depth+soil+buildings; subduction = largest; no reliable prediction
+
+**[160]** Q452 Antibiotic resistance: beta-lactamases, efflux pumps, target modification; horizontal gene transfer; 1.27M deaths/year now; ESKAPE pathogens; pipeline dry
+
+**[161]** Q453 Bystander effect (Darley & Latane 1968): diffusion of responsibility, pluralistic ignorance; 85% alone vs 31% with others; overcome by direct assignment
+
+**[162]** Q454 Dark matter: 27% of universe; rotation curves, Bullet Cluster, CMB peaks as evidence; WIMPs/axions as candidates; particle nature unknown
+
+**[163]** Q455 Shakespeare: 37 plays, 1700 words coined; psychological depth predating psychology; Hamlet/Macbeth/Lear on universal drives; First Folio preserved 18 plays
