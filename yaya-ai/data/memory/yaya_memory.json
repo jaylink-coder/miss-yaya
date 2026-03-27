@@ -1216,5 +1216,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-27T11:47:55.332696"
+  },
+  {
+    "id": 174,
+    "content": "Q466 Epigenetics: DNA methylation + histone modification; Dutch Hunger Winter; transgenerational inheritance real but not Lamarckian; cancer connection; reversible",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:50:45.833350"
+  },
+  {
+    "id": 175,
+    "content": "Q467 Standard Model: 6 quarks, 6 leptons, force bosons; Higgs confirmed 2012; leaves out gravity, dark matter, matter-antimatter asymmetry, neutrino mass",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:50:45.846473"
+  },
+  {
+    "id": 176,
+    "content": "Q468 Cancer: Hanahan-Weinberg hallmarks x8; mutations accumulate; heterogeneity + evolution = hard to cure; imatinib, checkpoint inhibitors, CAR-T as breakthroughs",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:50:45.859161"
+  },
+  {
+    "id": 177,
+    "content": "Q469 Free will: hard determinism vs libertarian vs compatibilism (majority view); Libet 500ms; moral responsibility survives in compatibilism; definitional dispute",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:50:45.873139"
+  },
+  {
+    "id": 178,
+    "content": "Q470 Biodiversity: 8.7M species, 1M threatened, 6th mass extinction; ecosystem services (pollination, carbon, medicine); HIPPO drivers; 30x30 target",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:50:45.890807"
   }
 ]

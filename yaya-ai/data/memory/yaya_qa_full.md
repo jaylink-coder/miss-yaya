@@ -6184,3 +6184,137 @@ The Cold War (1947-1991): ideological, geopolitical, and military competition be
 **Rating: 9.5/10**
 
 ---
+
+### Q466 — Biology
+**What is epigenetics and can you inherit your parents' experiences?**
+
+Epigenetics: changes in gene expression that do not involve changes to the DNA sequence itself. The genome is the hardware; the epigenome is the software that determines which genes are active.
+
+**Mechanisms**:
+1. **DNA methylation**: methyl groups attach to cytosine, typically silencing genes. Inherited through cell division.
+2. **Histone modification**: DNA wraps around histone proteins. Acetylation (relaxes, activates); methylation (condenses, silences). Marks can be heritable.
+3. **Non-coding RNA**: miRNA and lncRNA regulate gene expression post-transcriptionally.
+
+**Transgenerational inheritance -- what the evidence shows**:
+- Dutch Hunger Winter (1944-45): children and grandchildren of famine-exposed women showed metabolic differences -- higher obesity, cardiovascular disease rates decades later.
+- Swedish Overkalix study: grandfathers' food availability in prepubertal period correlated with grandsons' lifespan.
+- Mouse studies: stressed/obese parents pass epigenetic marks in sperm/eggs that affect offspring behaviour and metabolism.
+
+**What it does NOT mean**: you cannot pass on skills or memories (Lamarck was still wrong about that). The effects are statistical tendencies, not deterministic programming.
+
+**Cancer**: epigenetic dysregulation is a hallmark of cancer. Hypermethylation silences tumour suppressors; hypomethylation activates oncogenes. Epigenetic drugs (HDAC inhibitors) are cancer therapeutics.
+
+**Reversibility**: unlike genetic mutations, epigenetic marks can be reversed -- by environment, diet, drugs. This is both the hope and complexity of epigenetics.
+
+**Rating: 9.0/10**
+
+---
+
+### Q467 — Physics
+**What is the Standard Model of particle physics and what does it leave out?**
+
+The Standard Model (SM): our best description of the fundamental particles and forces of nature. Developed 1960s-1970s, confirmed by decades of experiment.
+
+**Particles**:
+- Fermions (matter): 6 quarks (up, down, strange, charm, bottom, top) + 6 leptons (electron, muon, tau + their neutrinos)
+- Bosons (force carriers): photon (EM), W+/W- and Z (weak), gluons x8 (strong), Higgs (mass)
+
+**Forces in SM** (3 of 4):
+- Electromagnetic (QED): photons; infinite range; binds atoms
+- Weak nuclear: W/Z bosons; very short range; radioactive decay, neutrinos
+- Strong nuclear (QCD): gluons; binds quarks inside protons; confinement
+
+**Higgs mechanism**: gives mass to W/Z bosons and fermions. Higgs boson confirmed at LHC 2012 (Englert and Higgs, Nobel 2013).
+
+**What SM leaves out**:
+1. **Gravity**: no quantum theory of gravity. General relativity breaks at Planck scale. This is the deepest problem in physics.
+2. **Dark matter**: SM has no candidate particle (WIMPs, axions not in SM)
+3. **Dark energy**: unexplained
+4. **Matter-antimatter asymmetry**: SM predicts equal amounts; we're made of matter
+5. **Neutrino mass**: SM assumes massless; oscillations prove they have mass
+6. **Hierarchy problem**: why is the Higgs so much lighter than Planck mass?
+
+**Extensions**: Supersymmetry (no evidence at LHC), string theory (not testable yet), extra dimensions. SM accurate to 1 in 10^12 -- most precise theory ever -- but clearly incomplete.
+
+**Rating: 10.0/10**
+
+---
+
+### Q468 — Medicine
+**How does cancer develop, and why is it so hard to cure?**
+
+Cancer: uncontrolled cell division resulting from accumulated mutations that disable normal growth controls.
+
+**Hallmarks of cancer** (Hanahan & Weinberg 2000, updated 2011):
+1. Sustaining proliferative signalling
+2. Evading growth suppressors (p53, Rb)
+3. Resisting cell death (apoptosis evasion -- Bcl-2 overexpression)
+4. Enabling replicative immortality (telomerase reactivation)
+5. Inducing angiogenesis (VEGF -- tumour grows blood supply)
+6. Activating invasion and metastasis
+7. Reprogramming energy metabolism (Warburg effect: aerobic glycolysis)
+8. Evading immune destruction
+
+**Why mutations accumulate**: DNA replication errors (~1 per 10^9 bp per division); environmental mutagens (UV, tobacco, HPV, aflatoxin); repair system failures (BRCA1/2 = defective double-strand break repair).
+
+**Why it's hard to cure**:
+- **Tumour heterogeneity**: one tumour contains millions of genetically distinct cells. Kill most -> survivors resistant.
+- **Evolution within tumour**: cancer is Darwinian selection under treatment pressure.
+- **Metastasis**: 90% of cancer deaths from metastases, not primary tumour. Micro-metastases invisible at diagnosis.
+- **Normal cell similarity**: hard to target cancer without harming normal rapidly dividing cells.
+
+**Modern advances**: targeted therapy (imatinib for CML -- BCR-ABL inhibitor; remarkable results); immunotherapy (checkpoint inhibitors -- PD-1/CTLA-4 -- 20% of advanced melanoma achieve durable remission); CAR-T for blood cancers; early detection via liquid biopsy.
+
+**Rating: 9.5/10**
+
+---
+
+### Q469 — Philosophy
+**What is free will and does it exist?**
+
+Free will: the capacity to make choices that are genuinely 'up to you' -- not determined by prior causes.
+
+**Three positions**:
+1. **Hard determinism**: every event, including every thought and choice, is causally determined by prior events + laws of physics. Free will is an illusion. (Laplace's demon: perfect knowledge of physics = predict all future.)
+2. **Libertarian free will** (not political): some choices are genuinely undetermined -- quantum indeterminacy, agent causation, or substance dualism. But random quantum events don't help -- randomness isn't control.
+3. **Compatibilism** (most philosophers): free will and determinism are compatible. 'Free' means acting from your own desires, values, and reasoning -- not external compulsion. Hume, Frankfurt, Dennett.
+
+**Neuroscience**: Libet (1983) -- readiness potential precedes conscious awareness of intention by ~500ms. Suggests brain 'decides' before you're aware. Replicated but debated: later studies show you can still 'veto'; timing of awareness measurement disputed.
+
+**Why it matters**:
+- **Moral responsibility**: if no free will, can we blame criminals? Compatibilists: yes -- punishment works; people respond to incentives; it's about shaping future behaviour.
+- **Criminal justice**: some neuroscientists argue we should shift from retributive to rehabilitative justice.
+- **Psychology**: believing in free will correlates with less cheating, more effort, better outcomes (Baumeister 2008).
+
+**Consensus**: most philosophers are compatibilists. Hard determinism gains ground in neuroscience. The debate is partly definitional -- what counts as 'free'?
+
+**Rating: 9.5/10**
+
+---
+
+### Q470 — Environmental Science
+**What is biodiversity and why does losing it matter?**
+
+Biodiversity: the variety of life at three levels -- genetic diversity within species, species diversity within ecosystems, ecosystem diversity across the planet.
+
+**Current scale**: ~8.7 million eukaryotic species estimated (Mora 2011); only ~2 million described. 1 million threatened with extinction (IPBES 2019). Current extinction rate: 100-1000x background rate -- Earth's 6th mass extinction.
+
+**Why it matters -- ecosystem services**:
+1. **Pollination**: 75% of food crops depend on pollinators. Bee decline threatens food security.
+2. **Pest control**: natural predators suppress agricultural pests. Loss increases pesticide need.
+3. **Carbon sequestration**: forests, wetlands, soils store carbon. Biodiversity sustains these ecosystems.
+4. **Water purification**: wetland plants filter pollutants. Mangroves protect coasts from storms.
+5. **Soil formation**: decomposers, earthworms, mycorrhizae make soil that grows food.
+6. **Medicine**: 50% of drugs derived from natural compounds. Undiscovered species may hold cures.
+
+**Stability argument**: diverse ecosystems are more resilient to disturbance. Monocultures collapse easily (Irish Potato Famine: single variety wiped out by single pathogen).
+
+**Drivers of loss** (HIPPO): Habitat loss (primary), Invasive species, Pollution, Population growth, Overharvesting.
+
+**Intrinsic value**: many argue species have value independent of human use. The last Northern White Rhino is irreplaceable regardless of economic utility.
+
+**Solutions**: protected areas (30x30 target); wildlife corridors; rewilding; reducing meat consumption (70% of agricultural land for livestock); international agreements (Kunming-Montreal 2022).
+
+**Rating: 9.0/10**
+
+---

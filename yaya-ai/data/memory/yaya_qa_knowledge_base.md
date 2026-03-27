@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 174
+Total entries: 179
 
 ---
 
@@ -351,3 +351,13 @@ Total entries: 174
 **[172]** Q464 Language acquisition: babbling-to-sentences by 3yr; Skinner demolished by Chomsky; nativist LAD vs social-interactionist vs statistical learning; poverty of stimulus
 
 **[173]** Q465 Cold War 1947-91: US vs USSR containment; Cuban Missile Crisis; MAD deterrence; Vietnam/Korea/Afghanistan proxies; Space Race -> technology; USSR collapse 1991
+
+**[174]** Q466 Epigenetics: DNA methylation + histone modification; Dutch Hunger Winter; transgenerational inheritance real but not Lamarckian; cancer connection; reversible
+
+**[175]** Q467 Standard Model: 6 quarks, 6 leptons, force bosons; Higgs confirmed 2012; leaves out gravity, dark matter, matter-antimatter asymmetry, neutrino mass
+
+**[176]** Q468 Cancer: Hanahan-Weinberg hallmarks x8; mutations accumulate; heterogeneity + evolution = hard to cure; imatinib, checkpoint inhibitors, CAR-T as breakthroughs
+
+**[177]** Q469 Free will: hard determinism vs libertarian vs compatibilism (majority view); Libet 500ms; moral responsibility survives in compatibilism; definitional dispute
+
+**[178]** Q470 Biodiversity: 8.7M species, 1M threatened, 6th mass extinction; ecosystem services (pollination, carbon, medicine); HIPPO drivers; 30x30 target
