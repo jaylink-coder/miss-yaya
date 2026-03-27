@@ -9,8 +9,8 @@
 seed: 42
 
 training:
-  per_device_batch_size: 4
-  gradient_accumulation_steps: 1     # no accumulation — faster updates
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 2     # same effective batch=4, halves activation memory
   learning_rate: 1.0e-4              # 5× higher than default; needed for tiny model
   weight_decay: 0.01                 # light regularisation
   adam_beta1: 0.9
