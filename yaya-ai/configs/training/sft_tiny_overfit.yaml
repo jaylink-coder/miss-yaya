@@ -46,5 +46,5 @@ data:
 
 distributed:
   strategy: none
-  gradient_checkpointing: false
+  gradient_checkpointing: true
   cpu_offload: false
