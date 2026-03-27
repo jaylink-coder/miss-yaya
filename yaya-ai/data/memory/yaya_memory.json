@@ -1251,5 +1251,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-27T11:50:45.890807"
+  },
+  {
+    "id": 179,
+    "content": "Q471 Addiction: dopamine hijack (VTA-accumbens); tolerance+withdrawal+sensitisation; PFC impairment; cue-conditioning persists years; methadone/buprenorphine best evidence",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:56:34.741504"
+  },
+  {
+    "id": 180,
+    "content": "Q472 Primes: atoms of arithmetic (FTA); Euclid's infinity proof; RSA cryptography; Goldbach conjecture; Riemann zeta connection; largest known 41M digits",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:56:34.775229"
+  },
+  {
+    "id": 181,
+    "content": "Q473 Trauma/PTSD: amygdala hyperactive, hippocampus shrunken, PFC offline; HPA dysregulation; ACEs dose-response; EMDR+CPT+MDMA trials; social support protective",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:56:34.798900"
+  },
+  {
+    "id": 182,
+    "content": "Q474 Inflation: demand-pull, cost-push, wage-price spiral, monetary (Friedman); CPI/PCE measurement; central bank interest rates; 2% target; Phillips Curve trade-off",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:56:34.807900"
+  },
+  {
+    "id": 183,
+    "content": "Q475 Meaning of life: 3 sub-questions (Wolf); religious/nihilist/existentialist/analytic approaches; Camus absurdism; Wittgenstein dissolution; meaning constructed not found",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:56:34.845036"
   }
 ]

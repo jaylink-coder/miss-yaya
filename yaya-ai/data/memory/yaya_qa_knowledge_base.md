@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 179
+Total entries: 184
 
 ---
 
@@ -361,3 +361,13 @@ Total entries: 179
 **[177]** Q469 Free will: hard determinism vs libertarian vs compatibilism (majority view); Libet 500ms; moral responsibility survives in compatibilism; definitional dispute
 
 **[178]** Q470 Biodiversity: 8.7M species, 1M threatened, 6th mass extinction; ecosystem services (pollination, carbon, medicine); HIPPO drivers; 30x30 target
+
+**[179]** Q471 Addiction: dopamine hijack (VTA-accumbens); tolerance+withdrawal+sensitisation; PFC impairment; cue-conditioning persists years; methadone/buprenorphine best evidence
+
+**[180]** Q472 Primes: atoms of arithmetic (FTA); Euclid's infinity proof; RSA cryptography; Goldbach conjecture; Riemann zeta connection; largest known 41M digits
+
+**[181]** Q473 Trauma/PTSD: amygdala hyperactive, hippocampus shrunken, PFC offline; HPA dysregulation; ACEs dose-response; EMDR+CPT+MDMA trials; social support protective
+
+**[182]** Q474 Inflation: demand-pull, cost-push, wage-price spiral, monetary (Friedman); CPI/PCE measurement; central bank interest rates; 2% target; Phillips Curve trade-off
+
+**[183]** Q475 Meaning of life: 3 sub-questions (Wolf); religious/nihilist/existentialist/analytic approaches; Camus absurdism; Wittgenstein dissolution; meaning constructed not found
