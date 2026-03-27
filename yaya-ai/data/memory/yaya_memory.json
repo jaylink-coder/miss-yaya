@@ -1286,5 +1286,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-27T11:56:34.845036"
+  },
+  {
+    "id": 184,
+    "content": "Q476 Light/photoelectric effect: E=hf; threshold frequency not intensity; Einstein 1905 Nobel; proved photon quantisation; solar cells + CCDs use same principle",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:07:19.196921"
+  },
+  {
+    "id": 185,
+    "content": "Q477 Renaissance 1300-1600: rebirth of classical learning; Italy first due to Medici wealth, city-state competition, 1453 Greek manuscripts; da Vinci, Michelangelo; printing spread it",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:07:19.214502"
+  },
+  {
+    "id": 186,
+    "content": "Q478 Neuroplasticity: LTP (Hebb 1949), structural changes, neurogenesis; taxi drivers + musicians evidence; cortical remapping after injury; declines but never stops",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:07:19.249023"
+  },
+  {
+    "id": 187,
+    "content": "Q479 Ship of Theseus: gradual replacement paradox; 5 identity criteria (material/structural/causal/functional/psychological); Parfit -- identity not what matters",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:07:19.276769"
+  },
+  {
+    "id": 188,
+    "content": "Q480 Social stratification: Weber's 3 dimensions; Davis-Moore functionalism vs Marx conflict vs Bourdieu capital; Matthew effect; US lower mobility than Scandinavia",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:07:19.297670"
   }
 ]

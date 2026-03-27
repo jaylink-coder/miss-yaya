@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 184
+Total entries: 189
 
 ---
 
@@ -371,3 +371,13 @@ Total entries: 184
 **[182]** Q474 Inflation: demand-pull, cost-push, wage-price spiral, monetary (Friedman); CPI/PCE measurement; central bank interest rates; 2% target; Phillips Curve trade-off
 
 **[183]** Q475 Meaning of life: 3 sub-questions (Wolf); religious/nihilist/existentialist/analytic approaches; Camus absurdism; Wittgenstein dissolution; meaning constructed not found
+
+**[184]** Q476 Light/photoelectric effect: E=hf; threshold frequency not intensity; Einstein 1905 Nobel; proved photon quantisation; solar cells + CCDs use same principle
+
+**[185]** Q477 Renaissance 1300-1600: rebirth of classical learning; Italy first due to Medici wealth, city-state competition, 1453 Greek manuscripts; da Vinci, Michelangelo; printing spread it
+
+**[186]** Q478 Neuroplasticity: LTP (Hebb 1949), structural changes, neurogenesis; taxi drivers + musicians evidence; cortical remapping after injury; declines but never stops
+
+**[187]** Q479 Ship of Theseus: gradual replacement paradox; 5 identity criteria (material/structural/causal/functional/psychological); Parfit -- identity not what matters
+
+**[188]** Q480 Social stratification: Weber's 3 dimensions; Davis-Moore functionalism vs Marx conflict vs Bourdieu capital; Matthew effect; US lower mobility than Scandinavia
