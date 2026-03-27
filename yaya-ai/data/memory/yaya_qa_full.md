@@ -5937,3 +5937,124 @@ Shakespeare (1564-1616) wrote 37 plays, 154 sonnets, and long poems across comed
 **Rating: 9.0/10**
 
 ---
+
+### Q456 — Chemistry
+**What is entropy, and why does it always increase?**
+
+Entropy (S) measures the number of microscopic arrangements (microstates) compatible with a macroscopic state. More arrangements = higher entropy.
+
+**Second Law of Thermodynamics**: in an isolated system, entropy never decreases. It increases or stays the same.
+
+**Why it increases**: probability. A gas released into a vacuum spreads out because the disordered states vastly outnumber the ordered ones -- not because of any force, but because disorder is overwhelmingly more likely. Boltzmann: S = k ln(W), where W is the number of microstates.
+
+**Examples**:
+- Ice melting: liquid water has more microstates than crystal ice
+- Perfume spreading: molecules explore all available space
+- Stars forming: locally decreases entropy (order from gas) but radiates far more entropy as heat
+
+**Arrow of time**: entropy gives time its direction. The laws of physics are symmetric -- they work the same forward and backward -- but entropy breaks that symmetry. The past is defined as lower entropy.
+
+**Maxwell's Demon**: thought experiment of a demon sorting fast/slow molecules to decrease entropy. Resolved by Szilard (1929) and Landauer (1961): the demon must erase memory, which costs entropy -- so the second law holds.
+
+**Heat death**: eventual equilibrium state of universe -- maximum entropy, no temperature differences, no useful work possible.
+
+**Rating: 9.0/10**
+
+---
+
+### Q457 — Political Science
+**What is democracy and why do some democracies fail?**
+
+Democracy: a system where political power derives from the governed, expressed through free elections, rule of law, and protection of rights.
+
+**Types**:
+- Direct (Athens): citizens vote on every decision. Impractical at scale.
+- Representative: elect representatives who govern. Most modern democracies.
+- Liberal democracy: adds constraints on majority power -- minority rights, press freedom, independent judiciary.
+
+**Why democracies fail (Levitsky & Ziblatt, How Democracies Die, 2018)**:
+1. **Executive aggrandisement**: elected leaders gradually grab power -- filling courts, weakening press, harassing opponents. Legal but antidemocratic.
+2. **Polarisation**: when parties see each other as existential enemies, norms of mutual toleration break down -- 'anything goes to win.'
+3. **Weak institutions**: democracies require strong courts, free press, civil society. Without them, leaders face no check.
+4. **Economic crisis**: Weimar Germany, Venezuela -- economic collapse drives voters to authoritarians promising order.
+
+**Historical record**: Freedom House 2023 -- 17th consecutive year of democratic decline globally. Hungary and Turkey went from democracy to competitive authoritarianism under elected leaders.
+
+**What sustains it**: independent judiciary, civilian control of military, strong civic culture, two-party or multi-party competition, peaceful transfers of power as norm.
+
+**Rating: 9.0/10**
+
+---
+
+### Q458 — Nutrition
+**What does the science actually say about diet and health?**
+
+Nutrition science is hard: humans can't be randomised to diets for decades, self-reporting is unreliable, and food is chemically complex.
+
+**What the evidence actually supports**:
+1. **Mediterranean diet**: highest quality evidence (PREDIMED RCT, 2013) -- reduces cardiovascular events ~30%. Olive oil, vegetables, fish, nuts, moderate wine.
+2. **Ultra-processed foods (UPF)**: Nova classification. UPFs linked to obesity, T2 diabetes, depression, all-cause mortality in cohort studies. Mechanisms unclear -- could be additives, processing, or displacement of whole foods.
+3. **Fibre**: consistently beneficial -- gut microbiome, colorectal cancer risk, satiety, blood glucose control.
+4. **Added sugar**: strong evidence for metabolic harm at high doses (T2 diabetes, NAFLD).
+5. **Saturated fat**: more complicated than '70s advice -- butter vs processed meat differ. Total fat less important than fat type.
+
+**Contested**:
+- Red meat: processed clearly harmful; unprocessed uncertain
+- Eggs: probably fine for most people
+- Dairy: no clear harm in most evidence
+- Low-carb vs low-fat: similar outcomes at 1-2 years; adherence is the main driver
+
+**What we don't know**: optimal macronutrient ratio, individual variation (gut microbiome, genetics), whether associations are causal.
+
+**Consensus**: varied whole foods, mostly plants, minimal processing, limited added sugar. Almost no controversy about that.
+
+**Rating: 8.5/10**
+
+---
+
+### Q459 — Mathematics
+**What is Godel's incompleteness theorem and why does it matter?**
+
+Godel (1931): any consistent formal system powerful enough to describe basic arithmetic contains true statements that cannot be proved within that system.
+
+**Two theorems**:
+1. **First incompleteness**: for any consistent, sufficiently powerful formal system F, there exists a statement G ('I am not provable in F') that is true but unprovable in F.
+2. **Second incompleteness**: F cannot prove its own consistency.
+
+**How he did it**: Godel numbering -- encode every formula and proof as a number. Then construct a self-referential formula G that says 'the formula with Godel number X is not provable' where X is the Godel number of G itself. If F is consistent, G can't be proved; if F proves G, F is inconsistent.
+
+**Why it matters**:
+- Killed Hilbert's programme: math cannot be fully formalised into one complete, consistent system
+- Not 'math is broken' -- it means no single formal system captures all mathematical truth
+- Human mathematicians vs computers: some argue Godel implies human intuition transcends formal systems (Penrose). Contested.
+
+**Common misconceptions**:
+- Doesn't mean 'everything is unprovable' -- most math is provable
+- Doesn't mean truth is relative
+- Doesn't apply to every formal system -- only those that include arithmetic
+
+**Impact**: foundations of mathematics, computer science (Turing's halting problem is equivalent), philosophy of mind.
+
+**Rating: 10.0/10**
+
+---
+
+### Q460 — Anthropology
+**What is culture and how does it shape human behaviour?**
+
+Culture: the shared beliefs, practices, symbols, values, and norms transmitted across generations within a group. Humans are uniquely cultural animals -- we inherit not just genes but accumulated knowledge.
+
+**Cultural universals** (Brown 1991): every human culture has language, music, kinship systems, rituals, tools, religion/supernatural beliefs, taboos. But the specific forms vary enormously.
+
+**How culture shapes behaviour**:
+1. **Cognition**: WEIRD (Western, Educated, Industrial, Rich, Democratic) samples dominate psychology research. Cross-cultural tests show different: perception (Muller-Lyer illusion less effective in non-WEIRD populations), reasoning (analytic vs holistic), self-concept (independent vs interdependent).
+2. **Emotion**: Ekman's 6 basic emotions (fear, anger, joy, sadness, disgust, surprise) show universal facial expressions, but emotional display rules and experience vary. Inuit have many words for snow-related emotional states; some cultures lack a concept of 'depression.'
+3. **Morality**: Haidt's moral foundations (care, fairness, loyalty, authority, purity) -- cultures weight them differently. Individualist cultures emphasise care/fairness; collectivist add loyalty/authority.
+
+**Nature vs culture**: not a binary. Gene-culture coevolution -- lactase persistence spread where cattle herding developed. Culture shapes which genes are selected.
+
+**Cultural change**: cultures aren't static. Contact, trade, media, migration all accelerate change. Globalisation homogenises some aspects (English, jeans, smartphones) while local cultures resist and adapt.
+
+**Rating: 9.0/10**
+
+---

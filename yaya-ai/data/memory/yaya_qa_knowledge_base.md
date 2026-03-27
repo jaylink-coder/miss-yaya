@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 164
+Total entries: 169
 
 ---
 
@@ -331,3 +331,13 @@ Total entries: 164
 **[162]** Q454 Dark matter: 27% of universe; rotation curves, Bullet Cluster, CMB peaks as evidence; WIMPs/axions as candidates; particle nature unknown
 
 **[163]** Q455 Shakespeare: 37 plays, 1700 words coined; psychological depth predating psychology; Hamlet/Macbeth/Lear on universal drives; First Folio preserved 18 plays
+
+**[164]** Q456 Entropy: S=k ln(W); second law = entropy never decreases in isolated system; probability not force; arrow of time; Maxwell's Demon resolved by Landauer
+
+**[165]** Q457 Democracy: direct/representative/liberal; fails via executive aggrandisement, polarisation, weak institutions (Levitsky 2018); 17yr decline globally
+
+**[166]** Q458 Diet science: Mediterranean diet (PREDIMED RCT), fibre, UPF harm, added sugar; low-carb vs low-fat similar; adherence matters most; consensus = whole foods
+
+**[167]** Q459 Godel incompleteness (1931): consistent arithmetic systems have true unprovable statements; killed Hilbert programme; Godel numbering; not 'math is broken'
+
+**[168]** Q460 Culture: shared beliefs/practices across generations; universals (Brown 1991) with variable forms; WEIRD bias in psychology; gene-culture coevolution; not static

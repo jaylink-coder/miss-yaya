@@ -1146,5 +1146,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-27T11:25:16.483945"
+  },
+  {
+    "id": 164,
+    "content": "Q456 Entropy: S=k ln(W); second law = entropy never decreases in isolated system; probability not force; arrow of time; Maxwell's Demon resolved by Landauer",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:39:57.292266"
+  },
+  {
+    "id": 165,
+    "content": "Q457 Democracy: direct/representative/liberal; fails via executive aggrandisement, polarisation, weak institutions (Levitsky 2018); 17yr decline globally",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:39:57.321514"
+  },
+  {
+    "id": 166,
+    "content": "Q458 Diet science: Mediterranean diet (PREDIMED RCT), fibre, UPF harm, added sugar; low-carb vs low-fat similar; adherence matters most; consensus = whole foods",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:39:57.340264"
+  },
+  {
+    "id": 167,
+    "content": "Q459 Godel incompleteness (1931): consistent arithmetic systems have true unprovable statements; killed Hilbert programme; Godel numbering; not 'math is broken'",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:39:57.368826"
+  },
+  {
+    "id": 168,
+    "content": "Q460 Culture: shared beliefs/practices across generations; universals (Brown 1991) with variable forms; WEIRD bias in psychology; gene-culture coevolution; not static",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:39:57.392552"
   }
 ]
