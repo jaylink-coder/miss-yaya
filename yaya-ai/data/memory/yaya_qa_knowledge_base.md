@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 169
+Total entries: 174
 
 ---
 
@@ -341,3 +341,13 @@ Total entries: 169
 **[167]** Q459 Godel incompleteness (1931): consistent arithmetic systems have true unprovable statements; killed Hilbert programme; Godel numbering; not 'math is broken'
 
 **[168]** Q460 Culture: shared beliefs/practices across generations; universals (Brown 1991) with variable forms; WEIRD bias in psychology; gene-culture coevolution; not static
+
+**[169]** Q461 GPS: trilateration from 4+ satellites; 3-5m standard, cm with RTK; ionospheric/multipath errors; requires relativistic corrections; GNSS = multi-constellation
+
+**[170]** Q462 Consciousness: Hard Problem (Chalmers); GWT, IIT, HOT, predictive processing theories; NCC = prefrontal-parietal + gamma; no theory explains qualia yet
+
+**[171]** Q463 2008 crisis: subprime mortgages -> MBS -> CDO securitisation; 30:1 leverage; Lehman $600B failure; CDS contagion; Dodd-Frank partial fix; systemic risk remains
+
+**[172]** Q464 Language acquisition: babbling-to-sentences by 3yr; Skinner demolished by Chomsky; nativist LAD vs social-interactionist vs statistical learning; poverty of stimulus
+
+**[173]** Q465 Cold War 1947-91: US vs USSR containment; Cuban Missile Crisis; MAD deterrence; Vietnam/Korea/Afghanistan proxies; Space Race -> technology; USSR collapse 1991

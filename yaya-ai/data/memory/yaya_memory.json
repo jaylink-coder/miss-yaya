@@ -1181,5 +1181,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-27T11:39:57.392552"
+  },
+  {
+    "id": 169,
+    "content": "Q461 GPS: trilateration from 4+ satellites; 3-5m standard, cm with RTK; ionospheric/multipath errors; requires relativistic corrections; GNSS = multi-constellation",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:47:55.248345"
+  },
+  {
+    "id": 170,
+    "content": "Q462 Consciousness: Hard Problem (Chalmers); GWT, IIT, HOT, predictive processing theories; NCC = prefrontal-parietal + gamma; no theory explains qualia yet",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:47:55.266309"
+  },
+  {
+    "id": 171,
+    "content": "Q463 2008 crisis: subprime mortgages -> MBS -> CDO securitisation; 30:1 leverage; Lehman $600B failure; CDS contagion; Dodd-Frank partial fix; systemic risk remains",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:47:55.294312"
+  },
+  {
+    "id": 172,
+    "content": "Q464 Language acquisition: babbling-to-sentences by 3yr; Skinner demolished by Chomsky; nativist LAD vs social-interactionist vs statistical learning; poverty of stimulus",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:47:55.312025"
+  },
+  {
+    "id": 173,
+    "content": "Q465 Cold War 1947-91: US vs USSR containment; Cuban Missile Crisis; MAD deterrence; Vietnam/Korea/Afghanistan proxies; Space Race -> technology; USSR collapse 1991",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T11:47:55.332696"
   }
 ]
