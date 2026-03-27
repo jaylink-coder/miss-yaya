@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 189
+Total entries: 194
 
 ---
 
@@ -381,3 +381,13 @@ Total entries: 189
 **[187]** Q479 Ship of Theseus: gradual replacement paradox; 5 identity criteria (material/structural/causal/functional/psychological); Parfit -- identity not what matters
 
 **[188]** Q480 Social stratification: Weber's 3 dimensions; Davis-Moore functionalism vs Marx conflict vs Bourdieu capital; Matthew effect; US lower mobility than Scandinavia
+
+**[189]** Q481 Neural network learning: forward pass, loss, backprop (chain rule), gradient descent; distributed representations; ReLU/dropout/attention; scale = performance
+
+**[190]** Q482 Effective altruism: cause neutrality, evidence-based, longtermism (MacAskill/Singer); criticisms: systemic neglect, legibility bias, FTX scandal, demandingness
+
+**[191]** Q483 Batteries: redox reactions; Li-ion = graphite/LiCoO2/electrolyte, 250 Wh/kg; limits = dendrites, thermal runaway, cycle fade, cobalt supply; solid-state next
+
+**[192]** Q484 Big Bang: 13.8Gyr, expansion not explosion; Hubble+CMB+nucleosynthesis evidence; inflation at 10^-36s; quark confinement, nucleosynthesis, recombination timeline
+
+**[193]** Q485 Cognitive dissonance (Festinger 1957): contradictory beliefs cause discomfort; $1 vs $20 experiment; 5 resolution strategies; cult doubling-down; self-perception alternative

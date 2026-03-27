@@ -1321,5 +1321,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-27T12:07:19.297670"
+  },
+  {
+    "id": 189,
+    "content": "Q481 Neural network learning: forward pass, loss, backprop (chain rule), gradient descent; distributed representations; ReLU/dropout/attention; scale = performance",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:13:27.788757"
+  },
+  {
+    "id": 190,
+    "content": "Q482 Effective altruism: cause neutrality, evidence-based, longtermism (MacAskill/Singer); criticisms: systemic neglect, legibility bias, FTX scandal, demandingness",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:13:27.825417"
+  },
+  {
+    "id": 191,
+    "content": "Q483 Batteries: redox reactions; Li-ion = graphite/LiCoO2/electrolyte, 250 Wh/kg; limits = dendrites, thermal runaway, cycle fade, cobalt supply; solid-state next",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:13:27.859454"
+  },
+  {
+    "id": 192,
+    "content": "Q484 Big Bang: 13.8Gyr, expansion not explosion; Hubble+CMB+nucleosynthesis evidence; inflation at 10^-36s; quark confinement, nucleosynthesis, recombination timeline",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:13:27.874860"
+  },
+  {
+    "id": 193,
+    "content": "Q485 Cognitive dissonance (Festinger 1957): contradictory beliefs cause discomfort; $1 vs $20 experiment; 5 resolution strategies; cult doubling-down; self-perception alternative",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:13:27.902847"
   }
 ]
