@@ -6723,3 +6723,142 @@ Cognitive dissonance (Festinger 1957): the mental discomfort that arises when a 
 **Rating: 9.0/10**
 
 ---
+
+### Q486 — Medicine
+**How does the immune system actually work?**
+
+The immune system: a layered defence network that distinguishes self from non-self and eliminates pathogens.
+
+**Two branches**:
+1. **Innate immunity** (fast, non-specific): first responders. Physical barriers (skin, mucus); phagocytes (neutrophils, macrophages) engulf invaders; natural killer cells destroy infected cells; complement proteins puncture bacteria; inflammation signals danger.
+2. **Adaptive immunity** (slow, specific, memory): tailored to each threat.
+   - **B cells**: produce antibodies -- Y-shaped proteins that bind antigens on pathogens. IgG (blood), IgA (gut/lungs), IgE (allergies).
+   - **T cells**: helper T cells (CD4+) coordinate immune response; cytotoxic T cells (CD8+) kill infected cells directly.
+   - **Memory cells**: persist after infection -- next exposure triggers faster, stronger response. Basis of vaccination.
+
+**How it recognises threats**: pattern recognition receptors (Toll-like receptors) detect molecular patterns shared by pathogens (bacterial LPS, viral RNA) -- absent in healthy human cells.
+
+**MHC (Major Histocompatibility Complex)**: every cell displays peptide fragments on MHC molecules. T cells check these. Foreign peptide = kill. Self peptide = leave alone. MHC mismatch is why transplants are rejected.
+
+**How it avoids attacking self**: thymic education -- T cells that react to self-antigens are deleted in the thymus. Failures cause autoimmune disease (Type 1 diabetes, lupus, MS, rheumatoid arthritis).
+
+**Vaccines**: show the immune system a harmless version of a pathogen (live attenuated, killed, subunit, or mRNA-encoded antigen). Memory cells form. Real infection triggers rapid recall response before disease establishes.
+
+**Rating: 9.5/10**
+
+---
+
+### Q487 — Physics
+**What is relativity and why does it matter for everyday technology?**
+
+Einstein's two theories of relativity reshaped our understanding of space, time, mass, and energy.
+
+**Special Relativity (1905)**:
+- **Two postulates**: (1) laws of physics are the same in all inertial frames; (2) speed of light c is the same for all observers regardless of motion.
+- **Consequences**: time dilation (moving clocks run slow -- gamma factor = 1/sqrt(1-v^2/c^2)); length contraction; mass-energy equivalence E=mc^2.
+- **Simultaneity is relative**: two events simultaneous in one frame are not in another moving frame.
+
+**General Relativity (1915)**:
+- **Equivalence principle**: gravity and acceleration are locally indistinguishable. A person in a rocket accelerating at g feels identical to standing on Earth.
+- **Space-time curvature**: mass-energy curves space-time. Objects follow geodesics (straightest paths) in curved space-time -- this IS gravity.
+- **Predictions**: gravitational time dilation (clocks run slower in stronger gravity); gravitational lensing (light bends around mass); black holes; gravitational waves (confirmed LIGO 2015).
+
+**Why it matters for everyday technology**:
+- **GPS**: satellites move fast (SR: clocks slow by 7 microseconds/day) and are farther from Earth's gravity (GR: clocks fast by 45 microseconds/day). Net: +38 microseconds/day. Uncorrected: GPS drifts 10 km/day. Corrected in software -- every GPS device applies relativity.
+- **Particle accelerators**: relativistic mass increase accounted for in LHC design.
+- **Nuclear energy**: E=mc^2 -- small mass loss in fission/fusion releases enormous energy.
+- **PET scans**: positron-electron annihilation produces gamma rays analysed using relativistic kinematics.
+
+**Rating: 9.5/10**
+
+---
+
+### Q488 — Economics
+**What is game theory and where does it actually apply?**
+
+Game theory: the mathematical study of strategic interactions -- situations where each player's outcome depends on others' choices.
+
+**Core concepts**:
+- **Players**: decision-makers with defined strategies and payoffs
+- **Strategies**: complete plans for every contingency
+- **Payoffs**: outcomes for each combination of strategies
+- **Nash Equilibrium**: no player can improve by unilaterally deviating
+
+**Key games**:
+- **Prisoner's Dilemma**: individual rationality leads to collectively worse outcome (defect/defect worse than cooperate/cooperate). Explains arms races, overfishing, climate action failure.
+- **Chicken**: both players prefer to swerve, but each wants the other to swerve. Nuclear deterrence modelled this way.
+- **Stag Hunt**: cooperation gives best outcome but requires trust. Explains why societies get stuck in low-trust equilibria.
+- **Repeated games**: folk theorem -- cooperation can emerge if players interact repeatedly and value the future (tit-for-tat in iterated Prisoner's Dilemma).
+
+**Real applications**:
+1. **Auctions**: Vickrey auction (second-price sealed bid) makes truthful bidding dominant strategy. FCC spectrum auctions designed using game theory.
+2. **Nuclear strategy**: MAD -- mutually assured destruction is a Nash equilibrium (neither side benefits from first strike if retaliation guaranteed).
+3. **Economics**: oligopoly pricing (OPEC), labour bargaining, trade policy.
+4. **Biology**: evolutionarily stable strategies (Maynard Smith) -- hawk-dove game explains animal conflict.
+5. **Platform economics**: two-sided markets (Uber, Airbnb) designed using mechanism design.
+
+**Limits**: assumes rationality; real humans cooperate more than theory predicts (ultimatum game -- people reject unfair offers even at cost to themselves). Behavioural game theory adds psychology.
+
+**Rating: 9.0/10**
+
+---
+
+### Q489 — History
+**What was the French Revolution and why did it matter?**
+
+The French Revolution (1789-1799): the most consequential political upheaval in modern history, dismantling the old order and establishing principles that still define democratic governance.
+
+**Causes**:
+1. **Fiscal crisis**: France bankrupt after supporting American Revolution; Louis XVI unable to tax nobility.
+2. **Enlightenment ideas**: Rousseau, Voltaire, Locke -- popular sovereignty, natural rights, critique of absolute monarchy.
+3. **Food crisis**: 1788 harvest failure; bread prices soaring; common people starving while aristocracy was exempt from taxes.
+4. **Social structure**: three estates -- clergy (1st), nobility (2nd), everyone else (3rd, 97% of population). Third Estate paid all taxes, had no political power.
+
+**Key events**:
+- 1789: Estates-General convened; Third Estate forms National Assembly; Bastille stormed (July 14); Declaration of Rights of Man
+- 1791: Constitutional monarchy established
+- 1792: War with Austria/Prussia; monarchy abolished; First Republic
+- 1793-94: Reign of Terror (Robespierre, Committee of Public Safety) -- 17,000 executed; 40,000 died in custody
+- 1795: Thermidorian Reaction -- moderates take power
+- 1799: Napoleon's coup (18 Brumaire) ends the Revolution
+
+**Why it mattered**:
+- Established that sovereignty belongs to the people, not God or kings
+- Liberty, Equality, Fraternity became template for democratic movements worldwide
+- Abolished feudalism and privileges of birth overnight
+- Triggered waves of revolution across Europe (1830, 1848)
+- Napoleon spread revolutionary legal codes (Code Napoleon) across Europe
+- Showed revolutions can consume their own children (Robespierre guillotined)
+
+**Rating: 9.5/10**
+
+---
+
+### Q490 — Biology
+**What is evolution by natural selection and what are the most common misconceptions?**
+
+Evolution by natural selection (Darwin 1859, Wallace co-discovery): populations of organisms change over generations because individuals with heritable traits better suited to their environment survive and reproduce more.
+
+**Four requirements**:
+1. **Variation**: individuals in population differ
+2. **Heritability**: variation is passed to offspring
+3. **Differential reproduction**: some variants reproduce more
+4. **Time**: accumulate over generations
+
+**Mechanisms**: natural selection (environment filters); sexual selection (mate choice); genetic drift (random changes, important in small populations); gene flow (migration); mutation (source of new variation).
+
+**Evidence**: fossil record (transitional forms); comparative anatomy (homologous structures -- bat wing/human hand/whale flipper share bones); molecular evidence (shared DNA, endogenous retroviruses); observed evolution (antibiotic resistance; peppered moths; Galapagos finches beak changes in real time, Grant 1973).
+
+**Most common misconceptions**:
+1. 'Evolution is just a theory' -- in science, theory means well-supported explanatory framework (gravity is also 'just a theory')
+2. 'Organisms evolve on purpose' -- selection has no goal; it is blind. Giraffes didn't try to grow long necks.
+3. 'Humans evolved from chimps' -- humans and chimps share a common ancestor ~6-7 million years ago.
+4. 'Evolution means progress' -- no direction or improvement, just fit to current environment. A bacterium is as evolved as a human.
+5. 'Missing link' -- all fossils are transitional. Tiktaalik (fish with limb-like fins) is one famous example.
+6. 'It's random' -- mutation is random; selection is not. Selection is the non-random part.
+
+**Modern synthesis**: Darwinian selection + Mendelian genetics + molecular biology. Supplemented now by evo-devo (development), epigenetics, niche construction.
+
+**Rating: 10.0/10**
+
+---

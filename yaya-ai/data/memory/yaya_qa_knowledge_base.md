@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 194
+Total entries: 199
 
 ---
 
@@ -391,3 +391,13 @@ Total entries: 194
 **[192]** Q484 Big Bang: 13.8Gyr, expansion not explosion; Hubble+CMB+nucleosynthesis evidence; inflation at 10^-36s; quark confinement, nucleosynthesis, recombination timeline
 
 **[193]** Q485 Cognitive dissonance (Festinger 1957): contradictory beliefs cause discomfort; $1 vs $20 experiment; 5 resolution strategies; cult doubling-down; self-perception alternative
+
+**[194]** Q486 Immune system: innate (fast/non-specific) + adaptive (B cells/antibodies, T cells, memory); MHC self-recognition; thymic education; autoimmunity when fails; vaccines = memory
+
+**[195]** Q487 Relativity: SR (time dilation, E=mc^2, simultaneity) + GR (space-time curvature, gravitational waves); GPS requires both corrections or drifts 10km/day
+
+**[196]** Q488 Game theory: Nash equilibrium, Prisoner's Dilemma, repeated games (tit-for-tat); applications in auctions (Vickrey), MAD, OPEC, biology (ESS); real humans more cooperative
+
+**[197]** Q489 French Revolution 1789-99: fiscal crisis + Enlightenment + food shortage; Terror killed 17k; Liberty-Equality-Fraternity template; sovereignty to people; Napoleon result
+
+**[198]** Q490 Evolution: 4 requirements (variation/heritability/diff. reproduction/time); mechanisms (selection/drift/flow/mutation); 6 misconceptions; modern synthesis

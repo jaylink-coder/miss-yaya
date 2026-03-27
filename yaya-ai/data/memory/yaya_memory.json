@@ -1356,5 +1356,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-27T12:13:27.902847"
+  },
+  {
+    "id": 194,
+    "content": "Q486 Immune system: innate (fast/non-specific) + adaptive (B cells/antibodies, T cells, memory); MHC self-recognition; thymic education; autoimmunity when fails; vaccines = memory",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:36:07.359437"
+  },
+  {
+    "id": 195,
+    "content": "Q487 Relativity: SR (time dilation, E=mc^2, simultaneity) + GR (space-time curvature, gravitational waves); GPS requires both corrections or drifts 10km/day",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:36:07.387924"
+  },
+  {
+    "id": 196,
+    "content": "Q488 Game theory: Nash equilibrium, Prisoner's Dilemma, repeated games (tit-for-tat); applications in auctions (Vickrey), MAD, OPEC, biology (ESS); real humans more cooperative",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:36:07.414518"
+  },
+  {
+    "id": 197,
+    "content": "Q489 French Revolution 1789-99: fiscal crisis + Enlightenment + food shortage; Terror killed 17k; Liberty-Equality-Fraternity template; sovereignty to people; Napoleon result",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:36:07.447749"
+  },
+  {
+    "id": 198,
+    "content": "Q490 Evolution: 4 requirements (variation/heritability/diff. reproduction/time); mechanisms (selection/drift/flow/mutation); 6 misconceptions; modern synthesis",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-03-27T12:36:07.480293"
   }
 ]
