@@ -23,7 +23,7 @@ training:
 
 checkpointing:
   save_steps: 500
-  save_dir: checkpoints/yaya-tiny-reasoning
+  save_dir: checkpoints/yaya-125m-reasoning
   keep_last_n: 4
 
 logging:
