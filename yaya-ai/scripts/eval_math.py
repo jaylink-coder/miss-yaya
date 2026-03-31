@@ -188,14 +188,7 @@ def find_best_checkpoint() -> str:
         if latest.exists():
             return str(ckpt_dir / latest.read_text().strip())
 
-    # Fall back through math curriculum stages
-    for stage in range(8, 0, -1):
-        ckpt_dir = Path(f"checkpoints/yaya-tiny-math-stage{stage}")
-        latest = ckpt_dir / "latest"
-        if latest.exists():
-            return str(ckpt_dir / latest.read_text().strip())
-
-    return "checkpoints/yaya-tiny-math-stage2/checkpoint-00000500"
+    return None
 
 
 def check_answer(response: str, keywords: list) -> bool:
