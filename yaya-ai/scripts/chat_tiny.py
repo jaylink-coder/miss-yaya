@@ -67,6 +67,41 @@ def _find_latest_checkpoint(dirs):
     return None
 
 
+def _display_response(response: str):
+    """Print response, rendering <|think|> blocks as dimmed reasoning and
+    <|calc|>EXPR<|/calc|>=VALUE as a clean calculator line."""
+    import re
+
+    # Split out think blocks
+    think_pat = re.compile(r"<\|think\|>(.*?)<\|/think\|>", re.DOTALL)
+    # Split out calc calls
+    calc_pat  = re.compile(r"<\|calc\|>(.+?)<\|/calc\|>=([^\n]+)")
+
+    # Replace calc calls with readable form first
+    def fmt_calc(m):
+        return f"  [= {m.group(2).strip()}]"
+
+    display = calc_pat.sub(fmt_calc, response)
+
+    # Now split on think blocks
+    parts = think_pat.split(display)
+    # parts alternates: [text, think, text, think, ...]
+    output_lines = []
+    for i, part in enumerate(parts):
+        if i % 2 == 1:
+            # This is a <|think|> block — print as dimmed reasoning
+            lines = part.strip().splitlines()
+            output_lines.append("  [thinking]")
+            for line in lines:
+                output_lines.append(f"    {line}")
+        else:
+            stripped = part.strip()
+            if stripped:
+                output_lines.append(stripped)
+
+    print("Yaya: " + "\n      ".join(output_lines) + "\n")
+
+
 def main():
     parser = argparse.ArgumentParser(description="Chat with Yaya-tiny")
     parser.add_argument("--checkpoint",  type=str, default=None)
