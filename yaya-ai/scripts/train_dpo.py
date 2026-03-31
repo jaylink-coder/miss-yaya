@@ -24,11 +24,9 @@ from src.training.checkpointing import CheckpointManager
 _DPO_SYSTEM = "You are Yaya, a helpful and honest AI assistant. You answer questions clearly and concisely."
 
 DEFAULT_SFT_DIRS = [
-    "checkpoints/yaya-tiny-sft-filtered",
-    "checkpoints/yaya-tiny-sft-focused",
-    "checkpoints/yaya-tiny-sft-clean",
-    "checkpoints/yaya-tiny-sft-v2",
-    "checkpoints/yaya-tiny-sft",
+    "checkpoints/yaya-125m-sft",
+    "checkpoints/yaya-125m-reasoning",
+    "checkpoints/yaya-125m",
 ]
 
 
