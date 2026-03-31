@@ -339,7 +339,7 @@ def main():
         print(f"Running Stage {args.stage} ({STAGE_NAMES.get(args.stage, '?')}) — {len(questions)} questions")
 
     # Run eval
-    results = run_eval(generator, questions, verbose=not args.quiet)
+    results = run_eval(generator, tokenizer, questions, verbose=not args.quiet)
     total_pass, total = print_summary(results)
     save_report(results, checkpoint)
 
