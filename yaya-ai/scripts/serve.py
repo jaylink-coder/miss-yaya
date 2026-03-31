@@ -27,11 +27,10 @@ from src.training.checkpointing import CheckpointManager
 
 
 DEFAULT_CHECKPOINT_DIRS = [
-    "checkpoints/yaya-tiny-sft-filtered",
-    "checkpoints/yaya-tiny-sft-focused",
-    "checkpoints/yaya-tiny-sft-clean",
-    "checkpoints/yaya-tiny-sft",
-    "checkpoints/yaya-tiny",
+    "checkpoints/yaya-125m-sft",
+    "checkpoints/yaya-125m-reasoning",
+    "checkpoints/yaya-125m",
+    "checkpoints/yaya-tiny-math-stage2",
 ]
 
 
