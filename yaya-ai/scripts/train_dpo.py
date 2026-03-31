@@ -2,7 +2,7 @@
 
 Usage:
     python scripts/train_dpo.py                         # auto-finds best SFT ckpt (filtered > focused > clean)
-    python scripts/train_dpo.py --sft_checkpoint checkpoints/yaya-tiny-sft-filtered/latest
+    python scripts/train_dpo.py --sft_checkpoint checkpoints/yaya-125m-sft/latest
 """
 import argparse, sys, os, json
 import torch
