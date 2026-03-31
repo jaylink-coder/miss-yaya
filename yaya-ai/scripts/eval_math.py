@@ -221,7 +221,12 @@ def run_eval(generator, tokenizer, questions, verbose=True):
                 top_p=0.9,
                 repetition_penalty=1.5,
             )
-            response = generator.generate(prompt=formatted, config=config)
+            import torch
+            with torch.no_grad():
+                raw = generator.generate(prompt=formatted, config=config)
+            response = raw[len(formatted):]
+            for stop in ["</s>", ASSISTANT_TOKEN, "<|endoftext|>"]:
+                response = response.split(stop)[0]
             response = response.strip()
             passed = check_answer(response, q["keywords"])
         except Exception as e:
