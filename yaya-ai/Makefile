@@ -572,6 +572,98 @@ sft-tiny-merged:
 training-status:
 	python scripts/training_status.py
 
+## ─────────────────────────────────────────────────────────────
+## MATH CURRICULUM TRAINING
+## ─────────────────────────────────────────────────────────────
+
+## Generate all math training data (8 stages + combined, 3298 samples)
+gen-math-data:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/generate_math_data.py
+
+## Stage 1 — Arithmetic (600 samples)
+## Starts from: yaya-tiny-sft-filtered latest checkpoint
+math-stage1:
+	@CKPT=$$(cat checkpoints/yaya-tiny-sft-filtered/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No yaya-tiny-sft-filtered checkpoint found. Run sft-tiny-filtered first."; exit 1; fi; \
+	echo "Starting math-stage1 from filtered checkpoint: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_stage1.yaml --pretrain_checkpoint checkpoints/yaya-tiny-sft-filtered/$$CKPT' -RedirectStandardOutput 'logs\math_stage1.log' -RedirectStandardError 'logs\math_stage1_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Stage 2 — Fractions, Decimals, Percentages (500 samples)
+## Starts from: math-stage1 latest checkpoint
+math-stage2:
+	@CKPT=$$(cat checkpoints/yaya-tiny-math-stage1/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No math-stage1 checkpoint found. Run math-stage1 first."; exit 1; fi; \
+	echo "Starting math-stage2 from: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_stage2.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage1/$$CKPT' -RedirectStandardOutput 'logs\math_stage2.log' -RedirectStandardError 'logs\math_stage2_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Stage 3 — Pre-Algebra (400 samples)
+math-stage3:
+	@CKPT=$$(cat checkpoints/yaya-tiny-math-stage2/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No math-stage2 checkpoint found. Run math-stage2 first."; exit 1; fi; \
+	echo "Starting math-stage3 from: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_stage3.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage2/$$CKPT' -RedirectStandardOutput 'logs\math_stage3.log' -RedirectStandardError 'logs\math_stage3_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Stage 4 — Algebra (400 samples)
+math-stage4:
+	@CKPT=$$(cat checkpoints/yaya-tiny-math-stage3/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No math-stage3 checkpoint found. Run math-stage3 first."; exit 1; fi; \
+	echo "Starting math-stage4 from: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_stage4.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage3/$$CKPT' -RedirectStandardOutput 'logs\math_stage4.log' -RedirectStandardError 'logs\math_stage4_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Stage 5 — Geometry (400 samples)
+math-stage5:
+	@CKPT=$$(cat checkpoints/yaya-tiny-math-stage4/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No math-stage4 checkpoint found. Run math-stage4 first."; exit 1; fi; \
+	echo "Starting math-stage5 from: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_stage5.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage4/$$CKPT' -RedirectStandardOutput 'logs\math_stage5.log' -RedirectStandardError 'logs\math_stage5_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Stage 6 — Statistics & Probability (348 samples)
+math-stage6:
+	@CKPT=$$(cat checkpoints/yaya-tiny-math-stage5/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No math-stage5 checkpoint found. Run math-stage5 first."; exit 1; fi; \
+	echo "Starting math-stage6 from: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_stage6.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage5/$$CKPT' -RedirectStandardOutput 'logs\math_stage6.log' -RedirectStandardError 'logs\math_stage6_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Stage 7 — Word Problems (350 samples)
+math-stage7:
+	@CKPT=$$(cat checkpoints/yaya-tiny-math-stage6/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No math-stage6 checkpoint found. Run math-stage6 first."; exit 1; fi; \
+	echo "Starting math-stage7 from: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_stage7.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage6/$$CKPT' -RedirectStandardOutput 'logs\math_stage7.log' -RedirectStandardError 'logs\math_stage7_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Stage 8 — Calculus & Beyond (300 samples)
+math-stage8:
+	@CKPT=$$(cat checkpoints/yaya-tiny-math-stage7/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No math-stage7 checkpoint found. Run math-stage7 first."; exit 1; fi; \
+	echo "Starting math-stage8 from: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_stage8.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage7/$$CKPT' -RedirectStandardOutput 'logs\math_stage8.log' -RedirectStandardError 'logs\math_stage8_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Combined — all 3298 math samples mixed (run after all stages)
+math-combined:
+	@CKPT=$$(cat checkpoints/yaya-tiny-math-stage8/latest 2>/dev/null || echo ""); \
+	if [ -z "$$CKPT" ]; then echo "ERROR: No math-stage8 checkpoint found. Run math-stage8 first."; exit 1; fi; \
+	echo "Starting math-combined from: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/math_combined.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage8/$$CKPT' -RedirectStandardOutput 'logs\math_combined.log' -RedirectStandardError 'logs\math_combined_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Eval math knowledge (runs 20 math questions against latest math checkpoint)
+math-eval:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_math.py
+
+## Show math training progress (all stage logs)
+math-curriculum:
+	@echo "=== Math Curriculum Progress ===" && \
+	for stage in 1 2 3 4 5 6 7 8 combined; do \
+		logfile="logs/math_stage$${stage}.log"; \
+		[ "$$stage" = "combined" ] && logfile="logs/math_combined.log"; \
+		if [ -f "$$logfile" ]; then \
+			last=$$(grep -oP 'step=\K[0-9]+' "$$logfile" 2>/dev/null | tail -1 || echo "?"); \
+			loss=$$(grep -oP 'loss=\K[0-9.]+' "$$logfile" 2>/dev/null | tail -1 || echo "?"); \
+			echo "  Stage $$stage: step=$$last  loss=$$loss  ($$logfile)"; \
+		else \
+			echo "  Stage $$stage: not started"; \
+		fi; \
+	done
+
 # Cleanup
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
