@@ -177,21 +177,25 @@ STAGE_NAMES = {
 
 
 def find_best_checkpoint() -> str:
-    """Find the best available math checkpoint."""
-    # Prefer highest stage
+    """Find the best available checkpoint — 125M first, then math fallbacks."""
+    priority = [
+        Path("checkpoints/yaya-125m-sft"),
+        Path("checkpoints/yaya-125m-reasoning"),
+        Path("checkpoints/yaya-125m"),
+    ]
+    for ckpt_dir in priority:
+        latest = ckpt_dir / "latest"
+        if latest.exists():
+            return str(ckpt_dir / latest.read_text().strip())
+
+    # Fall back through math curriculum stages
     for stage in range(8, 0, -1):
         ckpt_dir = Path(f"checkpoints/yaya-tiny-math-stage{stage}")
         latest = ckpt_dir / "latest"
         if latest.exists():
             return str(ckpt_dir / latest.read_text().strip())
 
-    # Fall back to filtered SFT
-    latest = Path("checkpoints/yaya-tiny-sft-filtered/latest")
-    if latest.exists():
-        return str(Path("checkpoints/yaya-tiny-sft-filtered") / latest.read_text().strip())
-
-    # Fall back to pretrain
-    return "checkpoints/yaya-tiny/checkpoint-00010000"
+    return "checkpoints/yaya-tiny-math-stage2/checkpoint-00000500"
 
 
 def check_answer(response: str, keywords: list) -> bool:
