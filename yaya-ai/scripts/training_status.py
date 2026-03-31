@@ -16,7 +16,7 @@ _RUNS = [
     ("logs/sft_125m.log",      "checkpoints/yaya-125m-sft",           30000),
     ("logs/reasoning.log",     "checkpoints/yaya-125m-reasoning",      8000),
     ("logs/pretrain_125m.log", "checkpoints/yaya-125m",               20000),
-    ("logs/math_combined.log", "checkpoints/yaya-tiny-math-combined", 3000),
+    ("logs/reasoning.log",     "checkpoints/yaya-125m-reasoning",      8000),
 ]
 
 import time as _time
