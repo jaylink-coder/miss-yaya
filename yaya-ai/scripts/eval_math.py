@@ -324,13 +324,12 @@ def main():
     args = parser.parse_args()
 
     checkpoint = args.checkpoint or find_best_checkpoint()
+    if checkpoint is None:
+        print("ERROR: No 125m checkpoint found. Run 'make sft' first.")
+        sys.exit(1)
     print(f"Loading checkpoint: {checkpoint}")
 
-    # Load model — detect config from checkpoint path
-    if "125m" in checkpoint or "yaya-125m" in checkpoint:
-        model_config_path = "configs/model/yaya_125m.yaml"
-    else:
-        model_config_path = "configs/model/yaya_tiny.yaml"
+    model_config_path = "configs/model/yaya_125m.yaml"
     cfg = load_model_config(model_config_path)
     model = YayaForCausalLM(cfg)
     ckpt_mgr = CheckpointManager(save_dir=str(Path(checkpoint).parent))
