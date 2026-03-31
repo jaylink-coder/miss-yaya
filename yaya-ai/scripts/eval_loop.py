@@ -166,7 +166,7 @@ def question_key(question: str) -> str | None:
 def main():
     parser = argparse.ArgumentParser(description="Eval-driven self-improvement loop")
     parser.add_argument("--checkpoint",   type=str, default=None)
-    parser.add_argument("--model_config", type=str, default="configs/model/yaya_tiny.yaml")
+    parser.add_argument("--model_config", type=str, default="configs/model/yaya_125m.yaml")
     parser.add_argument("--tokenizer",    type=str, default="data/tokenizer/yaya_tokenizer.model")
     parser.add_argument("--temperature",  type=float, default=0.3)
     parser.add_argument("--max_tokens",   type=int,   default=120)
