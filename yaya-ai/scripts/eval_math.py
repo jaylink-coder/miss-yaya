@@ -6,7 +6,7 @@ Runs 20 targeted questions and reports a score per stage + overall.
 
 Usage:
     python scripts/eval_math.py
-    python scripts/eval_math.py --checkpoint checkpoints/yaya-tiny-math-stage4/checkpoint-00003000
+    python scripts/eval_math.py --checkpoint checkpoints/yaya-125m-sft/checkpoint-00005000
     python scripts/eval_math.py --stage 1  # Only stage 1 questions
 """
 
