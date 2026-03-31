@@ -109,7 +109,7 @@ def main():
 
     # Load model config
     model_config = load_model_config(
-        os.path.join(PROJECT_ROOT, "configs", "model", "yaya_tiny.yaml")
+        os.path.join(PROJECT_ROOT, "configs", "model", "yaya_125m.yaml")
     )
     # Override vocab size to match our tokenizer
     model_config.vocab_size = tokenizer.vocab_size
