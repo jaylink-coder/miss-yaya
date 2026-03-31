@@ -183,7 +183,7 @@ def main():
         for d in ["checkpoints/yaya-125m-sft",
                   "checkpoints/yaya-125m-reasoning",
                   "checkpoints/yaya-125m",
-                  "checkpoints/yaya-tiny-math-stage2"]:
+                  "checkpoints/yaya-125m"]:
             latest = os.path.join(d, "latest")
             if os.path.exists(latest):
                 with open(latest) as f:
