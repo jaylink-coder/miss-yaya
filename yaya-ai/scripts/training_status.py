@@ -11,12 +11,12 @@ import time
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-# Auto-detect active log/checkpoint
+# Auto-detect active log/checkpoint — 125M is the default model
 _RUNS = [
-    ("logs/sft_filtered.log",  "checkpoints/yaya-tiny-sft-filtered",  15000),
-    ("logs/sft_focused.log",   "checkpoints/yaya-tiny-sft-focused",   15000),
-    ("logs/sft_clean.log",     "checkpoints/yaya-tiny-sft-clean",     20000),
-    ("logs/pretrain_tiny.log", "checkpoints/yaya-tiny",               10000),
+    ("logs/sft_125m.log",      "checkpoints/yaya-125m-sft",           30000),
+    ("logs/reasoning.log",     "checkpoints/yaya-125m-reasoning",      8000),
+    ("logs/pretrain_125m.log", "checkpoints/yaya-125m",               20000),
+    ("logs/math_combined.log", "checkpoints/yaya-tiny-math-combined", 3000),
 ]
 
 import time as _time
