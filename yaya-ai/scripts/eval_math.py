@@ -21,11 +21,11 @@ from datetime import datetime
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from inference.generator import TextGenerator, GenerationConfig
-from model.yaya_model import YayaForCausalLM
-from data.tokenizer import YayaTokenizer
+from src.inference.generator import TextGenerator, GenerationConfig
+from src.model.yaya_model import YayaForCausalLM
+from src.tokenizer.tokenizer import YayaTokenizer
 
 # ──────────────────────────────────────────────────────────
 # Eval questions — 20 total, 2-3 per stage
