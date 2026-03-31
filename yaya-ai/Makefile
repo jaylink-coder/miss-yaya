@@ -437,142 +437,100 @@ learn-125m:
 
 # ─── Yaya-tiny convenience targets ─────────────────────────────────────────
 
-## Run SFT training from pretrain checkpoint (fresh clean run, 20k steps)
-sft-tiny:
-	PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
-		--model_config configs/model/yaya_tiny.yaml \
-		--train_config configs/training/sft_tiny_clean.yaml \
-		--pretrain_checkpoint checkpoints/yaya-tiny/checkpoint-00010000
+## ─────────────────────────────────────────────────────────────
+## YAYA-125M — Primary model (129M params, GPT-2 scale)
+## All training, chat, and eval targets default to yaya-125m.
+## ─────────────────────────────────────────────────────────────
 
-## Run DPO alignment after SFT (auto-detects best SFT checkpoint)
-dpo-tiny:
-	PYTHONUNBUFFERED=1 python -u scripts/train_dpo.py \
-		--max_steps 2000 \
+## Pretrain yaya-125m from scratch on available text/reasoning data
+pretrain:
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_125m.yaml --train_config configs/training/train_125m.yaml' -RedirectStandardOutput 'logs\pretrain_125m.log' -RedirectStandardError 'logs\pretrain_125m_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## SFT on reasoning+math dataset (starts from pretrain checkpoint or fresh)
+sft:
+	@CKPT=$$(cat checkpoints/yaya-125m/latest 2>/dev/null || echo ""); \
+	if [ -n "$$CKPT" ]; then \
+		echo "Starting 125m SFT from pretrain: $$CKPT"; \
+		powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_125m.yaml --train_config configs/training/sft_125m.yaml --pretrain_checkpoint checkpoints/yaya-125m/$$CKPT' -RedirectStandardOutput 'logs\sft_125m.log' -RedirectStandardError 'logs\sft_125m_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"; \
+	else \
+		echo "No pretrain checkpoint — training 125m SFT from random init"; \
+		powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_125m.yaml --train_config configs/training/sft_125m.yaml' -RedirectStandardOutput 'logs\sft_125m.log' -RedirectStandardError 'logs\sft_125m_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"; \
+	fi
+
+## Resume 125m SFT from latest checkpoint
+sft-resume:
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_125m.yaml --train_config configs/training/sft_125m.yaml --resume' -RedirectStandardOutput 'logs\sft_125m.log' -RedirectStandardError 'logs\sft_125m_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## DPO alignment after SFT (auto-detects best 125m SFT checkpoint)
+dpo:
+	PYTHONUNBUFFERED=1 .venv/Scripts/python.exe -u scripts/train_dpo.py \
+		--model_config configs/model/yaya_125m.yaml \
+		--max_steps 3000 \
 		--save_steps 500 \
 		--log_steps 50
 
-## SFT on clean complete-examples only — auto-resumes from latest focused checkpoint
-## First run: uses sft-clean step 2000 as starting weights
-## Subsequent runs: resumes from latest focused checkpoint
-sft-tiny-focused:
-	@echo "Checking for existing training processes..." && \
-	RUNNING=$$(for pid in $$(ls /proc/ 2>/dev/null | grep -E '^[0-9]+$$'); do \
-		cmd=$$(cat /proc/$$pid/cmdline 2>/dev/null | tr '\0' ' '); \
-		echo "$$cmd" | grep -qi "train_sft" && echo "$$pid"; \
-	done | tr '\n' ' '); \
-	if [ -n "$$RUNNING" ]; then \
-		echo "WARNING: Training processes already running (PIDs: $$RUNNING)"; \
-		echo "Kill them first with: kill $$RUNNING"; \
-		exit 1; \
-	fi && \
-	if [ -f checkpoints/yaya-tiny-sft-focused/latest ]; then \
-		CKPT=$$(cat checkpoints/yaya-tiny-sft-focused/latest); \
-		echo "Resuming from checkpoints/yaya-tiny-sft-focused/$$CKPT"; \
-		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
-			--model_config configs/model/yaya_tiny.yaml \
-			--train_config configs/training/sft_tiny_focused.yaml \
-			--resume checkpoints/yaya-tiny-sft-focused/$$CKPT; \
-	else \
-		echo "No focused checkpoint found, starting from sft-clean step 2000"; \
-		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
-			--model_config configs/model/yaya_tiny.yaml \
-			--train_config configs/training/sft_tiny_focused.yaml \
-			--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000; \
-	fi
+## Evaluate instruction-following (auto-detects best 125m checkpoint)
+eval:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_instruction.py --model_config configs/model/yaya_125m.yaml
 
-## Evaluate instruction-following quality of best checkpoint (auto-detects)
-eval-tiny:
-	python scripts/eval_instruction.py
+## Evaluate math ability (auto-detects best 125m checkpoint)
+eval-math:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_math.py
 
-## Evaluate best filtered checkpoint specifically
-eval-filtered:
-	python scripts/eval_instruction.py --checkpoint $$(cat checkpoints/yaya-tiny-sft-filtered/latest 2>/dev/null | xargs -I{} echo checkpoints/yaya-tiny-sft-filtered/{})
-
-## Evaluate all checkpoints in a directory to track progress
-eval-tiny-all:
-	python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-tiny-sft-filtered
+## Evaluate all checkpoints in the 125m-sft directory
+eval-all:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_instruction.py \
+		--model_config configs/model/yaya_125m.yaml \
+		--all_checkpoints checkpoints/yaya-125m-sft
 
 ## Run eval loop: eval → augment dataset → print retrain command
 eval-loop:
-	python scripts/eval_loop.py
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_loop.py
 
-## Run eval loop and immediately launch focused retraining
+## Run eval loop and immediately launch retraining
 eval-loop-retrain:
-	python scripts/eval_loop.py --retrain
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_loop.py --retrain
 
-## Chat interactively with the best available tiny checkpoint
-chat-tiny:
-	python scripts/chat_tiny.py
+## Interactive CLI chat — auto-picks best 125m checkpoint
+chat:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/chat_tiny.py
+
+## Interactive chat with calculator tool enabled
+chat-calc:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/chat_tiny.py --tool-calc
 
 ## Launch Gradio web chat UI
 web-ui:
-	python scripts/web_ui.py
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/web_ui.py
 
-## Run continuous learning: convert chat logs → SFT data
+## Convert chat logs → SFT training data
 continuous-learn:
-	python scripts/continuous_learn.py --output data/sft/yaya_instruct_filtered.jsonl
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/continuous_learn.py \
+		--output data/sft/yaya_reasoning_combined.jsonl
 
-## Run self-evaluation benchmark (broader than eval-tiny)
+## Broader self-evaluation benchmark
 self-eval:
-	python scripts/self_eval.py
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/self_eval.py
 
-## Full self-improvement cycle: self-eval → self-improve → retrain
+## Full self-improvement: self-eval → augment data → suggest retrain
 self-improve:
-	python scripts/self_eval.py && python scripts/self_improve.py --eval_report data/eval/self_eval_report.json --output data/sft/yaya_instruct_filtered.jsonl
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/self_eval.py && \
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/self_improve.py \
+		--eval_report data/eval/self_eval_report.json \
+		--output data/sft/yaya_reasoning_combined.jsonl
 
-## SFT on filtered 12.7k dataset (chess-free: 1.6% chess, rest general Q&A), max_seq=384
-## Auto-resumes from latest filtered checkpoint; falls back to sft-clean step 2000
-sft-tiny-filtered:
-	@echo "Checking for existing training processes..." && \
-	RUNNING=$$(for pid in $$(ls /proc/ 2>/dev/null | grep -E '^[0-9]+$$'); do \
-		cmd=$$(cat /proc/$$pid/cmdline 2>/dev/null | tr '\0' ' '); \
-		echo "$$cmd" | grep -qi "train_sft" && echo "$$pid"; \
-	done | tr '\n' ' '); \
-	if [ -n "$$RUNNING" ]; then \
-		echo "WARNING: Training processes already running (PIDs: $$RUNNING)"; \
-		echo "Kill them first with: kill $$RUNNING"; \
-		exit 1; \
-	fi && \
-	if [ -f checkpoints/yaya-tiny-sft-filtered/latest ]; then \
-		CKPT=$$(cat checkpoints/yaya-tiny-sft-filtered/latest); \
-		echo "Resuming from checkpoints/yaya-tiny-sft-filtered/$$CKPT"; \
-		powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/sft_tiny_filtered.yaml --resume checkpoints/yaya-tiny-sft-filtered/$$CKPT' -RedirectStandardOutput 'logs\sft_filtered.log' -RedirectStandardError 'logs\sft_filtered_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"; \
-	else \
-		echo "No filtered checkpoint found, starting from sft-clean step 2000"; \
-		powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/sft_tiny_filtered.yaml --pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000' -RedirectStandardOutput 'logs\sft_filtered.log' -RedirectStandardError 'logs\sft_filtered_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"; \
-	fi
-
-## SFT on merged 27k dataset (clean + backup + new QA), max_seq=512
-## Start from best focused checkpoint, or fall back to sft-clean step 2000
-sft-tiny-merged:
-	@echo "Checking for existing training processes..." && \
-	RUNNING=$$(for pid in $$(ls /proc/ 2>/dev/null | grep -E '^[0-9]+$$'); do \
-		cmd=$$(cat /proc/$$pid/cmdline 2>/dev/null | tr '\0' ' '); \
-		echo "$$cmd" | grep -qi "train_sft" && echo "$$pid"; \
-	done | tr '\n' ' '); \
-	if [ -n "$$RUNNING" ]; then \
-		echo "WARNING: Training processes already running (PIDs: $$RUNNING)"; \
-		echo "Kill them first with: kill $$RUNNING"; \
-		exit 1; \
-	fi && \
-	if [ -f checkpoints/yaya-tiny-sft-focused/latest ]; then \
-		CKPT=$$(cat checkpoints/yaya-tiny-sft-focused/latest); \
-		echo "Starting from focused checkpoint: checkpoints/yaya-tiny-sft-focused/$$CKPT"; \
-		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
-			--model_config configs/model/yaya_tiny.yaml \
-			--train_config configs/training/sft_tiny_merged.yaml \
-			--pretrain_checkpoint checkpoints/yaya-tiny-sft-focused/$$CKPT; \
-	else \
-		echo "No focused checkpoint, starting from sft-clean step 2000"; \
-		PYTHONUNBUFFERED=1 python -u scripts/train_sft.py \
-			--model_config configs/model/yaya_tiny.yaml \
-			--train_config configs/training/sft_tiny_merged.yaml \
-			--pretrain_checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00002000; \
-	fi
-
-## Show training log tail + checkpoint status
+## Show training log + checkpoint status
 training-status:
-	python scripts/training_status.py
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/training_status.py
+
+## ── Legacy aliases (kept for backward compatibility) ──────────────────────────
+chat-tiny: chat
+eval-tiny: eval
+dpo-tiny: dpo
+sft-tiny: sft
+sft-tiny-filtered: sft
+sft-tiny-focused: sft
+sft-tiny-merged: sft
 
 ## ─────────────────────────────────────────────────────────────
 ## MATH CURRICULUM TRAINING
