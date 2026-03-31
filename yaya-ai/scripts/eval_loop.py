@@ -6,7 +6,7 @@ the command to start a new training run.
 
 Usage:
     python scripts/eval_loop.py
-    python scripts/eval_loop.py --checkpoint checkpoints/yaya-tiny-sft-focused/checkpoint-00005000
+    python scripts/eval_loop.py --checkpoint checkpoints/yaya-125m-sft/checkpoint-00005000
     python scripts/eval_loop.py --checkpoint ... --retrain        # auto-launches training
     python scripts/eval_loop.py --dry_run                         # show what would be added
 """
