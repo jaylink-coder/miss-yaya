@@ -1,9 +1,9 @@
 seed: 42
 
-# Math Stage 1 — Arithmetic
-# 600 examples: counting, addition, subtraction, multiplication, division, exponents.
-# Short sequences — max_seq_length=256 is sufficient.
-# Low LR + short warmup for precise, pattern-rich numeric data.
+# Math Stage 1 — Arithmetic (Computational Edition)
+# 916 examples: exhaustive single-digit facts + rigid algorithmic CoT for multi-digit.
+# More steps needed for grokking — small models need many passes to internalize facts.
+# Short sequences — max_seq_length=256 covers all arithmetic CoT.
 training:
   per_device_batch_size: 8
   gradient_accumulation_steps: 2
@@ -14,9 +14,9 @@ training:
   adam_epsilon: 1.0e-8
   max_grad_norm: 1.0
   lr_scheduler: cosine
-  warmup_steps: 100
+  warmup_steps: 150
   min_lr_ratio: 0.05
-  max_steps: 3000
+  max_steps: 6000
   max_seq_length: 256
   dtype: float32
 
