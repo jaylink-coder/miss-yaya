@@ -90,7 +90,11 @@ def main():
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"Loading Yaya-tiny from {checkpoint} on {device}...")
 
-    model_config = load_model_config("configs/model/yaya_tiny.yaml")
+    # Auto-detect model config from checkpoint path
+    _cfg_path = ("configs/model/yaya_125m.yaml"
+                 if "125m" in (checkpoint or "") else
+                 "configs/model/yaya_tiny.yaml")
+    model_config = load_model_config(_cfg_path)
     model = YayaForCausalLM(model_config)
 
     ckpt_mgr = CheckpointManager(save_dir=os.path.dirname(checkpoint))
