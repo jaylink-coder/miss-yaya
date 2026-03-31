@@ -210,17 +210,18 @@ def run_eval(generator, questions, verbose=True):
             print(f"  Q: {prompt}")
 
         try:
+            msgs = [
+                {"role": "system", "content": "You are Yaya, a helpful math assistant. Answer clearly and show your work."},
+                {"role": "user", "content": prompt},
+            ]
+            formatted = tokenizer.format_chat(msgs) + "\n" + ASSISTANT_TOKEN + "\n"
             config = GenerationConfig(
                 max_new_tokens=120,
                 temperature=0.1,
                 top_p=0.9,
                 repetition_penalty=1.5,
             )
-            response = generator.generate(
-                prompt=prompt,
-                system_prompt="You are Yaya, a helpful math assistant. Answer clearly and show your work.",
-                config=config,
-            )
+            response = generator.generate(prompt=formatted, config=config)
             response = response.strip()
             passed = check_answer(response, q["keywords"])
         except Exception as e:
