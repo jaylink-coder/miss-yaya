@@ -124,9 +124,7 @@ def main():
     print(f"Loading Yaya-tiny from {checkpoint} on {device}...")
 
     # Auto-detect model config from checkpoint path
-    _cfg_path = ("configs/model/yaya_125m.yaml"
-                 if "125m" in (checkpoint or "") else
-                 "configs/model/yaya_tiny.yaml")
+    _cfg_path = "configs/model/yaya_125m.yaml"
     model_config = load_model_config(_cfg_path)
     model = YayaForCausalLM(model_config)
 
