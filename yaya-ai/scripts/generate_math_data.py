@@ -539,7 +539,7 @@ def gen_stage4(target: int = 500) -> list:
         ))
 
     # ── 4e. Systems of equations — substitution method
-    for _ in range=80:
+    for _ in range(80):
         x, y = random.randint(1, 6), random.randint(1, 6)
         a1 = random.randint(1, 4)
         b1 = random.randint(1, 4)
@@ -846,7 +846,7 @@ def gen_stage7(target: int = 400) -> list:
         ))
 
     # ── 7e. Consecutive integers
-    for _ in range=80:
+    for _ in range(80):
         n = random.randint(1, 20)
         s = n + (n+1) + (n+2)
         out.append(sample(
