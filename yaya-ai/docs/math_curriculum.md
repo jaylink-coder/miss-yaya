@@ -120,7 +120,9 @@ Stage-by-stage training can cause catastrophic forgetting — stage 4 may slight
 - **Status**: Ready to start `make math-stage1` once `yaya-tiny-sft-filtered` training is complete
 
 ### Stage 1 — Arithmetic
-- **Started**: —
+- **Started**: 2026-03-31 — from `yaya-tiny-sft-filtered/checkpoint-00006000`
+- **PID**: 16652
+- **Loss @ step 100**: 1.94 (from 2.72 at step 0 — fast drop)
 - **Finished**: —
 - **Final loss**: —
 - **Eval score**: —/20
