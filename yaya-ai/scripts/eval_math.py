@@ -320,15 +320,16 @@ def main():
     checkpoint = args.checkpoint or find_best_checkpoint()
     print(f"Loading checkpoint: {checkpoint}")
 
-    # Load model
-    import yaml
+    # Load model using same pattern as eval_instruction.py
     model_config_path = "configs/model/yaya_tiny.yaml"
-    with open(model_config_path) as f:
-        model_config = yaml.safe_load(f)
+    cfg = load_model_config(model_config_path)
+    model = YayaForCausalLM(cfg)
+    ckpt_mgr = CheckpointManager(save_dir=str(Path(checkpoint).parent))
+    ckpt_mgr.load(model, checkpoint_path=checkpoint)
+    model.eval()
 
     tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
-    model = YayaForCausalLM.from_pretrained(checkpoint, config=model_config)
-    generator = TextGenerator(model=model, tokenizer=tokenizer)
+    generator = TextGenerator(model, tokenizer, device="cpu")
 
     # Filter questions
     questions = EVAL_QUESTIONS
