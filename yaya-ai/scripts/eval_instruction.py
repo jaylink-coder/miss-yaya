@@ -75,7 +75,12 @@ TEST_SUITE = [
 
 
 def score_response(response: str, required: list) -> tuple[bool, str]:
-    """Return (passed, reason). Passes if ANY required string found."""
+    """Return (passed, reason).
+
+    Passes if ANY required string is found in the response (case-insensitive).
+    For single-entry lists this is an exact match requirement.
+    For multi-entry lists (e.g. ["red", "blue", "yellow"]) at least one must appear.
+    """
     low = response.lower()
     for r in required:
         if r.lower() in low:
