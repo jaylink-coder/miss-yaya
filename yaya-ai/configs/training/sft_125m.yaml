@@ -34,8 +34,8 @@ eval:
   eval_samples: 50
 
 data:
-  train_data: data/sft/yaya_instruct.jsonl
-  eval_data: data/sft/yaya_instruct_eval.jsonl  # Held-out eval — not in training data
+  train_data: data/sft/yaya_reasoning_combined.jsonl
+  eval_data: data/sft/yaya_reasoning_combined.jsonl
   tokenizer_path: data/tokenizer/yaya_tokenizer.model
   num_workers: 0
 
