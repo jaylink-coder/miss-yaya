@@ -5,8 +5,8 @@ expected content. Reports a quality score and per-question results.
 
 Usage:
     python scripts/eval_instruction.py
-    python scripts/eval_instruction.py --checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-00005000
-    python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-tiny-sft-clean
+    python scripts/eval_instruction.py --checkpoint checkpoints/yaya-125m-sft/checkpoint-00005000
+    python scripts/eval_instruction.py --all_checkpoints checkpoints/yaya-125m-sft
 """
 
 import argparse
