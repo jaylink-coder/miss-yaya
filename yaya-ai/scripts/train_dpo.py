@@ -94,7 +94,7 @@ def main():
                         help="SFT checkpoint to start from (auto-detected if omitted)")
     parser.add_argument("--dpo_data",       type=str, default="data/sft/yaya_dpo_combined.jsonl")
     parser.add_argument("--tokenizer",      type=str, default="data/tokenizer/yaya_tokenizer.model")
-    parser.add_argument("--save_dir",       type=str, default="checkpoints/yaya-tiny-dpo")
+    parser.add_argument("--save_dir",       type=str, default="checkpoints/yaya-125m-dpo")
     parser.add_argument("--lr",             type=float, default=5e-7)
     parser.add_argument("--max_steps",      type=int, default=1000)
     parser.add_argument("--batch_size",     type=int, default=2)
