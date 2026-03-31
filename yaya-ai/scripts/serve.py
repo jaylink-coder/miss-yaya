@@ -49,7 +49,7 @@ def _find_latest_checkpoint():
 def main():
     parser = argparse.ArgumentParser(description="Serve Yaya model API")
     parser.add_argument("--checkpoint",  type=str, default=None, help="Checkpoint path (auto-detected)")
-    parser.add_argument("--model_config", type=str, default="configs/model/yaya_tiny.yaml")
+    parser.add_argument("--model_config", type=str, default="configs/model/yaya_125m.yaml")
     parser.add_argument("--tokenizer_path", type=str, default="data/tokenizer/yaya_tokenizer.model")
     parser.add_argument("--host", type=str, default="0.0.0.0", help="Server host")
     parser.add_argument("--port", type=int, default=8000, help="Server port")
