@@ -180,10 +180,10 @@ def main():
     # Auto-find checkpoint
     ckpt = args.checkpoint
     if ckpt is None:
-        for d in ["checkpoints/yaya-tiny-sft-focused",
-                  "checkpoints/yaya-tiny-sft-clean",
-                  "checkpoints/yaya-tiny-sft-v2",
-                  "checkpoints/yaya-tiny-sft"]:
+        for d in ["checkpoints/yaya-125m-sft",
+                  "checkpoints/yaya-125m-reasoning",
+                  "checkpoints/yaya-125m",
+                  "checkpoints/yaya-tiny-math-stage2"]:
             latest = os.path.join(d, "latest")
             if os.path.exists(latest):
                 with open(latest) as f:
