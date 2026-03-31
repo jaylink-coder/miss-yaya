@@ -176,7 +176,8 @@ def main():
                 response = response.split(stop)[0]
         response = response.strip()
 
-        print(f"Yaya: {response}\n")
+        # Display: show <|think|> blocks dimmed, then the answer
+        _display_response(response)
 
         # Log for continuous learning
         log_conversation(user_input, response)
