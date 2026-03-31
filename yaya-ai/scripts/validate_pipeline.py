@@ -143,7 +143,7 @@ def main():
     scheduler = create_scheduler(optimizer, warmup_steps=20, max_steps=200)
 
     # Checkpoint manager
-    ckpt_dir = os.path.join(PROJECT_ROOT, "checkpoints", "yaya-tiny")
+    ckpt_dir = os.path.join(PROJECT_ROOT, "checkpoints", "yaya-125m-validate")
     ckpt_manager = CheckpointManager(save_dir=ckpt_dir, keep_last_n=2)
 
     # Training loop
