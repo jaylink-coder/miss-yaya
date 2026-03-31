@@ -333,8 +333,11 @@ def main():
     checkpoint = args.checkpoint or find_best_checkpoint()
     print(f"Loading checkpoint: {checkpoint}")
 
-    # Load model using same pattern as eval_instruction.py
-    model_config_path = "configs/model/yaya_tiny.yaml"
+    # Load model — detect config from checkpoint path
+    if "125m" in checkpoint or "yaya-125m" in checkpoint:
+        model_config_path = "configs/model/yaya_125m.yaml"
+    else:
+        model_config_path = "configs/model/yaya_tiny.yaml"
     cfg = load_model_config(model_config_path)
     model = YayaForCausalLM(cfg)
     ckpt_mgr = CheckpointManager(save_dir=str(Path(checkpoint).parent))
