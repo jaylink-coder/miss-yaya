@@ -200,7 +200,7 @@ def check_answer(response: str, keywords: list) -> bool:
     return all(kw.lower() in response_lower for kw in keywords)
 
 
-def run_eval(generator, questions, verbose=True):
+def run_eval(generator, tokenizer, questions, verbose=True):
     results = []
 
     for i, q in enumerate(questions):
