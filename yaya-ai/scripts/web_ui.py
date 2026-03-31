@@ -133,7 +133,7 @@ def run_gradio(generator, tokenizer, args):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_config", type=str, default="configs/model/yaya_tiny.yaml")
+    parser.add_argument("--model_config", type=str, default="configs/model/yaya_125m.yaml")
     parser.add_argument("--checkpoint",   type=str, default=None)
     parser.add_argument("--port",         type=int, default=7860)
     parser.add_argument("--share",        action="store_true",
