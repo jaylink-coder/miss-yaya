@@ -55,6 +55,22 @@ TEST_SUITE = [
     # Yaya identity
     ("What is your name?",                ["yaya"]),
     ("Are you an AI?",                    ["yes", "am", "ai", "assistant"]),
+
+    # ── Compute (arithmetic — tests calculator tool learning) ──
+    ("What is 15 + 27?",                  ["42"]),
+    ("What is 9 times 8?",                ["72"]),
+    ("What is 2 to the power of 8?",      ["256"]),
+
+    # ── Reasoning (logic / word problems) ──
+    ("A farmer has 20 sheep. Half die. How many remain?",  ["10"]),
+    ("If today is Monday, what day is the day after tomorrow?",  ["wednesday"]),
+    ("All birds can fly. Penguins are birds. Can penguins fly?",
+     ["no", "cannot", "can't", "not"]),
+
+    # ── Math reasoning ──
+    ("What is 15% of 200?",               ["30"]),
+    ("A train travels 90 km/h for 2 hours. How far does it travel?",  ["180"]),
+    ("What is the area of a square with side 7?",  ["49"]),
 ]
 
 
