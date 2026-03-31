@@ -33,8 +33,6 @@ DEFAULT_CHECKPOINT_DIRS = [
     "checkpoints/yaya-125m-sft",
     "checkpoints/yaya-125m-reasoning",
     "checkpoints/yaya-125m",
-    "checkpoints/yaya-tiny-math-stage2",
-    "checkpoints/yaya-tiny-sft-filtered",
 ]
 
 # ── Benchmark questions by category ──────────────────────────────────────────
