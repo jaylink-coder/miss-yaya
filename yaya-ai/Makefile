@@ -8,6 +8,9 @@
         train-1b train-1b-2gpu train-1.5b train-7b \
         sft-1b sft-1b-2gpu sft-1.5b \
         lora-sft-1.5b lora-continual-1.5b merge-lora-1.5b \
+        gen-math-data \
+        math-stage1 math-stage2 math-stage3 math-stage4 math-stage5 math-stage6 math-stage7 math-stage8 \
+        math-combined math-eval math-curriculum \
         train-moe-1.5b sft-moe-1.5b \
         align-dpo-1b align-dpo dpo-1.5b \
         train-reward-model \
