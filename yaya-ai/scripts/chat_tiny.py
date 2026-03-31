@@ -100,7 +100,8 @@ def main():
 
     tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
     memory = SessionMemory(store_dir="data/memory", session_id="chat_tiny")
-    generator = TextGenerator(model, tokenizer, device=device, memory=memory)
+    base_generator = TextGenerator(model, tokenizer, device=device, memory=memory)
+    generator = ToolAugmentedGenerator(base_generator, verbose=True) if use_calc else base_generator
 
     gen_config = GenerationConfig(
         max_new_tokens=args.max_tokens,
@@ -111,9 +112,12 @@ def main():
         do_sample=args.temperature > 0,
     )
 
+    calc_label = " + Calculator" if use_calc else ""
     print("\n" + "=" * 55)
-    print("  Chat with Yaya-tiny  (type 'quit' to exit)")
+    print(f"  Chat with Yaya-tiny{calc_label}  (type 'quit' to exit)")
     print("  Commands: /memory, /clear")
+    if use_calc:
+        print("  Calculator: model can use <|calc|>EXPR<|/calc|>")
     print("=" * 55 + "\n")
 
     conversation = []
