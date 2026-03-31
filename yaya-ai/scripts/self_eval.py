@@ -138,7 +138,7 @@ def _find_latest_checkpoint():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_config', type=str, default='configs/model/yaya_tiny.yaml')
+    parser.add_argument('--model_config', type=str, default='configs/model/yaya_125m.yaml')
     parser.add_argument('--checkpoint',   type=str, default=None)
     parser.add_argument('--tokenizer',    type=str, default='data/tokenizer/yaya_tokenizer.model')
     parser.add_argument('--output',       type=str, default='data/eval/self_eval_report.json')
