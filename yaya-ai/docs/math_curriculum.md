@@ -134,10 +134,12 @@ Stage-by-stage training can cause catastrophic forgetting — stage 4 may slight
 > and by whether loss keeps dropping across all 8 stages.
 
 ### Stage 2 — Fractions & Decimals
-- **Started**: —
+- **Started**: 2026-03-31 — from `math-stage1/checkpoint-00003000` (PID 20932)
+- **Loss @ step 100**: 2.67 (initial 4.96, high GradNorm=28 — new domain, adapting fast)
+- **Loss @ step 300**: 0.75 (steep drop — fraction patterns being absorbed)
 - **Finished**: —
 - **Final loss**: —
-- **Eval score**: —/20
+- **Eval score**: —/3
 
 ### Stage 3 — Pre-Algebra
 - **Started**: —
