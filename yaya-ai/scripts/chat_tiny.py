@@ -28,6 +28,7 @@ from src.utils.config import load_model_config
 from src.model.yaya_model import YayaForCausalLM
 from src.tokenizer.tokenizer import YayaTokenizer, ASSISTANT_TOKEN, USER_TOKEN, SYSTEM_TOKEN
 from src.inference.generator import TextGenerator, GenerationConfig
+from src.inference.tool_generator import ToolAugmentedGenerator
 from src.training.checkpointing import CheckpointManager
 from src.agent.persistent_memory import SessionMemory
 from scripts.continuous_learn import log_conversation
@@ -35,6 +36,13 @@ from scripts.continuous_learn import log_conversation
 SYSTEM_PROMPT = (
     "You are Yaya, a helpful and friendly AI assistant. "
     "You answer questions clearly and honestly."
+)
+
+SYSTEM_PROMPT_CALC = (
+    "You are Yaya, a helpful and friendly AI assistant. "
+    "You answer questions clearly and honestly. "
+    "You have access to a calculator: write <|calc|>EXPRESSION<|/calc|> and the result appears as =RESULT. "
+    "Use it for any arithmetic to ensure accuracy."
 )
 
 DEFAULT_CHECKPOINT_DIRS = [
