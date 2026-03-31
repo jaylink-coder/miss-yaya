@@ -29,7 +29,9 @@
         pipeline-full clean \
         validate-sft-data validate-sft-data-verbose \
         sft dpo export agent rag safety \
-        maml-1.5b
+        maml-1.5b \
+        reasoning reasoning-resume eval-reasoning chat-reasoning \
+        train-125m
 
 # MAML meta-learning
 maml-1.5b:
