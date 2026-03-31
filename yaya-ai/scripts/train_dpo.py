@@ -89,7 +89,7 @@ def dpo_loss(policy, ref, chosen, rejected):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model_config",   type=str, default="configs/model/yaya_tiny.yaml")
+    parser.add_argument("--model_config",   type=str, default="configs/model/yaya_125m.yaml")
     parser.add_argument("--sft_checkpoint", type=str, default=None,
                         help="SFT checkpoint to start from (auto-detected if omitted)")
     parser.add_argument("--dpo_data",       type=str, default="data/sft/yaya_dpo_combined.jsonl")
