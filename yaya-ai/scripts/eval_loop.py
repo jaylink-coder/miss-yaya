@@ -266,28 +266,27 @@ def main():
     print(f"\nCurrent score: {score:.0%} ({passed}/{total})")
     if score < 1.0:
         print("\nTo retrain with augmented data:")
-        print("  make sft-tiny-filtered")
+        print("  make sft-resume")
         if args.retrain:
-            print("\nLaunching filtered training (resume from latest)...")
+            print("\nLaunching 125m SFT (resume from latest)...")
             import os as _os
-            latest_file = "checkpoints/yaya-tiny-sft-filtered/latest"
+            latest_file = "checkpoints/yaya-125m-sft/latest"
             if _os.path.exists(latest_file):
                 with open(latest_file) as lf:
                     latest_name = lf.read().strip()
-                resume_path = f"checkpoints/yaya-tiny-sft-filtered/{latest_name}"
+                resume_path = f"checkpoints/yaya-125m-sft/{latest_name}"
                 subprocess.Popen(
                     [sys.executable, "scripts/train_sft.py",
-                     "--model_config", "configs/model/yaya_tiny.yaml",
-                     "--train_config", "configs/training/sft_tiny_filtered.yaml",
+                     "--model_config", "configs/model/yaya_125m.yaml",
+                     "--train_config", "configs/training/sft_125m.yaml",
                      "--resume", resume_path],
                     cwd=_os.getcwd(),
                 )
             else:
                 subprocess.Popen(
                     [sys.executable, "scripts/train_sft.py",
-                     "--model_config", "configs/model/yaya_tiny.yaml",
-                     "--train_config", "configs/training/sft_tiny_filtered.yaml",
-                     "--pretrain_checkpoint", "checkpoints/yaya-tiny-sft-clean/checkpoint-00002000"],
+                     "--model_config", "configs/model/yaya_125m.yaml",
+                     "--train_config", "configs/training/sft_125m.yaml"],
                     cwd=_os.getcwd(),
                 )
             print("Training launched in background.")
