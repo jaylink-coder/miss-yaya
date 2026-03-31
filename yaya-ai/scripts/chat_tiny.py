@@ -155,16 +155,19 @@ def main():
             continue
 
         # Build prompt
-        history = ([{"role": "system", "content": SYSTEM_PROMPT}]
+        sys_prompt = SYSTEM_PROMPT_CALC if use_calc else SYSTEM_PROMPT
+        history = ([{"role": "system", "content": sys_prompt}]
                    + conversation
                    + [{"role": "user", "content": user_input}])
         prompt = tokenizer.format_chat(history) + "\n" + ASSISTANT_TOKEN + "\n"
 
-        # Generate (memory injected automatically by generator)
-        full_output = generator.generate(prompt, gen_config)
+        # Generate (ToolAugmentedGenerator handles calc calls; base generator handles memory)
+        if use_calc:
+            response = generator.generate(prompt, gen_config)
+        else:
+            full_output = generator.generate(prompt, gen_config)
+            response = full_output[len(prompt):]
 
-        # Extract response
-        response = full_output[len(prompt):]
         for stop in [USER_TOKEN, SYSTEM_TOKEN, "</s>", "<|endoftext|>"]:
             if stop in response:
                 response = response.split(stop)[0]
