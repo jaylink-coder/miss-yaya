@@ -75,7 +75,10 @@ def main():
     parser.add_argument("--temperature", type=float, default=0.8)
     parser.add_argument("--top_p",       type=float, default=0.9)
     parser.add_argument("--top_k",       type=int,   default=50)
+    parser.add_argument("--tool-calc",   action="store_true",
+                        help="Enable calculator tool (<|calc|>EXPR<|/calc|>)")
     args = parser.parse_args()
+    use_calc = getattr(args, "tool_calc", False)
 
     # Resolve checkpoint
     checkpoint = args.checkpoint
