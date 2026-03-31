@@ -3,6 +3,7 @@
 Usage:
     python scripts/chat_tiny.py
     python scripts/chat_tiny.py --checkpoint checkpoints/yaya-tiny-sft-clean/checkpoint-XXXXXXXX
+    python scripts/chat_tiny.py --tool-calc   # Enable calculator tool
 
 Commands during chat:
     /memory     — show stored memories
