@@ -666,6 +666,42 @@ math-curriculum:
 		fi; \
 	done
 
+## ─────────────────────────────────────────────────────────────────────────────
+## REASONING — Chain-of-Thought + Calculator Tool Use
+## ─────────────────────────────────────────────────────────────────────────────
+
+## Build reasoning dataset (math + CoT + calc-tool examples), then train.
+## Starts from: yaya-tiny-math-stage2 latest checkpoint.
+reasoning:
+	@echo "=== Step 1: Generate reasoning data ===" && \
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/generate_reasoning_data.py && \
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/build_reasoning_dataset.py && \
+	echo "=== Step 2: Launch reasoning training ===" && \
+	CKPT=$$(cat checkpoints/yaya-tiny-math-stage2/latest 2>/dev/null || echo "checkpoint-00000500"); \
+	echo "Starting reasoning training from math-stage2: $$CKPT"; \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/sft_reasoning.yaml --pretrain_checkpoint checkpoints/yaya-tiny-math-stage2/$$CKPT' -RedirectStandardOutput 'logs\reasoning.log' -RedirectStandardError 'logs\reasoning_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Resume reasoning training from latest reasoning checkpoint.
+reasoning-resume:
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_tiny.yaml --train_config configs/training/sft_reasoning.yaml --resume' -RedirectStandardOutput 'logs\reasoning.log' -RedirectStandardError 'logs\reasoning_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## Evaluate reasoning + math (20 questions, shows calc tool usage).
+eval-reasoning:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_math.py --checkpoint $$(cat checkpoints/yaya-tiny-reasoning/latest 2>/dev/null | xargs -I{} echo checkpoints/yaya-tiny-reasoning/{} || echo checkpoints/yaya-tiny-math-stage2/checkpoint-00000500)
+
+## Interactive chat with calculator tool support.
+chat-reasoning:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/chat_tiny.py --checkpoint $$(cat checkpoints/yaya-tiny-reasoning/latest 2>/dev/null | xargs -I{} echo checkpoints/yaya-tiny-reasoning/{} || echo checkpoints/yaya-tiny-math-stage2/checkpoint-00000500) --tool-calc
+
+## ─────────────────────────────────────────────────────────────────────────────
+## 125M — Real-scale training (GPT-2 scale, 129M params)
+## ─────────────────────────────────────────────────────────────────────────────
+
+## Pretrain Yaya-125M from scratch on available text data.
+train-125m:
+	@echo "Yaya-125M pretrain — 129M params, requires GPU (T4/A100)" && \
+	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_125m.yaml --train_config configs/training/sft_125m.yaml' -RedirectStandardOutput 'logs\train_125m.log' -RedirectStandardError 'logs\train_125m_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
 # Cleanup
 clean:
 	find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
