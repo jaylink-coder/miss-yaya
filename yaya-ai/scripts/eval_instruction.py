@@ -154,7 +154,7 @@ def main():
     parser.add_argument("--all_checkpoints",   type=str, default=None,
                         help="Directory — evaluate all checkpoints in order")
     parser.add_argument("--model_config",      type=str,
-                        default="configs/model/yaya_tiny.yaml")
+                        default="configs/model/yaya_125m.yaml")
     parser.add_argument("--tokenizer",         type=str,
                         default="data/tokenizer/yaya_tokenizer.model")
     parser.add_argument("--temperature",       type=float, default=0.3)
