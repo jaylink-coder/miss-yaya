@@ -27,6 +27,9 @@ class ToolAugmentedGenerator:
         =RESULT
     Then generation resumes from that point.
 
+    Training data format:  <|calc|>47*83<|/calc|>=3901
+    This class injects:                              =3901  (just the value)
+
     The model can make up to `max_tool_calls` calculator calls per response.
     """
 
@@ -50,50 +53,73 @@ class ToolAugmentedGenerator:
         if config is None:
             config = GenerationConfig()
 
+        # Disable memory during the loop so that prompt boundary slicing works
+        # cleanly (memory context prepended inside generate() would shift offsets).
+        # We manually update memory once the full response is assembled.
+        saved_memory = self.generator.memory
+        self.generator.memory = None
+
         full_text = ""
         current_prompt = prompt
         calls_made = 0
 
-        while calls_made <= self.max_tool_calls:
-            # Generate from current prompt
-            raw = self.generator.generate(current_prompt, config)
+        try:
+            while calls_made <= self.max_tool_calls:
+                # Generate from current prompt (no memory — we control the context)
+                raw = self.generator.generate(current_prompt, config)
 
-            # Extract only the new text (after the prompt)
-            tokenizer = self.generator.tokenizer
-            prompt_ids = tokenizer.encode(current_prompt, add_bos=True)
-            prompt_decoded = tokenizer.decode(prompt_ids)
-            new_text = raw[len(prompt_decoded):]
+                # Extract only the new text.
+                # With memory disabled, raw = decode(encode(current_prompt) + new_tokens).
+                # tokenizer.decode(tokenizer.encode(s, add_bos=True)) should equal raw[:len(prompt_decoded)].
+                tokenizer = self.generator.tokenizer
+                prompt_ids = tokenizer.encode(current_prompt, add_bos=True)
+                prompt_decoded = tokenizer.decode(prompt_ids)
+                new_text = raw[len(prompt_decoded):]
 
-            # Clean any trailing stop tokens
-            for stop in ["</s>", "<|endoftext|>"]:
-                new_text = new_text.split(stop)[0]
+                # Clean trailing stop tokens
+                for stop in ["</s>", "<|endoftext|>"]:
+                    new_text = new_text.split(stop)[0]
 
-            full_text += new_text
+                full_text += new_text
 
-            # Look for a calc call in what was just generated
-            calc_match = re.search(
-                re.escape(CALC_OPEN) + r"(.+?)" + re.escape(CALC_CLOSE),
-                new_text,
-            )
-            if calc_match is None or calls_made >= self.max_tool_calls:
-                break
+                # Look for the FIRST calc call in the new output
+                calc_match = re.search(
+                    re.escape(CALC_OPEN) + r"(.+?)" + re.escape(CALC_CLOSE),
+                    new_text,
+                )
+                if calc_match is None or calls_made >= self.max_tool_calls:
+                    break
 
-            expr = calc_match.group(1).strip()
-            result = self.calc.run(expr)
+                expr = calc_match.group(1).strip()
+                result = self.calc.run(expr)
 
-            if self.verbose:
+                # result.output is "EXPR = VALUE" — extract just the numeric value
+                # Training format: <|calc|>EXPR<|/calc|>=VALUE
                 if result.success:
-                    print(f"  [calc] {expr} = {result.output}")
+                    value = result.output.rsplit(" = ", 1)[-1]
                 else:
-                    print(f"  [calc] ERROR: {result.error}")
+                    value = "ERROR"
 
-            # Inject result and continue generating from there
-            injected = f"={result.output}\n" if result.success else f"=ERROR\n"
+                if self.verbose:
+                    if result.success:
+                        print(f"  [calc] {expr} = {value}")
+                    else:
+                        print(f"  [calc] ERROR: {result.error}")
 
-            # Rebuild prompt: original prompt + everything generated so far + injected result
-            current_prompt = current_prompt + new_text + injected
-            full_text += injected
-            calls_made += 1
+                # Inject result and continue generating
+                injected = f"={value}\n"
+                current_prompt = current_prompt + new_text + injected
+                full_text += injected
+                calls_made += 1
+
+        finally:
+            # Restore memory
+            self.generator.memory = saved_memory
+
+        # Update memory with the full exchange (prompt + response)
+        if saved_memory is not None:
+            saved_memory.extract_from_text(prompt)
+            saved_memory.extract_from_text(full_text)
 
         return full_text
 
