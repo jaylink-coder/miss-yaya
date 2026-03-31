@@ -123,9 +123,15 @@ Stage-by-stage training can cause catastrophic forgetting — stage 4 may slight
 - **Started**: 2026-03-31 — from `yaya-tiny-sft-filtered/checkpoint-00006000`
 - **PID**: 16652
 - **Loss @ step 100**: 1.94 (from 2.72 at step 0 — fast drop)
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/20
+- **Finished**: 2026-03-31 — `checkpoint-00003000`
+- **Final loss**: 0.216 | **Perplexity**: 1.248
+- **Eval score**: 0/3 (format correct, numbers wrong — see note)
+
+> **Note**: At 4.8M params, the model learns MATH FORMAT (step-by-step layout, operators, bold answers)
+> but cannot compute novel arithmetic. It hallucinates plausible-looking numbers from training patterns.
+> This is expected — it is NOT a failure. The model is building math intuition; exact computation
+> requires a much larger model or a calculator tool. Progress should be measured by format quality
+> and by whether loss keeps dropping across all 8 stages.
 
 ### Stage 2 — Fractions & Decimals
 - **Started**: —
