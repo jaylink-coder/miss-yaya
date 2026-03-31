@@ -6,7 +6,7 @@ identifies weak areas, and saves a report.
 
 Usage:
     python scripts/self_eval.py
-    python scripts/self_eval.py --checkpoint checkpoints/yaya-tiny-sft-focused/checkpoint-00005000
+    python scripts/self_eval.py --checkpoint checkpoints/yaya-125m-sft/checkpoint-00005000
 """
 
 import argparse
