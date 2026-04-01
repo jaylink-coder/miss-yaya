@@ -276,7 +276,7 @@ def gen_stage2(reps: int = 10) -> list:
             out.append(sample(f"Convert {n}/{d} to a decimal.",
                                f"{calc(f'{n}/{d}', r)}\nAnswer: {dec}"))
             out.append(sample(f"What is {dec} as a percentage?",
-                               f"{calc(f'{dec}*100', float(pct.replace(\"%\",\"\")))}\nAnswer: {pct}"))
+                               f"{calc(f'{dec}*100', float(pct.replace('%','')))}\\nAnswer: {pct}"))
 
     return shuffled(out)
 
