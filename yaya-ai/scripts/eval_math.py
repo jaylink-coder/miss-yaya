@@ -345,7 +345,8 @@ def main():
     model.eval()
 
     tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
-    generator = TextGenerator(model, tokenizer, device="cpu")
+    base_gen = TextGenerator(model, tokenizer, device="cpu")
+    generator = ToolAugmentedGenerator(base_gen, verbose=False)
 
     # Filter questions
     questions = EVAL_QUESTIONS
