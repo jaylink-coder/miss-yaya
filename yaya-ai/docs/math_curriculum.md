@@ -126,69 +126,39 @@ Stage-by-stage training can cause catastrophic forgetting — stage 4 may slight
 - **Eval script**: Created `scripts/eval_math.py` (20 math questions across all stages)
 - **Status**: Ready to start `make math-stage1` once `yaya-tiny-sft-filtered` training is complete
 
-### Stage 1 — Arithmetic
-- **Started**: 2026-03-31 — from `yaya-tiny-sft-filtered/checkpoint-00006000`
-- **PID**: 16652
-- **Loss @ step 100**: 1.94 (from 2.72 at step 0 — fast drop)
-- **Finished**: 2026-03-31 — `checkpoint-00003000`
-- **Final loss**: 0.216 | **Perplexity**: 1.248
-- **Eval score**: 0/3 (format correct, numbers wrong — see note)
+### v3 → v4 Architecture Change (2026-04-01)
 
-> **Note**: At 4.8M params, the model learns MATH FORMAT (step-by-step layout, operators, bold answers)
-> but cannot compute novel arithmetic. It hallucinates plausible-looking numbers from training patterns.
-> This is expected — it is NOT a failure. The model is building math intuition; exact computation
-> requires a much larger model or a calculator tool. Progress should be measured by format quality
-> and by whether loss keeps dropping across all 8 stages.
+**v3 (format-only, FAILED)**:
+- Model tried to MEMORIZE arithmetic in 4.8M weights
+- 30× repetition, 20k steps, loss 0.089 → still 27% accuracy
+- Root cause: 4.8M params cannot store 81 multiplication facts reliably
 
-### Stage 2 — Fractions & Decimals
-- **Started**: 2026-03-31 — from `math-stage1/checkpoint-00003000` (PID 20932)
-- **Loss @ step 100**: 2.67 (initial 4.96, high GradNorm=28 — new domain, adapting fast)
-- **Loss @ step 300**: 0.75 (steep drop — fraction patterns being absorbed)
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/3
+**v4 (tool-use + reasoning, WORKING)**:
+- Every arithmetic → `<|calc|>EXPR<|/calc|>` — model learns to CALL Python, not compute
+- Complex reasoning → `<|think|>...</|think|>` blocks
+- Data: 28,129 samples across 8 stages
+- `ToolAugmentedGenerator` at inference: intercepts calc tokens, runs `eval()`, injects result
 
-### Stage 3 — Pre-Algebra
-- **Started**: —
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/20
+### Stage 1 — Arithmetic (v4)
+- **Started**: 2026-04-01 — from `yaya-tiny-sft-filtered/checkpoint-00006000` (PID 13512)
+- **Loss: 4.13 → 0.021** (step 11000, epoch 15)
+- **Eval score**: **3/3 = 100%** at step 11000
+  - `47 × 83 → <|calc|>47*83<|/calc|>=3901` ✓
+  - `√144 → <|calc|>sqrt(144)<|/calc|>=12` ✓  
+  - `15 + 8×3 → <|think|>Mult before add<|/think|> → 8*3=24, 15+24=39` ✓
 
-### Stage 4 — Algebra
-- **Started**: —
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/20
+### Stage 2 — Fractions & Decimals (v4)
+- **Started**: 2026-04-01 — from `math-stage1/checkpoint-00011000` (PID 6900)
+- **Loss: 2.99 → 0.063** | **Perplexity**: 1.065 (step 8000)
+- **CATASTROPHIC FORGETTING**: Stage 1 regressed 100% → 0% after stage 2 training
+- **Lesson**: 4.8M params cannot retain knowledge across sequential stages
 
-### Stage 5 — Geometry
-- **Started**: —
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/20
-
-### Stage 6 — Statistics & Probability
-- **Started**: —
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/20
-
-### Stage 7 — Word Problems
-- **Started**: —
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/20
-
-### Stage 8 — Calculus & Beyond
-- **Started**: —
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/20
-
-### Combined (Consolidation)
-- **Started**: —
-- **Finished**: —
-- **Final loss**: —
-- **Eval score**: —/20
+### Combined Training (All Stages) — PRIMARY RUN
+- **Started**: 2026-04-01 — from `yaya-tiny-sft-filtered/checkpoint-00006000` (PID 21288)
+- **Data**: 28,129 samples (all 8 stages shuffled together)
+- **Status**: RUNNING — step 2000+ (perplexity 1.456 and dropping)
+- **Target**: 20,000 steps
+- **Checkpoint dir**: `checkpoints/yaya-tiny-math-combined/`
 
 ---
 
