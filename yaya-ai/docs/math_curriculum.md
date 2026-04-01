@@ -25,9 +25,9 @@ Yaya is trained on mathematics using a **tool-use + reasoning approach** (v4):
 | 6 | Statistics & Probability | 348 | Mean/median/range, probability, permutations, combinations, standard deviation | `configs/training/math_stage6.yaml` |
 | 7 | Word Problems | 350 | Speed/distance/time, simple interest, ratio/mixture, age problems, work rate | `configs/training/math_stage7.yaml` |
 | 8 | Calculus & Beyond | 300 | Limits, derivatives (power rule), integrals, Fundamental Theorem, chain/product rules | `configs/training/math_stage8.yaml` |
-| — | Combined | 3298 | All stages mixed — consolidation run | `configs/training/math_combined.yaml` |
+| — | Combined | 28,129 | All stages — primary training target | `configs/training/math_combined.yaml` |
 
-**Total training data: 3,298 samples** (regeneratable with `make gen-math-data`)
+**Total training data: 28,129 samples** (v4 — regeneratable with `make gen-math-data`)
 
 ---
 
