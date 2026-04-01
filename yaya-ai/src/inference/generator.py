@@ -180,6 +180,80 @@ class TextGenerator:
         return output_text
 
     @torch.no_grad()
+    def generate_new_text(
+        self,
+        prompt: str,
+        config: Optional[GenerationConfig] = None,
+        **kwargs,
+    ) -> str:
+        """Like generate() but returns ONLY the newly generated tokens decoded.
+
+        This avoids the character-boundary mismatch caused by special tokens
+        (e.g. </|assistant|>) decoding to empty string when round-tripped
+        through the tokenizer.  The full sequence is generated, then only
+        the tokens AFTER the prompt are decoded and returned.
+        """
+        # Replicate the core of generate() but expose the token-level split.
+        if config is None:
+            config = GenerationConfig()
+
+        actual_prompt = prompt
+        if self.memory is not None:
+            mem_ctx = self.memory.format_for_prompt()
+            if mem_ctx:
+                actual_prompt = f"[Memory context]\n{mem_ctx}\n\n{prompt}"
+
+        input_ids = self.tokenizer.encode(actual_prompt, add_bos=True)
+        input_tensor = torch.tensor([input_ids], dtype=torch.long, device=self.device)
+
+        stop_ids = set(config.stop_token_ids or [])
+        stop_ids.add(self.tokenizer.eos_id)
+
+        self.model.eval()
+        generated_ids = list(input_ids)
+        past_key_values = None
+        n_prompt = len(input_ids)
+
+        for _ in range(config.max_new_tokens):
+            if past_key_values is not None:
+                model_input = input_tensor[:, -1:]
+            else:
+                model_input = input_tensor
+
+            outputs = self.model(
+                input_ids=model_input,
+                past_key_values=past_key_values,
+                use_cache=True,
+            )
+            logits = outputs["logits"][:, -1, :]
+            past_key_values = outputs.get("past_key_values")
+
+            if config.repetition_penalty != 1.0:
+                logits = self._apply_repetition_penalty(
+                    logits, generated_ids, config.repetition_penalty
+                )
+
+            if config.do_sample:
+                next_token = self._sample(
+                    logits, temperature=config.temperature,
+                    top_k=config.top_k, top_p=config.top_p,
+                )
+            else:
+                next_token = logits.argmax(dim=-1)
+
+            next_token_id = next_token.item()
+            generated_ids.append(next_token_id)
+
+            if next_token_id in stop_ids:
+                break
+
+            input_tensor = next_token.unsqueeze(0)
+
+        # Decode ONLY the new tokens — avoids special-token boundary issues.
+        new_text = self.tokenizer.decode(generated_ids[n_prompt:])
+        return new_text
+
+    @torch.no_grad()
     def generate_batch(
         self,
         prompts: List[str],
