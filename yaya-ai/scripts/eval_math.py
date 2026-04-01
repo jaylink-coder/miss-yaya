@@ -215,9 +215,10 @@ def run_eval(generator, tokenizer, questions, verbose=True):
             formatted = tokenizer.format_chat(msgs) + "\n" + ASSISTANT_TOKEN + "\n"
             config = GenerationConfig(
                 max_new_tokens=120,
-                temperature=0.1,
-                top_p=0.9,
-                repetition_penalty=1.5,
+                temperature=0.0,
+                top_p=1.0,
+                repetition_penalty=1.3,
+                do_sample=False,
             )
             import torch
             with torch.no_grad():
