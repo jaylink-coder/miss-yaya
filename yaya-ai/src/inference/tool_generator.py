@@ -66,9 +66,17 @@ class ToolAugmentedGenerator:
         try:
             while calls_made <= self.max_tool_calls:
                 # Generate from current prompt (no memory — we control the context)
-                # Use generate_new_text() to get ONLY the newly generated tokens,
-                # avoiding the special-token boundary mismatch in character slicing.
-                new_text = self.generator.generate_new_text(current_prompt, config)
+                raw = self.generator.generate(current_prompt, config)
+
+                # Extract new text via character-boundary slicing.
+                # YAYA's tokenizer decodes special tokens to empty strings, so
+                # len(decode(encode(prompt))) < len(prompt) by exactly the number
+                # of invisible special-token characters.  Slicing at that decoded
+                # length correctly recovers the newly generated portion.
+                tokenizer = self.generator.tokenizer
+                prompt_ids = tokenizer.encode(current_prompt, add_bos=True)
+                prompt_decoded = tokenizer.decode(prompt_ids)
+                new_text = raw[len(prompt_decoded):]
 
                 # Clean trailing stop tokens
                 for stop in ["</s>", "<|endoftext|>"]:
