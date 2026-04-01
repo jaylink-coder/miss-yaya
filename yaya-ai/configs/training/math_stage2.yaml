@@ -13,7 +13,7 @@ training:
   adam_epsilon: 1.0e-8
   max_grad_norm: 1.0
   lr_scheduler: cosine
-  warmup_steps: 80
+  warmup_steps: 100
   min_lr_ratio: 0.05
   max_steps: 8000
   max_seq_length: 512
