@@ -66,25 +66,9 @@ class ToolAugmentedGenerator:
         try:
             while calls_made <= self.max_tool_calls:
                 # Generate from current prompt (no memory — we control the context)
-                raw = self.generator.generate(current_prompt, config)
-
-                # Extract only the new text.
-                # raw = decode(encode(current_prompt, add_bos=True) + new_ids)
-                # Special tokens (e.g. </|assistant|>) decode to empty string, so
-                # character-level slicing on len(decode(prompt_ids)) is unreliable.
-                # Instead slice at the TOKEN level: re-encode raw and drop the first
-                # n_prompt_tokens tokens, then decode the remainder.
-                tokenizer = self.generator.tokenizer
-                prompt_ids = tokenizer.encode(current_prompt, add_bos=True)
-                n_prompt = len(prompt_ids)
-                # Re-encode the full raw output (without adding another BOS)
-                raw_ids = tokenizer.encode(raw, add_bos=False)
-                # If encoding changed length (edge case), fall back to character slicing
-                if len(raw_ids) >= n_prompt:
-                    new_text = tokenizer.decode(raw_ids[n_prompt:])
-                else:
-                    prompt_decoded = tokenizer.decode(prompt_ids)
-                    new_text = raw[len(prompt_decoded):]
+                # Use generate_new_text() to get ONLY the newly generated tokens,
+                # avoiding the special-token boundary mismatch in character slicing.
+                new_text = self.generator.generate_new_text(current_prompt, config)
 
                 # Clean trailing stop tokens
                 for stop in ["</s>", "<|endoftext|>"]:
