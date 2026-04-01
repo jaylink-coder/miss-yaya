@@ -220,12 +220,15 @@ def run_eval(generator, tokenizer, questions, verbose=True):
                 repetition_penalty=1.5,
             )
             import torch
-            # Decode prompt tokens to find exact character offset (special tokens stripped by decode)
-            prompt_token_ids = tokenizer.encode(formatted, add_bos=True)
-            prompt_decoded = tokenizer.decode(prompt_token_ids)
             with torch.no_grad():
                 raw = generator.generate(prompt=formatted, config=config)
-            response = raw[len(prompt_decoded):]
+            # ToolAugmentedGenerator returns only the response (no prompt prefix).
+            # TextGenerator returns prompt+response — strip prompt if needed.
+            if len(raw) > 50 and formatted[:30] in raw[:len(formatted)+10]:
+                prompt_token_ids = tokenizer.encode(formatted, add_bos=True)
+                prompt_decoded = tokenizer.decode(prompt_token_ids)
+                raw = raw[len(prompt_decoded):]
+            response = raw
             for stop in ["</s>", ASSISTANT_TOKEN, "<|endoftext|>"]:
                 response = response.split(stop)[0]
             response = response.strip()
