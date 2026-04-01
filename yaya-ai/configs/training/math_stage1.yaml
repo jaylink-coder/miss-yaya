@@ -16,8 +16,8 @@ training:
   lr_scheduler: cosine
   warmup_steps: 200
   min_lr_ratio: 0.05
-  max_steps: 20000
-  max_seq_length: 256
+  max_steps: 10000
+  max_seq_length: 512
   dtype: float32
 
 checkpointing:
