@@ -69,12 +69,22 @@ class ToolAugmentedGenerator:
                 raw = self.generator.generate(current_prompt, config)
 
                 # Extract only the new text.
-                # With memory disabled, raw = decode(encode(current_prompt) + new_tokens).
-                # tokenizer.decode(tokenizer.encode(s, add_bos=True)) should equal raw[:len(prompt_decoded)].
+                # raw = decode(encode(current_prompt, add_bos=True) + new_ids)
+                # Special tokens (e.g. </|assistant|>) decode to empty string, so
+                # character-level slicing on len(decode(prompt_ids)) is unreliable.
+                # Instead slice at the TOKEN level: re-encode raw and drop the first
+                # n_prompt_tokens tokens, then decode the remainder.
                 tokenizer = self.generator.tokenizer
                 prompt_ids = tokenizer.encode(current_prompt, add_bos=True)
-                prompt_decoded = tokenizer.decode(prompt_ids)
-                new_text = raw[len(prompt_decoded):]
+                n_prompt = len(prompt_ids)
+                # Re-encode the full raw output (without adding another BOS)
+                raw_ids = tokenizer.encode(raw, add_bos=False)
+                # If encoding changed length (edge case), fall back to character slicing
+                if len(raw_ids) >= n_prompt:
+                    new_text = tokenizer.decode(raw_ids[n_prompt:])
+                else:
+                    prompt_decoded = tokenizer.decode(prompt_ids)
+                    new_text = raw[len(prompt_decoded):]
 
                 # Clean trailing stop tokens
                 for stop in ["</s>", "<|endoftext|>"]:
