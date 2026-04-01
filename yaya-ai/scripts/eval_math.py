@@ -24,6 +24,7 @@ if hasattr(sys.stdout, "reconfigure"):
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from src.inference.generator import TextGenerator, GenerationConfig
+from src.inference.tool_generator import ToolAugmentedGenerator
 from src.model.yaya_model import YayaForCausalLM
 from src.tokenizer.tokenizer import YayaTokenizer, ASSISTANT_TOKEN
 from src.utils.config import load_model_config
