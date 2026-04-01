@@ -2,7 +2,14 @@
 
 ## Overview
 
-Yaya is trained on mathematics **gradually** — from basic counting to calculus — using a structured 8-stage curriculum. Each stage builds on the previous one, introducing new concepts only after foundational skills are established.
+Yaya is trained on mathematics using a **tool-use + reasoning approach** (v4):
+- Every arithmetic operation uses `<|calc|>EXPR<|/calc|>` — Python computes exact answers
+- Complex problems use `<|think|>reasoning<|/think|>` chain-of-thought blocks
+- `ToolAugmentedGenerator` intercepts calc tokens at inference for exact computation
+- **Key insight**: train all 8 stages simultaneously (combined) to prevent catastrophic forgetting
+
+**v3 result (format-only)**: 27% — model learned math-LOOKING text, wrong numbers
+**v4 result (tool-use)**: 100% on Stage 1 — exact computation via Python `eval()`
 
 ---
 
