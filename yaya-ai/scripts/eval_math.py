@@ -209,7 +209,7 @@ def run_eval(generator, tokenizer, questions, verbose=True):
 
         try:
             msgs = [
-                {"role": "system", "content": "You are Yaya, a helpful math assistant. Answer clearly and show your work."},
+                {"role": "system", "content": "You are Yaya, a helpful AI assistant. When you need to compute, use <|calc|>EXPRESSION<|/calc|>. The result appears as =RESULT. Show your reasoning step by step."},
                 {"role": "user", "content": prompt},
             ]
             formatted = tokenizer.format_chat(msgs) + "\n" + ASSISTANT_TOKEN + "\n"
