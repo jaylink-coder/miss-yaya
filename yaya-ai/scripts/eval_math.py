@@ -317,6 +317,7 @@ def save_report(results, checkpoint_path: str):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", default=None)
+    parser.add_argument("--model_config", default=None)
     parser.add_argument("--stage", type=int, default=None,
                         help="Evaluate only a specific stage (1-8)")
     parser.add_argument("--quiet", action="store_true",
@@ -325,11 +326,17 @@ def main():
 
     checkpoint = args.checkpoint or find_best_checkpoint()
     if checkpoint is None:
-        print("ERROR: No 125m checkpoint found. Run 'make sft' first.")
+        print("ERROR: No checkpoint found.")
         sys.exit(1)
     print(f"Loading checkpoint: {checkpoint}")
 
-    model_config_path = "configs/model/yaya_125m.yaml"
+    # Auto-detect tiny vs 125m from checkpoint path
+    if args.model_config:
+        model_config_path = args.model_config
+    elif "tiny" in checkpoint:
+        model_config_path = "configs/model/yaya_tiny.yaml"
+    else:
+        model_config_path = "configs/model/yaya_125m.yaml"
     cfg = load_model_config(model_config_path)
     model = YayaForCausalLM(cfg)
     ckpt_mgr = CheckpointManager(save_dir=str(Path(checkpoint).parent))
