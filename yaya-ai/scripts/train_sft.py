@@ -54,7 +54,7 @@ def main():
     model = YayaForCausalLM(model_config)
 
     # Load pretrained weights if provided
-    if args.pretrain_checkpoint and args.resume is None:
+    if args.pretrain_checkpoint and not args.resume:
         if is_main_process():
             print(f"Loading pretrained weights from: {args.pretrain_checkpoint}")
         ckpt_mgr = CheckpointManager(save_dir=os.path.dirname(args.pretrain_checkpoint))
