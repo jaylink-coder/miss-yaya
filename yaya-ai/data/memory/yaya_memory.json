@@ -1391,5 +1391,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-03-27T12:36:07.480293"
+  },
+  {
+    "id": 199,
+    "content": "Q491 Microbiome: 38T organisms, gut-brain axis, 90% serotonin, immune education; FMT 90% for C.diff; dysbiosis linked to IBD/obesity/depression; fibre diversity key",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-03T00:02:55.096737"
+  },
+  {
+    "id": 200,
+    "content": "Q492 Black holes: event horizon (Schwarzschild radius), formation from massive stars; Hawking radiation; singularity = GR breakdown not physical; information paradox unresolved",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-03T00:02:55.122193"
+  },
+  {
+    "id": 201,
+    "content": "Q493 Crime: social disorganisation, strain theory, routine activity; certainty > severity of punishment; mass incarceration counterproductive; early intervention works best",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-03T00:02:55.150407"
+  },
+  {
+    "id": 202,
+    "content": "Q494 Internet: IP addresses + packets + routing (BGP); TCP (reliable) vs UDP (fast); DNS (name->IP); HTTPS = TLS encryption; browser-to-page in ~100ms",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-03T00:02:55.179683"
+  },
+  {
+    "id": 203,
+    "content": "Q495 Calculus: derivatives (rates) + integrals (accumulation) linked by FTC; Newton vs Leibniz; revolutionary for physics (F=ma), engineering, Maxwell's equations, ML backprop",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-03T00:02:55.205008"
   }
 ]

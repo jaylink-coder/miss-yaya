@@ -6862,3 +6862,122 @@ Evolution by natural selection (Darwin 1859, Wallace co-discovery): populations 
 **Rating: 10.0/10**
 
 ---
+
+### Q491 — Medicine
+**What is the microbiome and how does it affect health?**
+
+The microbiome: the ~38 trillion microorganisms (bacteria, fungi, archaea, viruses) living in and on the human body -- roughly equal to the number of human cells. The gut microbiome is the most studied.
+
+**What it does**:
+1. **Digestion**: breaks down complex carbohydrates, fibres, produces short-chain fatty acids (SCFAs -- butyrate, propionate, acetate) that feed colonocytes and regulate inflammation.
+2. **Immune training**: ~70% of immune system is gut-associated. Microbiome educates immune cells to distinguish friend from foe. Germ-free mice have severely underdeveloped immune systems.
+3. **Neurotransmitters**: gut produces ~90% of body's serotonin. Gut-brain axis -- vagus nerve carries signals bidirectionally. Dysbiosis linked to depression, anxiety.
+4. **Vitamin synthesis**: B12, K2, some B vitamins.
+5. **Pathogen resistance**: competitive exclusion -- colonised gut harder for pathogens to invade (C. diff flourishes when antibiotics wipe out competition).
+
+**Dysbiosis and disease**: disrupted microbiome linked to IBD, IBS, obesity, Type 2 diabetes, colorectal cancer, autism (correlation, causation unclear), depression. Antibiotic overuse = major disruptor.
+
+**Faecal microbiota transplant (FMT)**: transfer of donor stool to recipient. 90% cure rate for recurrent C. diff infection -- best evidence of microbiome causation. Clinical trials ongoing for IBD, obesity, cancer.
+
+**What builds a healthy microbiome**: fibre diversity (30 different plants per week -- Tim Spector research); fermented foods (yogurt, kefir, kimchi -- Sonnenburg 2021 RCT shows increased microbiome diversity); avoid unnecessary antibiotics; vaginal birth and breastfeeding inoculate infant microbiome.
+
+**Caveats**: most microbiome research is correlational. Probiotic supplements have weak evidence for healthy adults. The field is young -- many claims outpace evidence.
+
+**Rating: 9.0/10**
+
+---
+
+### Q492 — Physics
+**What is a black hole and what happens at the singularity?**
+
+A black hole: a region of space-time where gravity is so strong that nothing -- not even light -- can escape once past the event horizon.
+
+**Formation**: massive stars (>20 solar masses) exhaust nuclear fuel, core collapses under gravity. If remaining mass exceeds ~3 solar masses (Tolman-Oppenheimer-Volkoff limit), nothing stops the collapse -- black hole. Also: supermassive black holes (millions to billions of solar masses) at galaxy centres (Sagittarius A* = 4 million solar masses at Milky Way centre).
+
+**Event horizon**: the point of no return. Not a physical surface -- you'd feel nothing crossing it (locally). But your future light cone points only inward. Radius = Schwarzschild radius: r = 2GM/c^2. For Earth's mass: ~9mm.
+
+**Hawking radiation** (1974): quantum effects near event horizon cause black holes to emit thermal radiation and slowly evaporate. Temperature inversely proportional to mass -- stellar black holes are colder than CMB and essentially don't evaporate on cosmic timescales. Micro black holes would evaporate instantly.
+
+**The singularity**: general relativity predicts infinite density, infinite curvature at the centre. This is a breakdown of the theory, not a physical reality. Singularity = where GR stops working. Quantum gravity (string theory, loop quantum gravity) should resolve it -- but we don't have the theory yet.
+
+**Information paradox**: Hawking radiation is thermal (random). If black hole evaporates completely, information about what fell in is destroyed -- violating quantum mechanics. Still unresolved. Possible resolution: information is encoded in Hawking radiation (subtle correlations), or in a 'remnant.'
+
+**Rating: 10.0/10**
+
+---
+
+### Q493 — Sociology
+**What causes crime, and does punishment actually reduce it?**
+
+Crime is not caused by a single factor -- it emerges from interaction of individual, social, and structural variables.
+
+**Individual-level factors**: low self-control (Gottfredson & Hirschi), antisocial personality, substance abuse, mental illness (small effect -- most mentally ill are not violent; most violent are not mentally ill).
+
+**Social/environmental factors**:
+1. **Social disorganisation theory** (Shaw & McKay 1942): crime concentrates in neighbourhoods with weak social ties, high turnover, poverty -- not in people.
+2. **Strain theory** (Merton): crime results from gap between culturally valued goals (wealth, success) and legitimate means to achieve them. Innovate (crime) when blocked.
+3. **Social learning**: crime learned in peer groups (differential association -- Sutherland).
+4. **Routine activity theory**: crime occurs when motivated offender + suitable target + absent guardian converge.
+
+**Structural factors**: poverty, inequality (Gini coefficient predicts crime better than poverty alone), unemployment, housing instability, childhood adversity (ACEs), neighbourhood disinvestment.
+
+**Does punishment reduce crime?**
+- **Certainty > severity**: research consistently shows certainty of being caught deters more than harshness of punishment. Most offenders don't think they'll be caught.
+- **Death penalty**: no reliable deterrent effect (states with/without have similar homicide rates).
+- **Mass incarceration**: US incarcerates 2M people (highest per capita globally). Criminologists broadly agree: past a threshold, more imprisonment increases crime (family disruption, stigma, criminal networks). Returns to prison are close to zero after ~1980s.
+- **What works**: early childhood intervention (Perry Preschool -- ROI 7-12x), drug treatment, cognitive-behavioural therapy, community policing, environmental design (crime decreases with more streetlights).
+
+**Rating: 9.0/10**
+
+---
+
+### Q494 — Technology
+**How does the internet actually work?**
+
+The internet: a global network of interconnected networks using standardised protocols to route and deliver data.
+
+**Physical layer**: fibre optic cables (light pulses -- transatlantic cables carry terabits/second); copper (DSL, coaxial); wireless (WiFi, 4G/5G -- radio waves). Everything is ultimately photons or electrons.
+
+**IP (Internet Protocol)**: every device has an IP address (IPv4: 32-bit = ~4 billion addresses, nearly exhausted; IPv6: 128-bit = 340 undecillion addresses). Data broken into packets (~1,500 bytes each), each labelled with source and destination IP.
+
+**Routing**: packets travel through routers -- each router has a routing table and forwards the packet toward the destination using BGP (Border Gateway Protocol). Packets may take different paths and reassemble at destination.
+
+**TCP (Transmission Control Protocol)**: guarantees delivery and order. Three-way handshake (SYN, SYN-ACK, ACK). Receiver acknowledges packets; sender retransmits lost ones. Slower but reliable. Used for web, email.
+
+**UDP**: no handshake, no acknowledgement. Fast but lossy. Used for video streaming, gaming, VoIP -- better to drop a frame than freeze.
+
+**DNS (Domain Name System)**: translates human-readable names (google.com) to IP addresses. Hierarchical: root servers -> TLD servers (.com, .org) -> authoritative servers. Your browser caches results.
+
+**HTTPS**: HTTP + TLS encryption. TLS handshake: server sends certificate (signed by trusted CA); client verifies; they negotiate encryption keys using asymmetric cryptography (RSA/ECDH); subsequent traffic encrypted with symmetric key (AES). The padlock in your browser.
+
+**What you actually see**: when you type a URL, browser does DNS lookup, opens TCP connection, sends HTTP request, server sends back HTML/CSS/JS, browser renders. The whole process in ~100 milliseconds.
+
+**Rating: 9.0/10**
+
+---
+
+### Q495 — Mathematics
+**What is calculus and why was it such a revolutionary invention?**
+
+Calculus: the mathematics of continuous change. Two branches -- differential calculus (rates of change) and integral calculus (accumulation) -- linked by the Fundamental Theorem of Calculus.
+
+**Differential calculus**: the derivative. If f(x) describes position, f'(x) = velocity, f''(x) = acceleration. Formally: the limit of (f(x+h)-f(x))/h as h->0. The slope of the tangent line at a point.
+
+**Integral calculus**: the integral. Area under a curve, total accumulation. If you know velocity, integrate to get distance. Antiderivative of f'(x) is f(x) + C.
+
+**Fundamental Theorem of Calculus**: differentiation and integration are inverse operations. Revolutionary -- linked two seemingly unrelated problems.
+
+**History**: Newton and Leibniz independently invented calculus (1660s-1680s). Bitter priority dispute (Newton claimed first, published later; Leibniz published first). Modern notation (dy/dx, integral sign) is Leibniz's. Newton's dot notation still used in physics.
+
+**Why it was revolutionary**:
+1. **Physics**: Newton's laws of motion use derivatives (F=ma = F=m*d^2x/dt^2). Without calculus, no mechanics, no orbital calculation, no space travel.
+2. **Engineering**: stress in beams, fluid flow, heat transfer -- all calculus.
+3. **Electricity and magnetism**: Maxwell's equations (calculus) predicted radio waves before Hertz discovered them experimentally.
+4. **Economics**: marginal utility, marginal cost, optimisation -- economics runs on calculus.
+5. **Machine learning**: backpropagation is just calculus (chain rule for partial derivatives).
+
+**Limits and rigor**: Newton and Leibniz used 'infinitesimals' intuitively. Cauchy and Weierstrass (1800s) put it on rigorous footing with epsilon-delta definition of limits -- removing the 'ghost of departed quantities' that Berkeley mocked.
+
+**Rating: 9.5/10**
+
+---

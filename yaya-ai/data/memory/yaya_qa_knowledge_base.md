@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 199
+Total entries: 204
 
 ---
 
@@ -401,3 +401,13 @@ Total entries: 199
 **[197]** Q489 French Revolution 1789-99: fiscal crisis + Enlightenment + food shortage; Terror killed 17k; Liberty-Equality-Fraternity template; sovereignty to people; Napoleon result
 
 **[198]** Q490 Evolution: 4 requirements (variation/heritability/diff. reproduction/time); mechanisms (selection/drift/flow/mutation); 6 misconceptions; modern synthesis
+
+**[199]** Q491 Microbiome: 38T organisms, gut-brain axis, 90% serotonin, immune education; FMT 90% for C.diff; dysbiosis linked to IBD/obesity/depression; fibre diversity key
+
+**[200]** Q492 Black holes: event horizon (Schwarzschild radius), formation from massive stars; Hawking radiation; singularity = GR breakdown not physical; information paradox unresolved
+
+**[201]** Q493 Crime: social disorganisation, strain theory, routine activity; certainty > severity of punishment; mass incarceration counterproductive; early intervention works best
+
+**[202]** Q494 Internet: IP addresses + packets + routing (BGP); TCP (reliable) vs UDP (fast); DNS (name->IP); HTTPS = TLS encryption; browser-to-page in ~100ms
+
+**[203]** Q495 Calculus: derivatives (rates) + integrals (accumulation) linked by FTC; Newton vs Leibniz; revolutionary for physics (F=ma), engineering, Maxwell's equations, ML backprop
