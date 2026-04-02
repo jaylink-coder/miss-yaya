@@ -38,8 +38,8 @@ def main():
     parser.add_argument("--train_config",        type=str, required=True)
     parser.add_argument("--pretrain_checkpoint", type=str, default=None,
                         help="Pretrained checkpoint to start from")
-    parser.add_argument("--resume",              type=str, default=None,
-                        help="SFT checkpoint to resume from")
+    parser.add_argument("--resume",              nargs="?", const=True, default=None,
+                        help="Resume from checkpoint. Pass a path to resume from a specific checkpoint, or pass without a value to auto-resume from latest.")
     parser.add_argument("--compute_ewc_fisher",  action="store_true",
                         help="After loading checkpoint, compute EWC Fisher before training "
                              "(use for continual learning Phase 2)")
