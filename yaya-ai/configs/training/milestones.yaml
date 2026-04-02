@@ -1,0 +1,57 @@
+# Yaya-125m Training Roadmap
+# ─────────────────────────────────────────────────────────────────────────────
+# Each phase is sized to fit in one Kaggle T4 session (~12h).
+# T4 throughput: ~600 tok/s at seq_len=512, batch=4, grad_accum=8
+#   → ~1,050 steps/hour → ~12,000 steps/session
+#
+# Progress is persisted to HuggingFace Hub after every checkpoint.
+# At session start, kaggle_run_sft.py auto-detects current step and
+# resumes from the right phase.
+#
+# Run tracking: docs/training_milestones.json (auto-updated)
+
+model: yaya-125m
+hub_repo: jaylinkcoder/yaya-125m     # HuggingFace repo for checkpoint persistence
+total_steps: 40000
+
+phases:
+  - id: 1
+    name: "Warm-up"
+    description: "Learn the instruction format and basic Q&A patterns"
+    step_start: 0
+    step_end: 5000
+    target_loss: 3.0
+    eval_target: 0.15      # 15% on eval suite — model just starting out
+
+  - id: 2
+    name: "Foundation"
+    description: "Basic arithmetic, factual questions, short answers"
+    step_start: 5000
+    step_end: 15000
+    target_loss: 2.0
+    eval_target: 0.35
+
+  - id: 3
+    name: "Reasoning"
+    description: "Multi-step math, word problems, chain-of-thought"
+    step_start: 15000
+    step_end: 25000
+    target_loss: 1.5
+    eval_target: 0.55
+
+  - id: 4
+    name: "Mastery"
+    description: "Complex reasoning, calc tool use, algebra, geometry"
+    step_start: 25000
+    step_end: 40000
+    target_loss: 1.2
+    eval_target: 0.75
+
+  - id: 5
+    name: "Alignment"
+    description: "DPO fine-tuning for quality and helpfulness"
+    step_start: 40000
+    step_end: 45000
+    target_loss: 0.8
+    eval_target: 0.85
+    phase_type: dpo           # special: runs train_dpo.py instead
