@@ -17,7 +17,7 @@ training:
   min_lr_ratio: 0.0
   max_steps: 30000
   max_seq_length: 512
-  dtype: float16
+  dtype: bfloat16
 
 checkpointing:
   save_steps: 1000
