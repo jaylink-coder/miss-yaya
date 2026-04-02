@@ -30,10 +30,17 @@ PRETRAIN_CKPT_WORKING = '/kaggle/working/yaya-checkpoints'
 sys.path.insert(0, REPO_ROOT)
 os.chdir(REPO_ROOT)
 
-# Disable W&B unless API key is present
+# Load WANDB_API_KEY from Kaggle secrets if not already set
 if not os.environ.get('WANDB_API_KEY'):
-    os.environ['WANDB_DISABLED'] = 'true'
-    os.environ['WANDB_MODE']     = 'disabled'
+    try:
+        from kaggle_secrets import UserSecretsClient
+        wandb_key = UserSecretsClient().get_secret('WANDB_API_KEY')
+        os.environ['WANDB_API_KEY'] = wandb_key
+        print('WANDB_API_KEY loaded from Kaggle secrets.')
+    except Exception:
+        os.environ['WANDB_DISABLED'] = 'true'
+        os.environ['WANDB_MODE']     = 'disabled'
+        print('No WANDB_API_KEY found — W&B disabled.')
 
 os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
 os.environ['PYTHONIOENCODING']        = 'utf-8'
