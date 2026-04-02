@@ -11,7 +11,7 @@
 # Run tracking: docs/training_milestones.json (auto-updated)
 
 model: yaya-125m
-hub_repo: jaylinkcoder/yaya-125m     # HuggingFace repo for checkpoint persistence
+hub_repo: Jaylink-coder/yaya-125m     # HuggingFace repo for checkpoint persistence
 total_steps: 40000
 
 phases:
