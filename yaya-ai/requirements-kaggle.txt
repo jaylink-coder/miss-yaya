@@ -15,5 +15,8 @@ accelerate>=0.27.0          # Training utilities
 peft>=0.10.0                # LoRA / QLoRA
 trl>=0.8.0                  # DPOTrainer, SFTTrainer
 
+# Monitoring
+wandb>=0.16.0               # Live training metrics (requires WANDB_API_KEY Kaggle secret)
+
 # Evaluation
 # lm-eval>=0.4.0            # Uncomment for MMLU/HellaSwag benchmarks (heavy install)
