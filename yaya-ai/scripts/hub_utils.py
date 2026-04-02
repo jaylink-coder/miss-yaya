@@ -171,6 +171,8 @@ def start_watcher(ckpt_dir, repo_id, token, interval_sec=90):
             time.sleep(interval_sec)
             try:
                 for ckpt in sorted(glob.glob(os.path.join(ckpt_dir, "checkpoint-*"))):
+                    if ckpt.endswith('_temp'):
+                        continue
                     if ckpt not in pushed:
                         # Wait a moment to ensure write is complete
                         time.sleep(5)
