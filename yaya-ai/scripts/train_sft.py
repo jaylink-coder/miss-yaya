@@ -113,7 +113,8 @@ def main():
                 print("Computing EWC Fisher information matrix on training data...")
             trainer.compute_ewc_fisher()
 
-    trainer.train(resume_from=args.resume)
+    resume_from = None if args.resume is True else args.resume
+    trainer.train(resume_from=resume_from)
 
 
 if __name__ == "__main__":
