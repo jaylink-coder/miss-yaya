@@ -136,11 +136,14 @@ import yaml
 with open('configs/training/sft_125m.yaml') as f:
     cfg = yaml.safe_load(f)
 
-cfg['checkpointing']['save_dir'] = SFT_CKPT_DIR
-cfg['training']['dtype']         = DTYPE
-cfg['data']['train_data']        = SFT_DATA_PATH
-cfg['data']['eval_data']         = EVAL_DATA_PATH
-cfg['data']['tokenizer_path']    = TOKENIZER_PATH
+cfg['checkpointing']['save_dir']  = SFT_CKPT_DIR
+cfg['training']['dtype']          = DTYPE
+cfg['data']['train_data']         = SFT_DATA_PATH
+cfg['data']['eval_data']          = EVAL_DATA_PATH
+cfg['data']['tokenizer_path']     = TOKENIZER_PATH
+if os.environ.get('WANDB_API_KEY'):
+    cfg['logging']['wandb_project']  = 'yaya-ai'
+    cfg['logging']['wandb_run_name'] = 'yaya-125m-sft-kaggle'
 
 # Enable gradient checkpointing on low-VRAM GPUs (saves ~30% VRAM)
 if torch.cuda.is_available() and vram_gb < 14:
