@@ -119,7 +119,9 @@ def save_progress(progress):
 
 # ── Checkpoint helpers ────────────────────────────────────────────────────────
 def find_latest_local_checkpoint(directory):
-    ckpts = sorted(glob.glob(os.path.join(directory, 'checkpoint-*')))
+    # Skip _temp checkpoints — they are incomplete writes from crashed sessions
+    ckpts = sorted([c for c in glob.glob(os.path.join(directory, 'checkpoint-*'))
+                    if not c.endswith('_temp')])
     return ckpts[-1] if ckpts else None
 
 def get_step_from_checkpoint(ckpt_path):
