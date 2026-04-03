@@ -56,12 +56,14 @@ def push_checkpoint(ckpt_path, repo_id, token, verbose=True):
         ckpt_name = os.path.basename(ckpt_path)
         if verbose:
             print(f"[Hub] Pushing {ckpt_name} → {repo_id}...", flush=True)
+        # Only push model weights + metadata — skip optimizer.pt (1GB, not needed for resume)
         upload_folder(
             folder_path=ckpt_path,
             repo_id=repo_id,
             path_in_repo=ckpt_name,
             repo_type="model",
             token=token,
+            ignore_patterns=["optimizer.pt"],
             commit_message=f"Training checkpoint: {ckpt_name}",
         )
         # Also update a pointer file so we know the latest checkpoint
