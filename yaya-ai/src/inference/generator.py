@@ -404,6 +404,7 @@ class TextGenerator:
 
         self.model.eval()
         generated_ids = list(input_ids)
+        n_prompt = len(input_ids)
         past_key_values = None
 
         for _ in range(config.max_new_tokens):
@@ -423,7 +424,7 @@ class TextGenerator:
 
             if config.repetition_penalty != 1.0:
                 logits = self._apply_repetition_penalty(
-                    logits, generated_ids, config.repetition_penalty
+                    logits, generated_ids[n_prompt:], config.repetition_penalty
                 )
 
             if config.do_sample:
