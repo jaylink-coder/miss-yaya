@@ -147,8 +147,8 @@ class Trainer:
         self.use_amp = config.dtype in ("bfloat16", "float16")
         self.amp_dtype = torch.bfloat16 if config.dtype == "bfloat16" else torch.float16
         # GradScaler is only needed for float16 — bfloat16 has enough range and doesn't need it
-        self.scaler = torch.cuda.amp.GradScaler(
-            enabled=(self.use_amp and self.amp_dtype == torch.float16)
+        self.scaler = torch.amp.GradScaler(
+            "cuda", enabled=(self.use_amp and self.amp_dtype == torch.float16)
         )
 
         # EMA (Exponential Moving Average) weights — optional, improves eval generalization
