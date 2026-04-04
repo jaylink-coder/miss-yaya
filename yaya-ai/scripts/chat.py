@@ -124,7 +124,7 @@ def main():
         system = build_system_prompt(memory, user_input)
         history = [{"role": "system", "content": system}] + conversation + [{"role": "user", "content": user_input}]
 
-        prompt = tokenizer.format_chat(history) + ASSISTANT_TOKEN + "\n"
+        prompt = tokenizer.format_chat(history) + "\n" + ASSISTANT_TOKEN + "\n"
 
         response = generator.generate(
             prompt,
@@ -133,11 +133,7 @@ def main():
             top_p=args.top_p,
         )
 
-        # Clean up response
-        if ASSISTANT_TOKEN in response:
-            response = response.split(ASSISTANT_TOKEN)[-1]
-        elif prompt in response:
-            response = response[len(prompt):]
+        # generate() now returns response-only; strip any trailing role tokens
         for end_tag in [USER_TOKEN, SYSTEM_TOKEN, "</s>"]:
             response = response.split(end_tag)[0]
         response = response.strip()
