@@ -146,7 +146,7 @@ def make_sample(user_msg, assistant_msg, system=SYSTEM_PROMPT):
 
 def load_existing_yaya():
     samples = []
-    for fname in ['yaya_reasoning_combined.jsonl', 'yaya_instruct.jsonl']:
+    for fname in ['yaya_reasoning_combined.jsonl', 'yaya_instruct.jsonl', 'yaya_short_qa.jsonl']:
         path = os.path.join(DATA_DIR, fname)
         if os.path.exists(path):
             with open(path, encoding='utf-8') as f:
