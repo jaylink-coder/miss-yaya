@@ -230,7 +230,7 @@ class TextGenerator:
 
             if config.repetition_penalty != 1.0:
                 logits = self._apply_repetition_penalty(
-                    logits, generated_ids, config.repetition_penalty
+                    logits, generated_ids[n_prompt:], config.repetition_penalty
                 )
 
             if config.do_sample:
