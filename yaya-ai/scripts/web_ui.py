@@ -99,8 +99,7 @@ def run_gradio(generator, tokenizer, args):
         messages.append({"role": "user", "content": message})
 
         prompt = tokenizer.format_chat(messages) + "\n" + ASSISTANT_TOKEN + "\n"
-        full_output = generator.generate(prompt, gen_cfg)
-        response = full_output[len(prompt):]
+        response = generator.generate(prompt, gen_cfg)
 
         for stop in [USER_TOKEN, SYSTEM_TOKEN, "</s>", "<|endoftext|>"]:
             if stop in response:
