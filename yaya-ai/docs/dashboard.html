@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yaya Training Dashboard</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0d1117; color: #e6edf3; font-family: 'Segoe UI', system-ui, sans-serif; padding: 24px; }
+  h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { color: #8b949e; font-size: 0.85rem; margin-bottom: 28px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .card { background: #161b22; border: 1px solid #30363d; border-radius: 10px; padding: 20px; }
+  .card h2 { font-size: 0.75rem; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 12px; }
+
+  .big-num { font-size: 2.4rem; font-weight: 700; line-height: 1; }
+  .big-num .unit { font-size: 1rem; color: #8b949e; margin-left: 4px; }
+  .dim { color: #8b949e; font-size: 0.82rem; margin-top: 4px; }
+
+  /* Progress bar */
+  .prog-wrap { background: #21262d; border-radius: 6px; height: 12px; overflow: hidden; margin-top: 10px; }
+  .prog-fill { height: 100%; border-radius: 6px; transition: width .6s ease; background: linear-gradient(90deg, #1f6feb, #58a6ff); }
+
+  /* Phase pill */
+  .phase-pill { display: inline-block; background: #1f6feb22; border: 1px solid #1f6feb; color: #58a6ff;
+                border-radius: 20px; padding: 2px 12px; font-size: 0.8rem; font-weight: 600; margin-top: 8px; }
+
+  /* Benchmark table */
+  table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  th { text-align: left; color: #8b949e; font-weight: 600; padding: 6px 8px; border-bottom: 1px solid #30363d; }
+  td { padding: 8px 8px; border-bottom: 1px solid #21262d; }
+  tr:last-child td { border-bottom: none; }
+  .pct-cell { font-weight: 700; }
+  .pct-good  { color: #3fb950; }
+  .pct-ok    { color: #d29922; }
+  .pct-bad   { color: #f85149; }
+
+  /* Mini bar in table */
+  .mini-bar-wrap { background: #21262d; border-radius: 3px; height: 6px; width: 80px; display: inline-block; vertical-align: middle; }
+  .mini-bar-fill { height: 100%; border-radius: 3px; background: #58a6ff; }
+
+  /* History chart */
+  .chart-area { position: relative; height: 120px; margin-top: 12px; }
+  canvas { width: 100% !important; height: 100% !important; }
+
+  /* Timeline */
+  .phase-list { list-style: none; }
+  .phase-list li { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid #21262d; font-size: 0.82rem; }
+  .phase-list li:last-child { border-bottom: none; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .dot-done    { background: #3fb950; }
+  .dot-current { background: #58a6ff; box-shadow: 0 0 6px #58a6ff88; }
+  .dot-future  { background: #30363d; }
+  .phase-name  { flex: 1; }
+  .phase-steps { color: #8b949e; }
+
+  /* Status badge */
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+  .badge-running { background: #1f6feb22; color: #58a6ff; border: 1px solid #1f6feb; }
+  .badge-done    { background: #3fb95022; color: #3fb950; border: 1px solid #3fb950; }
+  .badge-wait    { background: #d2992222; color: #d29922; border: 1px solid #d29922; }
+
+  .refresh-btn { background: #21262d; border: 1px solid #30363d; color: #e6edf3; padding: 6px 16px;
+                 border-radius: 6px; cursor: pointer; font-size: 0.82rem; float: right; }
+  .refresh-btn:hover { background: #30363d; }
+  .last-updated { color: #8b949e; font-size: 0.75rem; margin-top: 6px; }
+
+  .wide { grid-column: 1 / -1; }
+</style>
+</head>
+<body>
+
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+  <h1>Yaya Training Dashboard</h1>
+  <button class="refresh-btn" onclick="loadAll()">Refresh</button>
+</div>
+<p class="subtitle">yaya-125m · 129M params · Kaggle T4 · HF Hub: Jaylink-coder/yaya-125m</p>
+
+<div class="grid" id="top-grid">
+
+  <!-- Step progress -->
+  <div class="card" id="card-step">
+    <h2>Training Progress</h2>
+    <div class="big-num" id="step-num">—<span class="unit">/ 40,000</span></div>
+    <div class="dim" id="step-pct">Loading…</div>
+    <div class="prog-wrap" style="margin-top:12px;"><div class="prog-fill" id="prog-bar" style="width:0%"></div></div>
+    <div style="margin-top:10px;display:flex;gap:10px;align-items:center;">
+      <span class="phase-pill" id="phase-label">Phase —</span>
+      <span class="badge badge-running" id="status-badge">Running</span>
+    </div>
+  </div>
+
+  <!-- Loss -->
+  <div class="card" id="card-loss">
+    <h2>Training Loss</h2>
+    <div class="big-num" id="loss-num">—</div>
+    <div class="dim">Started at 10.7 &nbsp;·&nbsp; Target: &lt;2.0</div>
+    <div class="chart-area"><canvas id="loss-chart"></canvas></div>
+  </div>
+
+  <!-- Benchmark -->
+  <div class="card" id="card-bench">
+    <h2>Latest Benchmark</h2>
+    <div class="big-num" id="bench-overall">—<span class="unit">/ 35</span></div>
+    <div class="dim" id="bench-ckpt">No results yet</div>
+    <div style="margin-top:12px;" id="bench-cats"></div>
+  </div>
+
+</div>
+
+<!-- Phase timeline + category breakdown -->
+<div class="grid">
+
+  <div class="card" id="card-phases">
+    <h2>Phase Timeline</h2>
+    <ul class="phase-list" id="phase-list"></ul>
+  </div>
+
+  <div class="card wide" id="card-history" style="display:none;">
+    <h2>Benchmark History</h2>
+    <table id="bench-history-table">
+      <thead><tr><th>Checkpoint</th><th>Overall</th><th>Arithmetic</th><th>Facts</th><th>Identity</th><th>Reasoning</th><th>Language</th><th>Word</th></tr></thead>
+      <tbody id="bench-history-body"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<p class="last-updated" id="last-updated"></p>
+
+<!-- Inline canvas mini chart (no external deps) -->
+<script>
+const HF_API = "https://huggingface.co/api/models/Jaylink-coder/yaya-125m";
+const HF_TOKEN = "";   // optional — set if repo is private
+
+const PHASES = [
+  {name:"Foundations",     steps:2500},
+  {name:"Basic Math",      steps:2500},
+  {name:"Arithmetic",      steps:2500},
+  {name:"Word Problems",   steps:2500},
+  {name:"Facts I",         steps:2500},
+  {name:"Facts II",        steps:2500},
+  {name:"Reasoning I",     steps:2500},
+  {name:"Reasoning II",    steps:2500},
+  {name:"Language I",      steps:2500},
+  {name:"Language II",     steps:2500},
+  {name:"Mixed I",         steps:2500},
+  {name:"Mixed II",        steps:2500},
+  {name:"Advanced I",      steps:2500},
+  {name:"Advanced II",     steps:2500},
+  {name:"Advanced III",    steps:2500},
+  {name:"Advanced IV",     steps:2500},
+  {name:"DPO",             steps:2500},
+];
+
+let lossHistory = [];
+
+// ── Benchmark data (embedded from jsonl) ────────────────────────────────────
+const BENCH_JSONL = `{"checkpoint":"checkpoint-00015000","overall_pct":28.6,"overall":"10/35","timestamp":"2026-04-04 16:03:20","categories":{"Basic Arithmetic":{"pass":4,"total":8,"pct":50.0},"Word Problems":{"pass":2,"total":6,"pct":33.3},"Factual Knowledge":{"pass":2,"total":8,"pct":25.0},"Identity":{"pass":1,"total":4,"pct":25.0},"Reasoning":{"pass":1,"total":5,"pct":20.0},"Language":{"pass":0,"total":4,"pct":0.0}}}
+{"checkpoint":"checkpoint-00030000","overall_pct":22.9,"overall":"8/35","timestamp":"2026-04-04 16:52:02","categories":{"Basic Arithmetic":{"pass":2,"total":8,"pct":25.0},"Word Problems":{"pass":1,"total":6,"pct":16.7},"Factual Knowledge":{"pass":1,"total":8,"pct":12.5},"Identity":{"pass":2,"total":4,"pct":50.0},"Reasoning":{"pass":0,"total":5,"pct":0.0},"Language":{"pass":2,"total":4,"pct":50.0}}}`;
+
+function parseBenchJsonl(raw) {
+  return raw.trim().split("\n").map(l => {
+    try { return JSON.parse(l); } catch { return null; }
+  }).filter(Boolean);
+}
+
+function pctClass(p) {
+  return p >= 50 ? "pct-good" : p >= 25 ? "pct-ok" : "pct-bad";
+}
+
+function miniBar(pct) {
+  return `<span class="mini-bar-wrap"><span class="mini-bar-fill" style="width:${pct}%"></span></span>`;
+}
+
+// ── Phase timeline ───────────────────────────────────────────────────────────
+function renderPhases(currentStep) {
+  const ul = document.getElementById("phase-list");
+  ul.innerHTML = "";
+  let cumulative = 0;
+  for (const ph of PHASES) {
+    const start = cumulative;
+    cumulative += ph.steps;
+    const done = currentStep >= cumulative;
+    const active = !done && currentStep >= start;
+    const li = document.createElement("li");
+    const dotClass = done ? "dot-done" : active ? "dot-current" : "dot-future";
+    li.innerHTML = `<span class="dot ${dotClass}"></span>
+      <span class="phase-name">${ph.name}</span>
+      <span class="phase-steps">${start.toLocaleString()}–${cumulative.toLocaleString()}</span>`;
+    ul.appendChild(li);
+  }
+}
+
+// ── Benchmark cards ──────────────────────────────────────────────────────────
+function renderBenchmark(rows) {
+  if (!rows.length) return;
+  const latest = rows[rows.length - 1];
+  const [passed, total] = latest.overall.split("/");
+  document.getElementById("bench-overall").innerHTML =
+    `${passed}<span class="unit">/ ${total}</span>`;
+  document.getElementById("bench-ckpt").textContent =
+    `${latest.checkpoint}  ·  ${latest.timestamp}`;
+
+  const cats = latest.categories;
+  let html = '<table style="width:100%;font-size:0.8rem;border-collapse:collapse;">';
+  for (const [cat, data] of Object.entries(cats)) {
+    html += `<tr>
+      <td style="padding:3px 0;color:#8b949e;">${cat}</td>
+      <td style="padding:3px 6px;" class="pct-cell ${pctClass(data.pct)}">${data.pct.toFixed(0)}%</td>
+      <td>${miniBar(data.pct)}</td>
+    </tr>`;
+  }
+  html += "</table>";
+  document.getElementById("bench-cats").innerHTML = html;
+}
+
+function renderBenchHistory(rows) {
+  if (rows.length < 2) return;
+  document.getElementById("card-history").style.display = "";
+  const tbody = document.getElementById("bench-history-body");
+  tbody.innerHTML = "";
+  const catKeys = ["Basic Arithmetic","Word Problems","Factual Knowledge","Identity","Reasoning","Language"];
+  for (const row of rows) {
+    const tr = document.createElement("tr");
+    let cells = `<td>${row.checkpoint.replace("checkpoint-","step ")}</td>
+      <td class="pct-cell ${pctClass(row.overall_pct)}">${row.overall_pct.toFixed(1)}%</td>`;
+    for (const k of catKeys) {
+      const d = row.categories?.[k];
+      const p = d ? d.pct : 0;
+      cells += `<td class="${pctClass(p)}">${p.toFixed(0)}%</td>`;
+    }
+    tr.innerHTML = cells;
+    tbody.appendChild(tr);
+  }
+}
+
+// ── Mini sparkline (canvas) ──────────────────────────────────────────────────
+function drawSparkline(canvasId, data, color = "#58a6ff") {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas || data.length < 2) return;
+  const ctx = canvas.getContext("2d");
+  const W = canvas.offsetWidth || 300;
+  const H = canvas.offsetHeight || 120;
+  canvas.width = W; canvas.height = H;
+
+  const min = Math.min(...data);
+  const max = Math.max(...data);
+  const range = max - min || 1;
+
+  const x = i => (i / (data.length - 1)) * (W - 20) + 10;
+  const y = v => H - 10 - ((v - min) / range) * (H - 20);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = "#21262d";
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const yy = 10 + (i / 4) * (H - 20);
+    ctx.beginPath(); ctx.moveTo(10, yy); ctx.lineTo(W - 10, yy); ctx.stroke();
+  }
+
+  // Fill
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, color + "44");
+  grad.addColorStop(1, color + "00");
+  ctx.fillStyle = grad;
+  ctx.beginPath();
+  ctx.moveTo(x(0), y(data[0]));
+  for (let i = 1; i < data.length; i++) ctx.lineTo(x(i), y(data[i]));
+  ctx.lineTo(x(data.length - 1), H); ctx.lineTo(x(0), H);
+  ctx.closePath(); ctx.fill();
+
+  // Line
+  ctx.strokeStyle = color; ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x(0), y(data[0]));
+  for (let i = 1; i < data.length; i++) ctx.lineTo(x(i), y(data[i]));
+  ctx.stroke();
+
+  // Labels
+  ctx.fillStyle = "#8b949e"; ctx.font = "10px system-ui"; ctx.textAlign = "left";
+  ctx.fillText(max.toFixed(2), 12, 18);
+  ctx.fillText(min.toFixed(2), 12, H - 4);
+}
+
+// ── HF Hub polling ───────────────────────────────────────────────────────────
+async function fetchHFStep() {
+  // Try to fetch metadata.json from latest checkpoint via raw HF
+  try {
+    const headers = HF_TOKEN ? {Authorization: `Bearer ${HF_TOKEN}`} : {};
+    // list repo files
+    const r = await fetch(
+      `https://huggingface.co/api/models/Jaylink-coder/yaya-125m?blobs=false`,
+      { headers }
+    );
+    if (!r.ok) return null;
+    const info = await r.json();
+    // find checkpoint dirs
+    const siblings = info.siblings || [];
+    const ckpts = [...new Set(
+      siblings.map(s => s.rfilename.split("/")[0])
+             .filter(p => /^checkpoint-\d+$/.test(p) && !p.includes("_temp"))
+    )].sort();
+    if (!ckpts.length) return null;
+    const latest = ckpts[ckpts.length - 1];
+
+    // fetch metadata.json
+    const mr = await fetch(
+      `https://huggingface.co/Jaylink-coder/yaya-125m/resolve/main/${latest}/metadata.json`,
+      { headers }
+    );
+    if (!mr.ok) return { step: parseInt(latest.replace("checkpoint-",""),10), loss: null, ckpt: latest };
+    const meta = await mr.json();
+    return { step: meta.step || 0, loss: meta.loss || null, ckpt: latest };
+  } catch { return null; }
+}
+
+// ── Phase label from step ────────────────────────────────────────────────────
+function phaseFromStep(step) {
+  let cum = 0;
+  for (let i = 0; i < PHASES.length; i++) {
+    cum += PHASES[i].steps;
+    if (step < cum) return { num: i + 1, name: PHASES[i].name };
+  }
+  return { num: 17, name: "DPO" };
+}
+
+// ── Main load ────────────────────────────────────────────────────────────────
+async function loadAll() {
+  document.getElementById("last-updated").textContent = "Refreshing…";
+
+  // Benchmark (embedded)
+  const benchRows = parseBenchJsonl(BENCH_JSONL);
+  renderBenchmark(benchRows);
+  renderBenchHistory(benchRows);
+
+  // HF Hub live data
+  const hf = await fetchHFStep();
+  const step = hf?.step ?? 32500;
+  const loss = hf?.loss ?? 2.76;
+  const ckpt = hf?.ckpt ?? "checkpoint-00032500";
+
+  const pct = Math.min((step / 40000) * 100, 100);
+  document.getElementById("step-num").innerHTML =
+    `${step.toLocaleString()}<span class="unit">/ 40,000</span>`;
+  document.getElementById("step-pct").textContent =
+    `${pct.toFixed(1)}% complete  ·  ${ckpt}`;
+  document.getElementById("prog-bar").style.width = `${pct}%`;
+
+  if (loss) {
+    document.getElementById("loss-num").textContent = loss.toFixed(4);
+    lossHistory.push(loss);
+    if (lossHistory.length > 40) lossHistory.shift();
+    drawSparkline("loss-chart", lossHistory);
+  }
+
+  const phase = phaseFromStep(step);
+  document.getElementById("phase-label").textContent = `Phase ${phase.num} · ${phase.name}`;
+
+  const badge = document.getElementById("status-badge");
+  if (step >= 40000) {
+    badge.textContent = "Complete"; badge.className = "badge badge-done";
+  } else {
+    badge.textContent = "Training"; badge.className = "badge badge-running";
+  }
+
+  renderPhases(step);
+
+  document.getElementById("last-updated").textContent =
+    `Last updated: ${new Date().toLocaleTimeString()}`;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────────────
+loadAll();
+// Auto-refresh every 2 min
+setInterval(loadAll, 120_000);
+</script>
+</body>
+</html>
