@@ -59,6 +59,7 @@ def load_secret(name):
         return None
 
 hf_token  = load_secret('HF_TOKEN')
+HF_TOKEN  = hf_token  # module-level alias used by build_dataset and hub helpers
 wandb_key = load_secret('WANDB_API_KEY')
 
 if hf_token:
