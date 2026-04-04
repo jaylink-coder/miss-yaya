@@ -159,25 +159,21 @@ class TextGenerator:
             # Update input for next iteration
             input_tensor = next_token.unsqueeze(0)
 
-        # Decode generated tokens
-        output_text = self.tokenizer.decode(generated_ids)
+        # Decode response only (token-boundary slice avoids tokenizer normalization
+        # mismatches that occur when decoding the full sequence and slicing by chars)
+        prompt_token_count = len(input_ids)
+        response_only = self.tokenizer.decode(generated_ids[prompt_token_count:])
 
-        # Update memory: extract facts from both the user prompt and the response
+        # Update memory
         if self.memory is not None:
-            prompt_token_count = len(input_ids)
-            response_only = self.tokenizer.decode(generated_ids[prompt_token_count:])
             self.memory.extract_from_text(prompt)
             self.memory.extract_from_text(response_only)
 
-        # Online learning — submit feedback if provided.
-        # Use token-boundary slicing (not character slicing) to avoid tokenizer
-        # normalization mismatches between prompt and decoded output.
+        # Online learning
         if feedback is not None and self.online_learner is not None:
-            prompt_token_count = len(input_ids)
-            response_only = self.tokenizer.decode(generated_ids[prompt_token_count:])
             self.online_learner.add_example(prompt, response_only, score=feedback)
 
-        return output_text
+        return response_only
 
     @torch.no_grad()
     def generate_new_text(
