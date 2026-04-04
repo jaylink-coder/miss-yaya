@@ -459,7 +459,36 @@ if next_phase:
     print(f'\nNext session: Phase {next_phase["id"]} — "{next_phase["name"]}"')
     print(f'  Steps: {final_step} → {next_phase["step_end"]}')
     print(f'  Just re-run this notebook — it will auto-resume.')
-else:
-    print(f'\nAll {TOTAL_STEPS} SFT steps complete! Yaya is ready for DPO alignment.')
+elif final_step >= TOTAL_STEPS:
+    print(f'\nAll {TOTAL_STEPS} SFT steps complete! Starting DPO alignment...')
+    dpo_data = os.path.join(REPO_DIR, 'data/sft/yaya_dpo_combined.jsonl')
+    dpo_ckpt_dir = os.path.join(WORKING_DIR, 'yaya-dpo-checkpoints')
+    if os.path.exists(dpo_data):
+        dpo_cmd = [
+            sys.executable, os.path.join(REPO_DIR, 'scripts/train_dpo.py'),
+            '--model_config',   os.path.join(REPO_DIR, 'configs/model/yaya_125m.yaml'),
+            '--sft_checkpoint', latest_ckpt,
+            '--dpo_data',       dpo_data,
+            '--tokenizer',      os.path.join(REPO_DIR, 'data/tokenizer/yaya_tokenizer.model'),
+            '--save_dir',       dpo_ckpt_dir,
+            '--lr',             '5e-7',
+            '--max_steps',      '2500',
+            '--batch_size',     '4',
+        ]
+        print(f'  DPO command: {" ".join(dpo_cmd)}')
+        import subprocess
+        dpo_result = subprocess.run(dpo_cmd, cwd=REPO_DIR)
+        if dpo_result.returncode == 0:
+            print('DPO alignment complete!')
+            # Push DPO checkpoint to Hub
+            import glob as _glob
+            dpo_ckpts = sorted(_glob.glob(os.path.join(dpo_ckpt_dir, 'checkpoint-*')))
+            if dpo_ckpts:
+                push_checkpoint(dpo_ckpts[-1], HUB_REPO, HF_TOKEN)
+                print(f'[Hub] DPO checkpoint pushed → {HUB_REPO}')
+        else:
+            print('DPO training failed — check logs.')
+    else:
+        print(f'  DPO data not found at {dpo_data} — skipping DPO phase.')
 
 sys.exit(0 if training_ok else 1)
