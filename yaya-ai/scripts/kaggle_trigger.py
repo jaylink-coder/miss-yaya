@@ -25,7 +25,7 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 NOTEBOOK_REF = "jaylinkcoder/notebookfe483550f6"
-HF_TOKEN = "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"
+HF_TOKEN = os.environ.get("HF_TOKEN", "")
 POLL_INTERVAL = 600  # 10 min between checks in watch mode
 
 
