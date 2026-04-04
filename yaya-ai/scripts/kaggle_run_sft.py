@@ -419,9 +419,41 @@ current_step  = get_step_from_checkpoint(local_ckpt)
 current_phase = get_phase(current_step)
 
 if current_phase is None:
-    print(f'\nTraining complete at step {current_step}/{TOTAL_STEPS}! Running eval...')
-    if local_ckpt:
-        boost_weak_areas(local_ckpt, current_phase_id=5)
+    print(f'\nSFT training complete at step {current_step}/{TOTAL_STEPS}! Launching DPO...')
+    # Jump straight to DPO — skip dataset build and SFT training loop
+    dpo_data    = os.path.join(DATA_DIR, 'yaya_dpo_combined.jsonl')
+    dpo_ckpt_dir = os.path.join('/kaggle/working', 'yaya-dpo-checkpoints')
+    os.makedirs(dpo_ckpt_dir, exist_ok=True)
+    if os.path.exists(dpo_data):
+        dpo_cmd = [
+            sys.executable, os.path.join(REPO_ROOT, 'scripts/train_dpo.py'),
+            '--sft_checkpoint', local_ckpt,
+            '--dpo_data',       dpo_data,
+            '--tokenizer',      os.path.join(REPO_ROOT, 'data/tokenizer/yaya_tokenizer.model'),
+            '--save_dir',       dpo_ckpt_dir,
+            '--lr',             '5e-7',
+            '--max_steps',      '2500',
+            '--batch_size',     '4',
+        ]
+        print(f'  DPO command: {" ".join(dpo_cmd)}')
+        import subprocess as _sp
+        dpo_result = _sp.run(dpo_cmd, cwd=REPO_ROOT)
+        if dpo_result.returncode == 0:
+            print('DPO alignment complete!')
+            import glob as _glob
+            dpo_ckpts = sorted(_glob.glob(os.path.join(dpo_ckpt_dir, 'checkpoint-*')))
+            if dpo_ckpts and HF_TOKEN:
+                from scripts.hub_utils import push_checkpoint
+                push_checkpoint(dpo_ckpts[-1], HUB_REPO, HF_TOKEN)
+                print(f'[Hub] DPO checkpoint pushed → {HUB_REPO}')
+            # Final benchmark
+            bench_script = os.path.join(REPO_ROOT, 'scripts/benchmark.py')
+            bench_ckpt   = dpo_ckpts[-1] if dpo_ckpts else local_ckpt
+            _sp.run([sys.executable, bench_script, '--checkpoint', bench_ckpt], cwd=REPO_ROOT)
+        else:
+            print('DPO training failed — check logs.')
+    else:
+        print(f'  DPO data not found at {dpo_data} — skipping.')
     sys.exit(0)
 
 print(f'\n[2/5] Current step: {current_step}')
