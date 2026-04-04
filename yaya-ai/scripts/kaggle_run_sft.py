@@ -180,6 +180,14 @@ def download_metamath(max_n=100000):
                 out.append(make_sample(r['query'], r['response']))
                 if len(out) >= max_n:
                     break
+        if len(out) < 50000:
+            print(f'    MetaMath incomplete ({len(out):,}) — retrying with streaming...')
+            ds2 = load_dataset('meta-math/MetaMathQA', split='train', streaming=True)
+            for r in ds2:
+                if r.get('query') and r.get('response'):
+                    out.append(make_sample(r['query'], r['response']))
+                if len(out) >= max_n:
+                    break
         print(f'    {len(out):,} examples')
         return out
     except Exception as e:
@@ -190,7 +198,7 @@ def download_openhermes(max_n=150000):
     print('  Downloading OpenHermes-2.5...')
     try:
         from datasets import load_dataset
-        ds = load_dataset('teknium/OpenHermes-2.5', split='train')
+        ds = load_dataset('teknium/OpenHermes-2.5', split='train', streaming=True)
         out = []
         for r in ds:
             convs = r.get('conversations', [])
@@ -209,6 +217,8 @@ def download_openhermes(max_n=150000):
                 out.append(make_sample(user_msg, assistant_msg, system=system))
             if len(out) >= max_n:
                 break
+        if len(out) < 100000:
+            print(f'    WARNING: OpenHermes only got {len(out):,} / {max_n:,} examples')
         print(f'    {len(out):,} examples')
         return out
     except Exception as e:
