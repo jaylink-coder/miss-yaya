@@ -421,7 +421,7 @@ current_phase = get_phase(current_step)
 if current_phase is None:
     print(f'\nTraining complete at step {current_step}/{TOTAL_STEPS}! Running eval...')
     if local_ckpt:
-        boost_weak_areas(local_ckpt, phase_id=5)
+        boost_weak_areas(local_ckpt, current_phase_id=5)
     sys.exit(0)
 
 print(f'\n[2/5] Current step: {current_step}')
