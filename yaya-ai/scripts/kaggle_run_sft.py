@@ -218,14 +218,26 @@ def download_openhermes(max_n=150000):
 def build_dataset():
     os.makedirs(DATA_DIR, exist_ok=True)
 
-    # Check if we already have a large enough local dataset
+    # Check if we already have a large enough local dataset.
+    # Also check that short_qa data is already included (fingerprint via line count).
+    short_qa_path = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
+    short_qa_lines = 0
+    if os.path.exists(short_qa_path):
+        with open(short_qa_path, encoding='utf-8') as f:
+            short_qa_lines = sum(1 for l in f if l.strip())
+
     if os.path.exists(DATASET_PATH):
         with open(DATASET_PATH, encoding='utf-8') as f:
             n = sum(1 for l in f if l.strip())
-        if n >= 200_000:
+        # Accept cached dataset only if it's large enough AND already contains short_qa
+        # (short_qa has ~2634 lines; if dataset < n+short_qa it was built before short_qa existed)
+        if n >= 200_000 and (short_qa_lines == 0 or n >= 205_000):
             print(f'  Dataset ready: {n:,} examples')
             return n
-        print(f'  Dataset too small ({n:,}) — rebuilding...')
+        if short_qa_lines > 0 and n < 205_000:
+            print(f'  Dataset missing short Q&A data ({n:,} examples) — rebuilding with short_qa...')
+        else:
+            print(f'  Dataset too small ({n:,}) — rebuilding...')
 
     # Try downloading cached dataset from HF Hub (much faster than re-downloading sources)
     if HF_TOKEN:
