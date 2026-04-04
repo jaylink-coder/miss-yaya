@@ -1,32 +1,39 @@
 # Yaya AI — Claude Code Project Instructions
 
 ## Project overview
-Yaya is a multimodal AI model built from scratch in PyTorch. The working directory is `yaya-ai/`.
-**Primary model: yaya-125m** (129M params, GPT-2 scale). The tiny model is retired.
+Yaya is an AI assistant built from scratch in PyTorch. Working directory: `yaya-ai/`.
+**Primary model: yaya-125m** (129M params, 12 layers, hidden 768, GQA, RoPE, SwiGLU).
+Training runs on Kaggle T4 GPU and persists checkpoints to HuggingFace Hub.
 
 ## Key commands
 ```
-make sft             # SFT training — yaya-125m on reasoning+math dataset (starts fresh or from pretrain)
-make sft-resume      # Resume 125m SFT from latest checkpoint
-make pretrain        # Pretrain yaya-125m from scratch
-make eval            # Evaluate instruction-following (auto-detects best 125m checkpoint)
-make eval-math       # Evaluate math ability
-make eval-loop       # Eval + augment dataset for failures
-make chat            # Interactive CLI chat (auto-picks best 125m checkpoint)
-make chat-calc       # Chat with calculator tool enabled
-make web-ui          # Gradio web chat
-make dpo             # DPO alignment (auto-detects best 125m SFT checkpoint)
+make chat            # Interactive CLI chat (auto-picks latest checkpoint)
+make web-ui          # Gradio web chat at http://localhost:7860
+make eval-math       # Math evaluation (20 questions, per-stage scores)
+make dpo             # DPO alignment (auto-detects best SFT checkpoint)
 make training-status # Show step/loss/checkpoint status
-make self-eval       # Broader benchmark
-make self-improve    # Self-eval + data augmentation
-make continuous-learn # Convert chat logs → SFT data
-make reasoning       # Build reasoning dataset + train (starts from math-stage2)
-make reasoning-resume # Resume reasoning training
+make benchmark       # Full 35-question benchmark across 6 categories
 ```
 
+## Training (Kaggle)
+Training runs via `scripts/kaggle_run_sft.py` on Kaggle.
+- **Resume**: Just re-run the Kaggle notebook — auto-pulls latest checkpoint from HF Hub
+- **Monitor**: `python scripts/phase_tester.py --once --token $HF_TOKEN`
+- **Benchmark**: `python scripts/benchmark.py --checkpoint checkpoints/.../checkpoint-XXXXX`
+- **Auto-test per phase**: `python scripts/phase_tester.py --watch --token $HF_TOKEN`
+
+## Current training state (2026-04-04)
+- **Step**: 32,500 / 40,000 (81%) — Phase 14 "Advanced I", running on Kaggle
+- **Loss**: 2.76 (was 10.7 at start)
+- **HF Hub**: `Jaylink-coder/yaya-125m` — checkpoints pushed every 90s
+- **Latest local**: `checkpoints/yaya-125m-sft/checkpoint-00032500/`
+- **Benchmark**: Step 15k=29%, Step 30k=23% (model in math rut — short Q&A fix pending)
+- **After step 40,000**: DPO auto-launches, then pushes final checkpoint to Hub
+
 ## Model configs
-- **Primary**: `configs/model/yaya_125m.yaml` — 129M params, 12 layers, hidden 768
-- Archive: `configs/model/yaya_tiny.yaml` — 4.8M params (do not use for new runs)
+- **Primary**: `configs/model/yaya_125m.yaml` — 129M params
+- **Training**: `configs/training/sft_125m.yaml` — batch=4, grad_accum=8, lr=2e-5
+- **Milestones**: `configs/training/milestones.yaml` — 16 SFT phases × 2500 steps + DPO
 
 ## Python environment
 Always use `.venv/Scripts/python.exe`.
@@ -34,13 +41,11 @@ Always use `.venv/Scripts/python.exe`.
 .venv/Scripts/python.exe scripts/...
 ```
 
-## Launching training (IMPORTANT — use PowerShell, not nohup)
+## Launching training locally (IMPORTANT — use PowerShell, not nohup)
 `nohup python.exe ... &` in WSL bash gets killed when the bash session ends.
-Use PowerShell Start-Process to launch as a native Windows process that survives session close:
 ```powershell
 powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_125m.yaml --train_config configs/training/sft_125m.yaml' -RedirectStandardOutput 'logs\sft_125m.log' -RedirectStandardError 'logs\sft_125m_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$(\$proc.Id)"
 ```
-`make sft` does this automatically.
 
 ## Important rules
 - **All entry-point scripts must have UTF-8 reconfigure at the top** (Windows charmap issue):
@@ -48,40 +53,36 @@ powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$proc = Start-Process
   if hasattr(sys.stdout, "reconfigure"):
       sys.stdout.reconfigure(encoding="utf-8", errors="replace")
   ```
-- **Always use `repetition_penalty=1.5`** in GenerationConfig for inference — prevents degenerate outputs
-- **Training resume vs fresh start**: Use `--resume` for same dataset/config restarts; use `--pretrain_checkpoint` only when switching to a new dataset (weights-only, no optimizer state)
+- **Generator returns response-only** — `TextGenerator.generate()` returns just the new tokens,
+  do NOT slice by `len(prompt)`. This was fixed 2026-04-04.
+- **Repetition penalty applies to response tokens only** — not prompt tokens (fixed 2026-04-04).
+  Short answers like "4" or "Paris" were being suppressed before this fix.
+- **Always use `repetition_penalty=1.5`** in GenerationConfig for inference
+- **Training resume vs fresh start**: Use `--resume` for same dataset/config; `--pretrain_checkpoint` for new dataset
 - **Never use `required=True`** for `--checkpoint` or `--model_config` — all scripts auto-detect
-- **Always resume from latest checkpoint** when restarting the same run — never lose progress
-- **Model config auto-detection**: scripts detect 125m vs tiny from checkpoint path (`"125m" in path`)
+- **Always resume from latest checkpoint** — never restart from scratch
 
 ## Token format
 - `SYSTEM_TOKEN = "<|system|>"`
-- `USER_TOKEN = "</|user|>"`  (closing-style, used as prefix)
+- `USER_TOKEN = "</|user|>"` (closing-style, used as prefix)
 - `ASSISTANT_TOKEN = "</|assistant|>"`
-- Prompt construction: `tokenizer.format_chat(history) + "\n" + ASSISTANT_TOKEN + "\n"`
+- Prompt: `tokenizer.format_chat(messages) + "\n" + ASSISTANT_TOKEN + "\n"`
   (The `"\n"` before ASSISTANT_TOKEN is required to match training format)
 
 ## Reasoning / tool-call tokens
-- `<|think|>...</|think|>` — chain-of-thought reasoning block in assistant response
-- `<|calc|>EXPRESSION<|/calc|>=RESULT` — calculator tool call; `ToolAugmentedGenerator` intercepts and evaluates live
-
-## Current training state (2026-03-31)
-- `checkpoints/yaya-125m-sft/` — primary target (run `make sft` to start)
-- `checkpoints/yaya-tiny-math-stage2/checkpoint-00000500` — math curriculum base (used as reasoning start)
-- `checkpoints/yaya-tiny-reasoning/` — reasoning run (8000 steps, tiny model — reference only)
+- `<|think|>...</|think|>` — chain-of-thought reasoning block
+- `<|calc|>EXPRESSION<|/calc|>=RESULT` — calculator tool call
 
 ## Data files
-- `data/sft/yaya_reasoning_combined.jsonl` — **3,455 examples** (math + CoT + calc-tool) — primary training set
-- `data/sft/yaya_reasoning.jsonl` — 41 CoT+calculator examples (generated)
-- `data/sft/yaya_cot.jsonl` — 23 chain-of-thought examples
-- `data/sft/math/yaya_math_combined.jsonl` — 3,391 math curriculum examples
-- `data/sft/yaya_dpo_combined.jsonl` — 1,052 DPO preference pairs
+- `data/sft/yaya_reasoning_large.jsonl` — **~203K examples** (Kaggle-built: GSM8K + MetaMath + OpenHermes + Yaya)
+- `data/sft/yaya_short_qa.jsonl` — **2,634 direct Q&A pairs** (arithmetic, facts, identity) — fixes math rut
+- `data/sft/yaya_dpo_combined.jsonl` — **4,214 DPO preference pairs** (was 1,052)
+- `data/sft/yaya_reasoning_combined.jsonl` — 3,455 local CoT examples
 - `data/tokenizer/yaya_tokenizer.model` — SentencePiece tokenizer (vocab 32768)
 
-## Self-improvement pipeline
-```
-make sft → checkpoint → make eval → make eval-loop → augment data → make sft-resume
-                     → make self-eval → make self-improve → augment data → make sft-resume
-                     → make continuous-learn (from chat logs)
-```
-Data augmentation writes to `data/sft/yaya_reasoning_combined.jsonl`.
+## Known issues / recent fixes
+- **2026-04-04**: Generator was returning full prompt+response; fixed to return response-only
+- **2026-04-04**: Repetition penalty was penalizing prompt tokens; fixed to response-only
+- **2026-04-04**: OpenHermes download was cutting off ~53K short; fixed to use streaming=True
+- **2026-04-04**: Dataset cache check now forces rebuild when short_qa not yet included
+- **2026-04-04**: GradScaler deprecated call fixed (torch.amp.GradScaler)
