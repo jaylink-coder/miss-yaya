@@ -217,6 +217,8 @@ def download_openhermes(max_n=150000):
 
 def build_dataset():
     os.makedirs(DATA_DIR, exist_ok=True)
+
+    # Check if we already have a large enough local dataset
     if os.path.exists(DATASET_PATH):
         with open(DATASET_PATH, encoding='utf-8') as f:
             n = sum(1 for l in f if l.strip())
@@ -224,6 +226,26 @@ def build_dataset():
             print(f'  Dataset ready: {n:,} examples')
             return n
         print(f'  Dataset too small ({n:,}) — rebuilding...')
+
+    # Try downloading cached dataset from HF Hub (much faster than re-downloading sources)
+    if HF_TOKEN:
+        try:
+            from huggingface_hub import hf_hub_download
+            print('  Trying to pull cached dataset from HF Hub...')
+            cached = hf_hub_download(
+                repo_id=HUB_REPO, filename='dataset/yaya_reasoning_large.jsonl',
+                repo_type='model', token=HF_TOKEN, local_dir=DATA_DIR,
+            )
+            import shutil
+            shutil.copy(cached, DATASET_PATH)
+            with open(DATASET_PATH, encoding='utf-8') as f:
+                n = sum(1 for l in f if l.strip())
+            if n >= 200_000:
+                print(f'  Dataset pulled from Hub: {n:,} examples (saved ~10 min)')
+                return n
+            print(f'  Hub dataset too small ({n:,}) — rebuilding from scratch...')
+        except Exception as e:
+            print(f'  Hub dataset not found ({e}) — building from scratch...')
 
     print('\nBuilding reasoning dataset...')
     all_samples = load_existing_yaya() + download_gsm8k() + download_metamath() + download_openhermes()
@@ -242,6 +264,21 @@ def build_dataset():
             f.write(json.dumps(s, ensure_ascii=False) + '\n')
 
     print(f'  Dataset saved: {len(deduped):,} examples')
+
+    # Push to HF Hub for future sessions to reuse
+    if HF_TOKEN:
+        try:
+            from huggingface_hub import upload_file
+            print('  Pushing dataset to HF Hub for future sessions...')
+            upload_file(
+                path_or_fileobj=DATASET_PATH,
+                path_in_repo='dataset/yaya_reasoning_large.jsonl',
+                repo_id=HUB_REPO, repo_type='model', token=HF_TOKEN,
+            )
+            print(f'  [Hub] Dataset cached → {HUB_REPO}/dataset/yaya_reasoning_large.jsonl')
+        except Exception as e:
+            print(f'  [Hub] Dataset cache push failed (non-fatal): {e}')
+
     return len(deduped)
 
 # ── Continuous learning: boost weak areas ─────────────────────────────────────
