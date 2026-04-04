@@ -546,6 +546,17 @@ elif final_step >= TOTAL_STEPS:
             if dpo_ckpts:
                 push_checkpoint(dpo_ckpts[-1], HUB_REPO, HF_TOKEN)
                 print(f'[Hub] DPO checkpoint pushed → {HUB_REPO}')
+
+            # ── Final benchmark after DPO ─────────────────────────────────────
+            print('\n[Post-DPO] Running final benchmark...')
+            bench_script = os.path.join(REPO_ROOT, 'scripts/benchmark.py')
+            bench_ckpt   = dpo_ckpts[-1] if dpo_ckpts else latest_ckpt
+            bench_cmd    = [sys.executable, bench_script, '--checkpoint', bench_ckpt]
+            bench_result = subprocess.run(bench_cmd, cwd=REPO_ROOT)
+            if bench_result.returncode == 0:
+                print('[Post-DPO] Benchmark complete — results saved to docs/benchmark_results.jsonl')
+            else:
+                print('[Post-DPO] Benchmark failed — run manually: python scripts/benchmark.py')
         else:
             print('DPO training failed — check logs.')
     else:
