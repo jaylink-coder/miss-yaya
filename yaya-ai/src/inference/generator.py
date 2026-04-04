@@ -113,6 +113,7 @@ class TextGenerator:
         # Generate tokens
         self.model.eval()
         generated_ids = list(input_ids)
+        n_prompt = len(input_ids)  # track prompt length for repetition penalty
         past_key_values = None
 
         for _ in range(config.max_new_tokens):
@@ -132,10 +133,13 @@ class TextGenerator:
             logits = outputs["logits"][:, -1, :]  # Last token logits
             past_key_values = outputs.get("past_key_values")
 
-            # Apply repetition penalty
+            # Apply repetition penalty only to response tokens (not prompt tokens).
+            # Penalising prompt tokens suppresses short answers like "4" or "Paris"
+            # that appear as digits/words in the question.
             if config.repetition_penalty != 1.0:
+                response_so_far = generated_ids[n_prompt:]
                 logits = self._apply_repetition_penalty(
-                    logits, generated_ids, config.repetition_penalty
+                    logits, response_so_far, config.repetition_penalty
                 )
 
             # Sample next token
