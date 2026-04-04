@@ -490,5 +490,6 @@ elif final_step >= TOTAL_STEPS:
             print('DPO training failed — check logs.')
     else:
         print(f'  DPO data not found at {dpo_data} — skipping DPO phase.')
+        print(f'  To run manually: python scripts/train_dpo.py --sft_checkpoint {latest_ckpt}')
 
 sys.exit(0 if training_ok else 1)
