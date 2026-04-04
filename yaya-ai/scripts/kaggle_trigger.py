@@ -26,6 +26,9 @@ if hasattr(sys.stdout, "reconfigure"):
 
 NOTEBOOK_REF = "jaylinkcoder/notebookfe483550f6"
 HF_TOKEN = os.environ.get("HF_TOKEN", "")
+if not HF_TOKEN:
+    print("Warning: HF_TOKEN env var not set — step tracking from HF Hub will be skipped.")
+    print("  Set it with:  export HF_TOKEN=hf_...")
 POLL_INTERVAL = 600  # 10 min between checks in watch mode
 
 
