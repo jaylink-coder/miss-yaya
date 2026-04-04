@@ -461,15 +461,15 @@ if next_phase:
     print(f'  Just re-run this notebook — it will auto-resume.')
 elif final_step >= TOTAL_STEPS:
     print(f'\nAll {TOTAL_STEPS} SFT steps complete! Starting DPO alignment...')
-    dpo_data = os.path.join(REPO_DIR, 'data/sft/yaya_dpo_combined.jsonl')
-    dpo_ckpt_dir = os.path.join(WORKING_DIR, 'yaya-dpo-checkpoints')
+    dpo_data = os.path.join(REPO_ROOT, 'data/sft/yaya_dpo_combined.jsonl')
+    dpo_ckpt_dir = '/kaggle/working/yaya-dpo-checkpoints'
     if os.path.exists(dpo_data):
         dpo_cmd = [
-            sys.executable, os.path.join(REPO_DIR, 'scripts/train_dpo.py'),
-            '--model_config',   os.path.join(REPO_DIR, 'configs/model/yaya_125m.yaml'),
+            sys.executable, os.path.join(REPO_ROOT, 'scripts/train_dpo.py'),
+            '--model_config',   os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml'),
             '--sft_checkpoint', latest_ckpt,
             '--dpo_data',       dpo_data,
-            '--tokenizer',      os.path.join(REPO_DIR, 'data/tokenizer/yaya_tokenizer.model'),
+            '--tokenizer',      os.path.join(REPO_ROOT, 'data/tokenizer/yaya_tokenizer.model'),
             '--save_dir',       dpo_ckpt_dir,
             '--lr',             '5e-7',
             '--max_steps',      '2500',
@@ -477,7 +477,7 @@ elif final_step >= TOTAL_STEPS:
         ]
         print(f'  DPO command: {" ".join(dpo_cmd)}')
         import subprocess
-        dpo_result = subprocess.run(dpo_cmd, cwd=REPO_DIR)
+        dpo_result = subprocess.run(dpo_cmd, cwd=REPO_ROOT)
         if dpo_result.returncode == 0:
             print('DPO alignment complete!')
             # Push DPO checkpoint to Hub
