@@ -349,6 +349,10 @@ _HELP_PATTERN = re.compile(
     r'^can\s+you\s+help\s+me',
     re.IGNORECASE
 )
+_CAPABILITY_PATTERN = re.compile(
+    r'^what\s+can\s+you\s+do|what\s+(?:are\s+you\s+(?:able|capable)|do\s+you\s+do)',
+    re.IGNORECASE
+)
 
 def check_conversational(text: str) -> str:
     """Return a canned response for short social exchanges."""
@@ -359,6 +363,8 @@ def check_conversational(text: str) -> str:
         return "You're welcome! I'm glad I could help."
     if _HELP_PATTERN.match(text):
         return "Of course! I'm happy to help. What is your question?"
+    if _CAPABILITY_PATTERN.match(text):
+        return "I can answer questions, help with math, share facts about Kenya and East Africa, translate Swahili words, and have a conversation. What would you like to know?"
     return ""
 
 
