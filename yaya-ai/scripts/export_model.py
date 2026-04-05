@@ -1,88 +1,219 @@
-"""Export Yaya model to various deployment formats.
+"""Export Yaya model checkpoint for sharing or deployment.
+
+Creates a self-contained export directory with:
+  - model.pt       (weights only, no optimizer state)
+  - config.json    (model architecture config)
+  - tokenizer.model (SentencePiece tokenizer)
+  - README.md      (usage instructions)
+  - generate.py    (standalone inference script)
 
 Usage:
-    # SafeTensors
-    python scripts/export_model.py \
-        --checkpoint checkpoints/yaya-1.5b/latest \
-        --model_config configs/model/yaya_1_5b.yaml \
-        --format safetensors --output exports/yaya-1.5b-st
+    # Export latest local checkpoint
+    python scripts/export_model.py --output exports/yaya-125m-final
 
-    # ONNX
-    python scripts/export_model.py \
-        --checkpoint checkpoints/yaya-1.5b/latest \
-        --model_config configs/model/yaya_1_5b.yaml \
-        --format onnx --output exports/yaya-1.5b.onnx
+    # Export from HF Hub
+    python scripts/export_model.py --token hf_xxx --output exports/yaya-125m-final
 
-    # llama.cpp (GGUF prep)
-    python scripts/export_model.py \
-        --checkpoint checkpoints/yaya-1.5b/latest \
-        --model_config configs/model/yaya_1_5b.yaml \
-        --format gguf --output exports/yaya-1.5b-gguf
+    # Export + quantize to int8 (492MB -> ~219MB)
+    python scripts/export_model.py --output exports/yaya-125m-int8 --quantize
+
+    # Export + push to HF Hub
+    python scripts/export_model.py --output exports/yaya-125m-final --push --hub_repo Jaylink-coder/yaya-125m
 """
 
 import argparse
+import glob
+import json
 import os
+import shutil
 import sys
-from dataclasses import asdict
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import torch
 
-from src.utils.config import load_model_config
-from src.model.yaya_model import YayaForCausalLM
-from src.training.checkpointing import CheckpointManager
-from src.inference.export import (
-    export_safetensors,
-    export_onnx,
-    export_for_llama_cpp,
-)
-from src.utils.io_utils import count_parameters, format_num
+REPO_ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+TOKENIZER_PATH = os.path.join(REPO_ROOT, "data/tokenizer/yaya_tokenizer.model")
+
+
+def find_best_checkpoint():
+    search_dirs = [
+        "/kaggle/working/yaya-recovery-checkpoints",
+        "/kaggle/working/yaya-dpo-checkpoints",
+        "/kaggle/working/yaya-sft-checkpoints",
+        os.path.join(REPO_ROOT, "checkpoints/yaya-125m-sft"),
+    ]
+    for d in search_dirs:
+        ckpts = sorted(glob.glob(os.path.join(d, "checkpoint-*")))
+        if ckpts:
+            return ckpts[-1]
+    return None
+
+
+def load_checkpoint(ckpt_path):
+    model_file = os.path.join(ckpt_path, "model.pt")
+    meta_file  = os.path.join(ckpt_path, "metadata.json")
+    if not os.path.exists(model_file):
+        raise FileNotFoundError(f"model.pt not found in {ckpt_path}")
+    state = torch.load(model_file, map_location="cpu")
+    meta  = {}
+    if os.path.exists(meta_file):
+        with open(meta_file) as f:
+            meta = json.load(f)
+    return state, meta
+
+
+def extract_weights(state):
+    if "model" in state:
+        return state["model"]
+    return {k: v for k, v in state.items()
+            if not any(k.startswith(p) for p in ["optimizer", "scheduler", "scaler"])}
+
+
+def write_generate_script(output_dir):
+    script = '''\
+"""Standalone Yaya chat. Requires: torch, sentencepiece, pyyaml."""
+import sys, os, json, torch
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from src.model.transformer import YayaTransformer
+from src.model.config import ModelConfig
+from src.tokenizer.tokenizer import YayaTokenizer
+from src.inference.generator import TextGenerator, GenerationConfig
+
+
+def load_yaya(export_dir=None):
+    if export_dir is None:
+        export_dir = os.path.dirname(os.path.abspath(__file__))
+    with open(os.path.join(export_dir, "config.json")) as f:
+        cfg_dict = json.load(f)
+    cfg = ModelConfig(**cfg_dict)
+    tokenizer = YayaTokenizer(os.path.join(export_dir, "tokenizer.model"))
+    model = YayaTransformer(cfg)
+    weights = torch.load(os.path.join(export_dir, "model.pt"), map_location="cpu")
+    model.load_state_dict(weights, strict=False)
+    model.eval()
+    return model, tokenizer
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Export Yaya model")
-    parser.add_argument("--checkpoint", type=str, required=True)
-    parser.add_argument("--model_config", type=str, required=True)
-    parser.add_argument("--format", type=str, required=True,
-                        choices=["safetensors", "onnx", "gguf"])
-    parser.add_argument("--output", type=str, required=True)
-    parser.add_argument("--tokenizer_path", type=str, default=None)
+    model, tokenizer = load_yaya()
+    gen = TextGenerator(model, tokenizer)
+    cfg = GenerationConfig(max_new_tokens=256, temperature=0.7, repetition_penalty=1.5)
+    print("Yaya-125M  (type quit to exit)")
+    print("-" * 40)
+    while True:
+        try:
+            user = input("You: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            break
+        if user.lower() in ("quit", "exit"):
+            break
+        if not user:
+            continue
+        print(f"Yaya: {gen.generate(user, config=cfg)}\\n")
+
+if __name__ == "__main__":
+    main()
+'''
+    with open(os.path.join(output_dir, "generate.py"), "w", encoding="utf-8") as f:
+        f.write(script)
+
+
+def write_readme(output_dir, meta, quantized=False):
+    step = meta.get("step", "?")
+    loss = meta.get("loss", "?")
+    readme = f"""\
+# Yaya-125M Export
+
+Step: {step} | Loss: {f"{loss:.4f}" if isinstance(loss, float) else loss}
+{"Quantized: int8" if quantized else "Precision: float32"}
+
+## Quick start
+```bash
+python generate.py
+```
+
+## Python usage
+```python
+from generate import load_yaya
+from src.inference.generator import TextGenerator, GenerationConfig
+
+model, tokenizer = load_yaya()
+gen = TextGenerator(model, tokenizer)
+cfg = GenerationConfig(max_new_tokens=256, temperature=0.7, repetition_penalty=1.5)
+print(gen.generate("What is 2 + 2?", config=cfg))
+```
+"""
+    with open(os.path.join(output_dir, "README.md"), "w", encoding="utf-8") as f:
+        f.write(readme)
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--checkpoint", help="Path to checkpoint dir")
+    parser.add_argument("--token",      help="HF token (download from Hub)")
+    parser.add_argument("--output",     default="exports/yaya-125m-final")
+    parser.add_argument("--quantize",   action="store_true")
+    parser.add_argument("--push",       action="store_true")
+    parser.add_argument("--hub_repo",   default="Jaylink-coder/yaya-125m")
     args = parser.parse_args()
 
-    # Load model
-    config = load_model_config(args.model_config)
-    model = YayaForCausalLM(config)
-    ckpt_manager = CheckpointManager(save_dir=os.path.dirname(args.checkpoint))
-    ckpt_manager.load(model, checkpoint_path=args.checkpoint)
-    model.eval()
+    os.makedirs(args.output, exist_ok=True)
+    print(f"Exporting to: {args.output}")
 
-    params = count_parameters(model)
-    print(f"Model: {config.model_name}")
-    print(f"Parameters: {format_num(params['total'])}")
-    print(f"Export format: {args.format}")
-    print()
+    ckpt_path = args.checkpoint
+    if not ckpt_path and args.token:
+        from scripts.hub_utils import pull_latest_checkpoint
+        ckpt_path = pull_latest_checkpoint(args.hub_repo, os.path.join(args.output, "_tmp"), args.token)
+    if not ckpt_path:
+        ckpt_path = find_best_checkpoint()
+    if not ckpt_path:
+        print("ERROR: No checkpoint found.")
+        sys.exit(1)
 
-    config_dict = asdict(config)
+    print(f"Checkpoint: {ckpt_path}")
+    state, meta = load_checkpoint(ckpt_path)
+    weights = extract_weights(state)
+    print(f"  Step: {meta.get('step','?')}  Loss: {meta.get('loss','?')}")
 
-    if args.format == "safetensors":
-        export_safetensors(model, args.output, model_config=config_dict)
+    import yaml
+    with open(os.path.join(REPO_ROOT, "configs/model/yaya_125m.yaml")) as f:
+        cfg_dict = yaml.safe_load(f)
+    with open(os.path.join(args.output, "config.json"), "w") as f:
+        json.dump(cfg_dict, f, indent=2)
 
-    elif args.format == "onnx":
-        export_onnx(
-            model, args.output,
-            vocab_size=config.vocab_size,
-            max_seq_length=config.max_position_embeddings,
-        )
+    shutil.copy(TOKENIZER_PATH, os.path.join(args.output, "tokenizer.model"))
 
-    elif args.format == "gguf":
-        export_for_llama_cpp(
-            model, args.output,
-            model_config=config_dict,
-            tokenizer_path=args.tokenizer_path,
-        )
+    if args.quantize:
+        from src.model.transformer import YayaTransformer
+        from src.model.config import ModelConfig
+        model = YayaTransformer(ModelConfig(**cfg_dict))
+        model.load_state_dict(weights, strict=False)
+        model.eval()
+        model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
+        torch.save(model.state_dict(), os.path.join(args.output, "model.pt"))
+    else:
+        torch.save(weights, os.path.join(args.output, "model.pt"))
 
-    print("\nExport complete!")
+    size_mb = os.path.getsize(os.path.join(args.output, "model.pt")) / 1e6
+    print(f"  model.pt: {size_mb:.0f} MB")
+
+    write_generate_script(args.output)
+    write_readme(args.output, meta, quantized=args.quantize)
+    print(f"\nExport complete: {args.output}/")
+
+    if args.push and args.token:
+        from huggingface_hub import HfApi
+        api = HfApi()
+        for fname in ["model.pt", "config.json", "tokenizer.model", "README.md", "generate.py"]:
+            fpath = os.path.join(args.output, fname)
+            if os.path.exists(fpath):
+                api.upload_file(path_or_fileobj=fpath, path_in_repo=f"export/{fname}",
+                                repo_id=args.hub_repo, token=args.token)
+                print(f"  Pushed: {fname}")
 
 
 if __name__ == "__main__":
