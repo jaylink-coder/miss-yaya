@@ -1,19 +1,21 @@
 """Kaggle Patch SFT for Yaya-125M.
 
-Targeted 500-step fix for specific DPO2 failures:
-- Factual confusion (planet=Earth, months=12, H2O, Kenya=Nairobi, boiling=100C)
-- Language questions (opposites, language identification)
-- Word problem arithmetic (10-3=7, 60km/h*2h=120km)
-- Reasoning with direct final answer
+Targeted fix for remaining failures after Recovery+DPO2.
+Always pulls the best checkpoint from Hub (patch > dpo2 > recovery > dpo),
+trains 300 steps at lr=5e-6, then benchmarks.
 
-Starts from dpo2-checkpoint-00001500 on Hub.
+v1: 500 steps from dpo2 → 91% (32/35)
+v2: 300 steps from patch-checkpoint-00000500 → target 94%+ (33/35)
 
-Usage (Kaggle cell):
-    !git clone https://github.com/jaylink-coder/miss-yaya.git /kaggle/working/miss-yaya 2>/dev/null || \
-        (cd /kaggle/working/miss-yaya && git pull origin main)
-    !pip install -q sentencepiece pyyaml huggingface_hub
-    import os; os.chdir('/kaggle/working/miss-yaya/yaya-ai')
-    !python scripts/kaggle_run_patch.py
+Usage (Kaggle cells):
+    Cell 1:
+        !git clone https://github.com/jaylink-coder/miss-yaya.git /kaggle/working/miss-yaya 2>/dev/null || \
+            (cd /kaggle/working/miss-yaya && git fetch origin && git reset --hard origin/main)
+        !pip install -q sentencepiece pyyaml huggingface_hub
+        import os; os.chdir('/kaggle/working/miss-yaya/yaya-ai')
+
+    Cell 2:
+        !python scripts/kaggle_run_patch.py
 """
 
 import json
@@ -21,13 +23,11 @@ import os
 import sys
 import glob
 import subprocess
-from pathlib import Path
 
-REPO_ROOT    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-PATCH_CKPT   = '/kaggle/working/yaya-patch-checkpoints'
-DATA_DIR     = os.path.join(REPO_ROOT, 'data/sft')
-TOKENIZER    = os.path.join(REPO_ROOT, 'data/tokenizer/yaya_tokenizer.model')
-HUB_REPO     = 'Jaylink-coder/yaya-125m'
+REPO_ROOT  = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PATCH_CKPT = '/kaggle/working/yaya-patch-checkpoints'
+DATA_DIR   = os.path.join(REPO_ROOT, 'data/sft')
+HUB_REPO   = 'Jaylink-coder/yaya-125m'
 
 sys.path.insert(0, REPO_ROOT)
 os.chdir(REPO_ROOT)
@@ -73,118 +73,112 @@ else:
 
 print()
 print('=' * 60)
-print(' YAYA-125M PATCH SFT (fixing DPO2 failures)')
+print(' YAYA-125M PATCH SFT v2')
 print('=' * 60)
 
 
-# ── Step 1: Find starting checkpoint (dpo2 > recovery > dpo > sft) ────────────
-print('\n[1/4] Finding starting checkpoint...')
+# ── Step 1: Pull best checkpoint from Hub ─────────────────────────────────────
+print('\n[1/4] Finding best starting checkpoint...')
 
-def find_local_checkpoint(ckpt_dir, prefix='checkpoint-'):
-    ckpts = sorted(glob.glob(os.path.join(ckpt_dir, f'{prefix}*')))
-    return ckpts[-1] if ckpts else None
+if not hf_token:
+    print('ERROR: No HF_TOKEN.')
+    sys.exit(1)
 
+try:
+    from huggingface_hub import list_repo_files, snapshot_download
+    hub_files = list(list_repo_files(repo_id=HUB_REPO, repo_type='model', token=hf_token))
+    all_names = sorted({f.split('/')[0] for f in hub_files if '/' in f and '_temp' not in f})
 
-# Always pull the best checkpoint from Hub first (patch > dpo2 > recovery > dpo)
-# This ensures we always start from the right checkpoint even on a fresh session
-start_ckpt = None
-_already_done = False
+    # Priority: patch > dpo2 > recovery > dpo
+    hub_ckpt = None
+    for prefix in ('patch-checkpoint-', 'dpo2-checkpoint-', 'recovery-checkpoint-', 'dpo-checkpoint-'):
+        matches = [c for c in all_names if c.startswith(prefix)]
+        if matches:
+            hub_ckpt = matches[-1]
+            break
 
-if hf_token:
-        print('  Checking Hub for best starting checkpoint...')
-        try:
-            from huggingface_hub import list_repo_files, snapshot_download
-            hub_files = list(list_repo_files(repo_id=HUB_REPO, repo_type='model', token=hf_token))
-            all_names = sorted({f.split('/')[0] for f in hub_files if '/' in f and '_temp' not in f})
+    if not hub_ckpt:
+        print('ERROR: No suitable checkpoint on Hub.')
+        sys.exit(1)
 
-            # Priority: patch > dpo2 > recovery > dpo
-            hub_ckpt = None
-            for prefix in ('patch-checkpoint-', 'dpo2-checkpoint-', 'recovery-checkpoint-', 'dpo-checkpoint-'):
-                matches = [c for c in all_names if c.startswith(prefix)]
-                if matches:
-                    hub_ckpt = matches[-1]
-                    break
+    # Check if it's already local
+    dl_dir = PATCH_CKPT if hub_ckpt.startswith('patch-') else '/kaggle/working/yaya-dpo2-checkpoints'
+    local_path = os.path.join(dl_dir, hub_ckpt)
 
-            if hub_ckpt:
-                dl_dir = PATCH_CKPT if hub_ckpt.startswith('patch-') else '/kaggle/working/yaya-dpo2-checkpoints'
-                local_path = os.path.join(dl_dir, hub_ckpt)
-                if os.path.isdir(local_path) and os.path.exists(os.path.join(local_path, 'model.pt')):
-                    print(f'  Already local: {local_path}')
-                    start_ckpt = local_path
-                else:
-                    print(f'  Downloading {hub_ckpt} from Hub...')
-                    os.makedirs(dl_dir, exist_ok=True)
-                    snapshot_download(
-                        repo_id=HUB_REPO,
-                        allow_patterns=f'{hub_ckpt}/*',
-                        local_dir=dl_dir,
-                        repo_type='model',
-                        token=hf_token,
-                    )
-                    local_path = os.path.join(dl_dir, hub_ckpt)
-                    if os.path.isdir(local_path):
-                        start_ckpt = local_path
-                    print(f'  Restored: {start_ckpt}')
-            else:
-                print('  ERROR: No patch/dpo2/recovery checkpoint on Hub.')
-                sys.exit(1)
-        except Exception as e:
-            print(f'  Hub pull failed: {e}')
-            import traceback; traceback.print_exc()
-            sys.exit(1)
+    if os.path.isdir(local_path) and os.path.exists(os.path.join(local_path, 'model.pt')):
+        print(f'  Already local: {local_path}')
     else:
-        print('ERROR: No HF_TOKEN — cannot pull checkpoint.')
-        sys.exit(1)
+        print(f'  Downloading {hub_ckpt} from Hub...')
+        os.makedirs(dl_dir, exist_ok=True)
+        snapshot_download(
+            repo_id=HUB_REPO,
+            allow_patterns=f'{hub_ckpt}/*',
+            local_dir=dl_dir,
+            repo_type='model',
+            token=hf_token,
+        )
+        print(f'  Downloaded: {local_path}')
 
-    if not start_ckpt:
-        print('ERROR: start_ckpt not set after Hub pull.')
-        sys.exit(1)
+    start_ckpt = local_path
 
-    print(f'  Starting from: {start_ckpt}')
+    # Read its metadata
+    meta_path = os.path.join(start_ckpt, 'metadata.json')
+    meta = json.load(open(meta_path)) if os.path.exists(meta_path) else {}
+    start_step = meta.get('step', 0)
+    start_loss = meta.get('loss', 99)
+    print(f'  Starting from: {hub_ckpt}  step={start_step}  loss={start_loss:.4f}')
+
+except Exception as e:
+    print(f'ERROR: Hub pull failed: {e}')
+    import traceback; traceback.print_exc()
+    sys.exit(1)
+
+# Decide if we should train or just benchmark
+# If already a patch checkpoint with step >= 300 (v2 done), skip to benchmark
+_is_patch = hub_ckpt.startswith('patch-')
+_skip_training = _is_patch and start_step >= 300 and start_loss < 0.35
+
+if _skip_training:
+    print(f'  Patch v2 already complete (step={start_step}, loss={start_loss:.4f}) — skipping to benchmark.')
+    patch_ckpt = start_ckpt
+else:
+    if _is_patch:
+        print(f'  Patch v1 found at step={start_step} — running v2 (300 more steps).')
+    else:
+        print(f'  Running patch from {hub_ckpt} (500 steps).')
 
 
-# ── Step 2: Build patch dataset ────────────────────────���───────────────────────
-if not _already_done:
+# ── Step 2: Build patch dataset ───────────────────────────────────────────────
+if not _skip_training:
     print('\n[2/4] Building patch dataset...')
 
-    PATCH_DATA   = '/kaggle/working/yaya_patch_data.jsonl'
-    PATCH_SFT    = os.path.join(DATA_DIR, 'yaya_patch_sft.jsonl')
-    SHORT_QA     = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
-    QUICK_FACTS  = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
-    FACTUAL_QA   = os.path.join(DATA_DIR, 'yaya_factual_qa.jsonl')
+    PATCH_DATA  = '/kaggle/working/yaya_patch_data.jsonl'
+    PATCH_SFT   = os.path.join(DATA_DIR, 'yaya_patch_sft.jsonl')
+    SHORT_QA    = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
+    QUICK_FACTS = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
+    FACTUAL_QA  = os.path.join(DATA_DIR, 'yaya_factual_qa.jsonl')
 
     all_lines = []
 
-    # Patch examples — 5x oversample (150 examples → 750) — these are the specific fixes
-    if os.path.exists(PATCH_SFT):
-        with open(PATCH_SFT, encoding='utf-8', errors='replace') as f:
-            patch_lines = [l.strip() for l in f if l.strip()]
-        all_lines.extend(patch_lines * 5)
-        print(f'  + yaya_patch_sft.jsonl: {len(patch_lines)} examples x5 = {len(patch_lines)*5}')
-    else:
-        print(f'  ERROR: {PATCH_SFT} not found. Run scripts/generate_patch_data.py first.')
-        sys.exit(1)
+    if not os.path.exists(PATCH_SFT):
+        print(f'  ERROR: {PATCH_SFT} not found. Regenerating...')
+        subprocess.run([sys.executable, os.path.join(REPO_ROOT, 'scripts/generate_patch_data.py')],
+                       cwd=REPO_ROOT)
 
-    # Short QA — 2x (broad factual/arithmetic grounding)
-    if os.path.exists(SHORT_QA):
-        with open(SHORT_QA, encoding='utf-8', errors='replace') as f:
-            lines = [l.strip() for l in f if l.strip()]
-        all_lines.extend(lines * 2)
-        print(f'  + yaya_short_qa.jsonl: {len(lines)} x2 = {len(lines)*2}')
+    with open(PATCH_SFT, encoding='utf-8', errors='replace') as f:
+        patch_lines = [l.strip() for l in f if l.strip()]
+    # 5x oversample for v2 (targeting 6 specific failures)
+    all_lines.extend(patch_lines * 5)
+    print(f'  + yaya_patch_sft.jsonl: {len(patch_lines)} x5 = {len(patch_lines)*5}')
 
-    # Quick facts — 2x
-    if os.path.exists(QUICK_FACTS):
-        with open(QUICK_FACTS, encoding='utf-8', errors='replace') as f:
-            lines = [l.strip() for l in f if l.strip()]
-        all_lines.extend(lines * 2)
-        print(f'  + quick_facts.jsonl: {len(lines)} x2 = {len(lines)*2}')
-
-    # Factual QA — 1x (prevents forgetting learned facts)
-    if os.path.exists(FACTUAL_QA):
-        with open(FACTUAL_QA, encoding='utf-8', errors='replace') as f:
-            lines = [l.strip() for l in f if l.strip()]
-        all_lines.extend(lines)
-        print(f'  + yaya_factual_qa.jsonl: {len(lines)} x1')
+    for path, label, mult in [(SHORT_QA, 'yaya_short_qa.jsonl', 2),
+                               (QUICK_FACTS, 'quick_facts.jsonl', 2),
+                               (FACTUAL_QA, 'yaya_factual_qa.jsonl', 1)]:
+        if os.path.exists(path):
+            with open(path, encoding='utf-8', errors='replace') as f:
+                lines = [l.strip() for l in f if l.strip()]
+            all_lines.extend(lines * mult)
+            print(f'  + {label}: {len(lines)} x{mult} = {len(lines)*mult}')
 
     import random; random.seed(42)
     random.shuffle(all_lines)
@@ -192,12 +186,11 @@ if not _already_done:
     with open(PATCH_DATA, 'w', encoding='utf-8') as f:
         for line in all_lines:
             f.write(line + '\n')
-    print(f'  Patch dataset: {len(all_lines)} total examples')
-    print(f'  Saved → {PATCH_DATA}')
+    print(f'  Total: {len(all_lines)} examples → {PATCH_DATA}')
 
 
-# ── Step 3: Train ───────────────────────────���────────────────────���─────────────
-if not _already_done:
+# ── Step 3: Train ─────────────────────────────────────────────────────────────
+if not _skip_training:
     print('\n[3/4] Launching patch training...')
     os.makedirs(PATCH_CKPT, exist_ok=True)
 
@@ -210,12 +203,14 @@ if not _already_done:
             print(f'  WARNING: Hub watcher failed to start: {_e}')
 
     import yaml
-    base_cfg_path = os.path.join(REPO_ROOT, 'configs/training/sft_125m.yaml')
-    with open(base_cfg_path) as f:
+    with open(os.path.join(REPO_ROOT, 'configs/training/sft_125m.yaml')) as f:
         patch_cfg = yaml.safe_load(f)
 
-    patch_cfg['training']['max_steps']      = 300    # v2 micro-patch (300 steps for remaining 6 failures)
-    patch_cfg['training']['learning_rate']  = 5e-6   # very conservative — minimal forgetting
+    # Conservative settings — minimize forgetting
+    n_steps = 300 if _is_patch else 500
+    lr      = 5e-6 if _is_patch else 1e-5
+    patch_cfg['training']['max_steps']      = n_steps
+    patch_cfg['training']['learning_rate']  = lr
     patch_cfg['training']['max_seq_length'] = 256
     patch_cfg['training']['dtype']          = DTYPE
     patch_cfg['checkpointing'] = patch_cfg.get('checkpointing', {})
@@ -228,36 +223,31 @@ if not _already_done:
     with open(tmp_cfg, 'w') as f:
         yaml.dump(patch_cfg, f)
 
-    train_cmd = [
+    print(f'  Steps: {n_steps}  LR: {lr}  Starting from: {os.path.basename(start_ckpt)}')
+    result = subprocess.run([
         sys.executable, '-u', os.path.join(REPO_ROOT, 'scripts/train_sft.py'),
         '--model_config', os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml'),
         '--train_config', tmp_cfg,
         '--pretrain_checkpoint', start_ckpt,
-    ]
+    ], cwd=REPO_ROOT)
 
-    print(f'  CMD: {" ".join(train_cmd[2:])}')
-    result = subprocess.run(train_cmd, cwd=REPO_ROOT)
-    training_ok = result.returncode == 0
-
-    if not training_ok:
-        print(f'  ERROR: Training exited with code {result.returncode}')
+    if result.returncode != 0:
+        print(f'  ERROR: Training exited {result.returncode}')
         sys.exit(result.returncode)
 
-    # Rename final checkpoint to patch-checkpoint-NNNNN
+    # Rename to patch-checkpoint-NNNNN
     final_ckpts = sorted(glob.glob(os.path.join(PATCH_CKPT, 'checkpoint-*')))
-    if final_ckpts:
-        final = final_ckpts[-1]
-        step_num = os.path.basename(final).split('-')[-1]
-        patch_name = f'patch-checkpoint-{step_num}'
-        patch_final = os.path.join(PATCH_CKPT, patch_name)
-        os.rename(final, patch_final)
-        print(f'  Renamed {os.path.basename(final)} -> {patch_name}')
-        patch_ckpt = patch_final
-    else:
-        print('  WARNING: No checkpoint found after training.')
+    if not final_ckpts:
+        print('  ERROR: No checkpoint after training.')
         sys.exit(1)
+    final = final_ckpts[-1]
+    step_num = os.path.basename(final).split('-')[-1]
+    patch_name = f'patch-checkpoint-{step_num}'
+    patch_final = os.path.join(PATCH_CKPT, patch_name)
+    os.rename(final, patch_final)
+    print(f'  Renamed {os.path.basename(final)} -> {patch_name}')
+    patch_ckpt = patch_final
 
-    # Push final checkpoint to Hub
     if HF_TOKEN:
         try:
             from scripts.hub_utils import push_checkpoint, ensure_repo
@@ -267,20 +257,17 @@ if not _already_done:
             print(f'  WARNING: Hub push failed: {_e}')
 
 
-# ── Step 4: Benchmark ──────────────────────────────────────────────────────────
-print('\n[4/4] Running benchmark on patch checkpoint...')
-ckpt_to_bench = patch_ckpt
-
-bench_cmd = [
+# ── Step 4: Benchmark ─────────────────────────────────────────────────────────
+print('\n[4/4] Running benchmark...')
+bench_result = subprocess.run([
     sys.executable, '-u', os.path.join(REPO_ROOT, 'scripts/benchmark.py'),
-    '--checkpoint', ckpt_to_bench,
-]
-bench_result = subprocess.run(bench_cmd, cwd=REPO_ROOT)
+    '--checkpoint', patch_ckpt,
+], cwd=REPO_ROOT)
 if bench_result.returncode != 0:
     print(f'  WARNING: Benchmark exited {bench_result.returncode}')
 
 print()
 print('=' * 60)
 print(' PATCH SFT COMPLETE')
-print(f'  Checkpoint: {ckpt_to_bench}')
+print(f'  Checkpoint: {patch_ckpt}')
 print('=' * 60)
