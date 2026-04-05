@@ -79,7 +79,7 @@ import sys, os, json, torch
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.model.yaya_model import YayaForCausalLM
-from src.utils.config import ModelConfig
+from src.utils.config import ModelConfig, VisionConfig
 from src.tokenizer.tokenizer import YayaTokenizer
 from src.inference.generator import TextGenerator, GenerationConfig
 
@@ -89,6 +89,9 @@ def load_yaya(export_dir=None):
         export_dir = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(export_dir, "config.json")) as f:
         cfg_dict = json.load(f)
+    # config.json stores vision as a nested dict — reconstruct VisionConfig
+    vision_raw = cfg_dict.pop("vision", {})
+    cfg_dict["vision"] = VisionConfig(**vision_raw) if vision_raw else VisionConfig()
     cfg = ModelConfig(**cfg_dict)
     tokenizer = YayaTokenizer(os.path.join(export_dir, "tokenizer.model"))
     model = YayaForCausalLM(cfg)
