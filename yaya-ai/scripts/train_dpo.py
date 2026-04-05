@@ -173,7 +173,7 @@ def main():
             if step % args.log_steps == 0:
                 avg_loss = running_loss / args.log_steps
                 avg_acc = running_acc / args.log_steps
-                print(f"Step {step:5d} | Loss: {avg_loss:.4f} | Acc: {avg_acc:.2%}")
+                print(f"Step {step:5d} | Loss: {avg_loss:.4f} | Acc: {avg_acc:.2%}", flush=True)
                 running_loss = 0.0
                 running_acc = 0.0
 
