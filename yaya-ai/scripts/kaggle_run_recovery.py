@@ -95,30 +95,32 @@ if not start_ckpt and HF_TOKEN:
     print('  No local checkpoint — pulling from HF Hub...')
     try:
         from huggingface_hub import list_repo_files, snapshot_download
-        # Scan Hub for best starting checkpoint — prefer DPO > SFT final
+        # Scan Hub — priority: recovery > dpo > sft
         hub_files = list(list_repo_files(repo_id=HUB_REPO, repo_type='model', token=hf_token))
         hub_ckpt_names = sorted({
             f.split('/')[0] for f in hub_files
-            if '/' in f and not f.split('/')[0].startswith('recovery-')
-            and '_temp' not in f
+            if '/' in f and '_temp' not in f
+            and any(f.split('/')[0].startswith(p) for p in
+                    ('recovery-checkpoint-', 'dpo-checkpoint-', 'checkpoint-'))
         })
         hub_ckpt = None
-        for prefix in ('dpo-checkpoint-', 'checkpoint-'):
+        for prefix in ('recovery-checkpoint-', 'dpo-checkpoint-', 'checkpoint-'):
             matches = [c for c in hub_ckpt_names if c.startswith(prefix)]
             if matches:
                 hub_ckpt = matches[-1]
                 break
         if hub_ckpt:
             print(f'  Downloading {hub_ckpt} from Hub...')
-            os.makedirs(DPO_CKPT_DIR, exist_ok=True)
+            dl_dir = RECOVERY_CKPT if hub_ckpt.startswith('recovery-') else DPO_CKPT_DIR
+            os.makedirs(dl_dir, exist_ok=True)
             snapshot_download(
                 repo_id=HUB_REPO,
                 allow_patterns=f'{hub_ckpt}/*',
-                local_dir=DPO_CKPT_DIR,
+                local_dir=dl_dir,
                 repo_type='model',
                 token=hf_token,
             )
-            local_path = os.path.join(DPO_CKPT_DIR, hub_ckpt)
+            local_path = os.path.join(dl_dir, hub_ckpt)
             if os.path.isdir(local_path):
                 start_ckpt = local_path
                 print(f'  Restored: {start_ckpt}')
