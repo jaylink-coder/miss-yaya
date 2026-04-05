@@ -224,6 +224,12 @@ def main():
     print_report(all_results, total_pass, total, overall_pct, step, loss)
     save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, loss)
 
+    # Update dashboard HTML with new results
+    dash_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "update_dashboard.py")
+    if os.path.exists(dash_script):
+        import subprocess
+        subprocess.run([sys.executable, dash_script], check=False)
+
 
 if __name__ == "__main__":
     main()
