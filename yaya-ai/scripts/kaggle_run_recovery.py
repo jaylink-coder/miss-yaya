@@ -276,21 +276,25 @@ else:
 # ── Step 4: Benchmark ─────────────────────────────────────────────────────────
 print('\n[4/4] Running benchmark on recovery checkpoint...')
 
-# Find the best recovery checkpoint — check all possible save locations
-# (trainer may save to its default dir if save_dir patch doesn't take effect)
-_candidate_dirs = [
-    RECOVERY_CKPT,
-    os.path.join(REPO_ROOT, 'checkpoints/yaya-125m-sft'),
-    '/kaggle/working/yaya-sft-checkpoints',
-    os.path.join(REPO_ROOT, 'checkpoints/yaya-125m-recovery'),
-]
-recovery_ckpts = []
-for _d in _candidate_dirs:
-    recovery_ckpts.extend(glob.glob(os.path.join(_d, 'checkpoint-*')))
-recovery_ckpts = sorted(set(recovery_ckpts))
+# If already done, use the downloaded recovery checkpoint directly
+if _already_done:
+    best_ckpt = start_ckpt
+    print(f'  Using pre-downloaded recovery checkpoint: {best_ckpt}')
+else:
+    # Find the best recovery checkpoint — check all possible save locations
+    _candidate_dirs = [
+        RECOVERY_CKPT,
+        os.path.join(REPO_ROOT, 'checkpoints/yaya-125m-sft'),
+        '/kaggle/working/yaya-sft-checkpoints',
+        os.path.join(REPO_ROOT, 'checkpoints/yaya-125m-recovery'),
+    ]
+    recovery_ckpts = []
+    for _d in _candidate_dirs:
+        recovery_ckpts.extend(glob.glob(os.path.join(_d, 'checkpoint-*')))
+    recovery_ckpts = sorted(set(recovery_ckpts))
+    best_ckpt = recovery_ckpts[-1] if recovery_ckpts else None
 
-if recovery_ckpts:
-    best_ckpt = recovery_ckpts[-1]
+if best_ckpt:
     print(f'  Found recovery checkpoint: {best_ckpt}')
 
     # Push to Hub with recovery- prefix to avoid collision with SFT/DPO checkpoints
