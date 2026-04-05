@@ -123,6 +123,34 @@ def extract_arithmetic(text: str) -> str:
     return ""
 
 
+# ── Date / time tool ──────────────────────────────────────────────────────────
+# Intercept "what time is it", "what day is today", etc. before generation.
+# Returns current local time/date so the model doesn't hallucinate stale dates.
+
+_DATETIME_PATTERNS = re.compile(
+    r'what\s+(?:is\s+(?:the\s+)?(?:current\s+)?|\'?s\s+)?(?:time|date|day|month|year)\s*(?:is\s+it|today|now)?'
+    r'|what\s+day\s+is\s+(?:it\s+)?today'
+    r'|(?:today\'?s?\s+date|current\s+date|current\s+time)'
+    r'|(?:what|which)\s+year\s+(?:is\s+it|are\s+we\s+in)',
+    re.IGNORECASE
+)
+
+def check_datetime(text: str) -> str:
+    """Return the current date/time if the question asks for it."""
+    if not _DATETIME_PATTERNS.search(text):
+        return ""
+    import datetime
+    now = datetime.datetime.now()
+    text_lower = text.lower()
+    if 'time' in text_lower and 'date' not in text_lower and 'day' not in text_lower:
+        return now.strftime("The current time is %H:%M.")
+    if 'year' in text_lower:
+        return now.strftime("The current year is %Y.")
+    if 'month' in text_lower:
+        return now.strftime("The current month is %B %Y.")
+    return now.strftime("Today is %A, %d %B %Y.")
+
+
 # ── Identity guard ────────────────────────────────────────────────────────────
 # The model's identity is unstable at 128M params — "Who are you?" sometimes
 # returns a language name or city. Intercept identity questions at the
