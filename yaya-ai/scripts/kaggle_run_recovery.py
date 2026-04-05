@@ -231,9 +231,9 @@ else:
     base_cfg_path = os.path.join(REPO_ROOT, 'configs/training/sft_125m.yaml')
     with open(base_cfg_path) as f:
         recovery_cfg = yaml.safe_load(f)
-    recovery_cfg['training']['max_steps']      = 5000
-    recovery_cfg['training']['learning_rate']  = 5e-5
-    recovery_cfg['training']['max_seq_length'] = 128
+    recovery_cfg['training']['max_steps']      = 2000   # stop before loss hits zero
+    recovery_cfg['training']['learning_rate']  = 2e-5   # lower LR — less memorization risk
+    recovery_cfg['training']['max_seq_length'] = 256    # slightly longer for instruct_clean
     recovery_cfg['training']['dtype']          = DTYPE
     recovery_cfg['checkpointing'] = recovery_cfg.get('checkpointing', {})
     recovery_cfg['checkpointing']['save_steps'] = 250
