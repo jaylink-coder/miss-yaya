@@ -128,15 +128,15 @@ _IDENTITY_QUESTIONS = re.compile(
 )
 
 _IDENTITY_ANSWERS = {
-    # Pattern substring → answer
-    'your name':        'Yaya',
-    'who are you':      'I am Yaya, a helpful AI assistant.',
+    # Pattern substring → answer (checked in order, first match wins)
     'chatgpt':          'No, I am Yaya — not ChatGPT.',
-    'gpt':              'No, I am Yaya, not a GPT model.',
     'openai':           'No, I am Yaya. I was not made by OpenAI.',
     'claude':           'No, I am Yaya, not Claude.',
     'gemini':           'No, I am Yaya, not Gemini.',
     'bard':             'No, I am Yaya, not Bard.',
+    'gpt':              'No, I am Yaya, not a GPT model.',
+    'your name':        'Yaya',
+    'who are you':      'I am Yaya, a helpful AI assistant.',
     'what ai':          'I am Yaya, a custom AI assistant.',
     'what model':       'I am Yaya, a 125M parameter language model.',
     'what assistant':   'I am Yaya, a helpful AI assistant.',
