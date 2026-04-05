@@ -167,13 +167,18 @@ else:
     # ── Step 2: Build recovery dataset ────────────────────────────────────────
     print('\n[2/4] Building recovery dataset...')
 
-    RECOVERY_DATA = os.path.join(DATA_DIR, 'yaya_recovery.jsonl')
-    SHORT_QA    = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
-    QUICK_FACTS = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
-    CONCISE_SFT = os.path.join(DATA_DIR, 'yaya_concise_sft.jsonl')
+    RECOVERY_DATA    = os.path.join(DATA_DIR, 'yaya_recovery.jsonl')
+    SHORT_QA         = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
+    QUICK_FACTS      = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
+    CONCISE_SFT      = os.path.join(DATA_DIR, 'yaya_concise_sft.jsonl')
+    INSTRUCT_CLEAN   = os.path.join(DATA_DIR, 'yaya_instruct_clean.jsonl')
+    FACTUAL_QA       = os.path.join(DATA_DIR, 'yaya_factual_qa.jsonl')
+    QA_FOCUSED       = os.path.join(DATA_DIR, 'yaya_qa_focused.jsonl')
 
+    # Base sources (1x) — diverse to prevent memorization of narrow set
+    base_sources = [SHORT_QA, QUICK_FACTS, CONCISE_SFT, FACTUAL_QA, QA_FOCUSED]
     sources = []
-    for src in [SHORT_QA, QUICK_FACTS, CONCISE_SFT]:
+    for src in base_sources:
         if os.path.exists(src):
             with open(src, encoding='utf-8', errors='replace') as f:
                 lines = [l.strip() for l in f if l.strip()]
@@ -182,13 +187,32 @@ else:
         else:
             print(f'  ! Missing: {os.path.basename(src)}')
 
+    # Add non-chess instruct_clean examples (diverse Q&A, ~13% lists — acceptable)
+    if os.path.exists(INSTRUCT_CLEAN):
+        import json as _json
+        with open(INSTRUCT_CLEAN, encoding='utf-8', errors='replace') as f:
+            ic_lines = [l.strip() for l in f if l.strip()]
+        # Filter out chess (they add domain-specific noise)
+        ic_filtered = []
+        for l in ic_lines:
+            try:
+                obj = _json.loads(l)
+                sys_content = obj.get('messages', [{}])[0].get('content', '').lower()
+                if 'chess' not in sys_content:
+                    ic_filtered.append(l)
+            except Exception:
+                pass
+        sources.extend(ic_filtered)
+        print(f'  + yaya_instruct_clean.jsonl (non-chess): {len(ic_filtered)} examples')
+
+    # 2x oversample only short_qa + quick_facts — enough signal without memorization
     boosted = []
     for src in [SHORT_QA, QUICK_FACTS]:
         if os.path.exists(src):
             with open(src, encoding='utf-8', errors='replace') as f:
                 lines = [l.strip() for l in f if l.strip()]
-            boosted.extend(lines * 10)
-            print(f'  + {os.path.basename(src)}: 10x boost = {len(lines) * 10} examples')
+            boosted.extend(lines * 2)
+            print(f'  + {os.path.basename(src)}: 2x boost = {len(lines) * 2} examples')
 
     import random; random.seed(42)
     all_examples = sources + boosted
@@ -196,7 +220,7 @@ else:
     with open(RECOVERY_DATA, 'w', encoding='utf-8') as f:
         for line in all_examples:
             f.write(line + '\n')
-    print(f'  Recovery dataset: {len(all_examples)} examples')
+    print(f'  Recovery dataset: {len(all_examples)} examples (2x oversample, diverse sources)')
     print(f'  Saved → {RECOVERY_DATA}')
 
     # ── Step 3: Train ──────────────────────────────────────────────────────────
