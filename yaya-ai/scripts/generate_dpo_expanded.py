@@ -199,6 +199,36 @@ FORMAT_PAIRS = [
     ),
 ]
 
+# ── Anti-numbered-list pairs: direct answer (chosen) vs math-list format (rejected) ──
+# These directly counter the "1. The main types of..." habit burned in by SFT training.
+ANTI_LIST_PAIRS = [
+    ("What is the capital of France?", "Paris", "1. The capital of France is Paris.\n2. It is located in northern France.\n3. The city has a population of..."),
+    ("What is the capital of Kenya?", "Nairobi", "1. Nairobi\n2. It is the capital city\n3. Located in East Africa"),
+    ("What color is the sky?", "Blue", "1. The sky appears blue\n2. This is due to Rayleigh scattering\n3. Shorter wavelengths..."),
+    ("How many months are in a year?", "12", "1. There are 12 months\n2. They are January, February, March...\n3. Each month has between 28 and 31 days"),
+    ("What planet do we live on?", "Earth", "1. We live on Earth\n2. Earth is the third planet from the Sun\n3. It has one natural satellite called the Moon"),
+    ("What is the chemical formula for water?", "H2O", "1. The chemical formula for water is H2O\n2. H stands for hydrogen\n3. O stands for oxygen"),
+    ("At what temperature does water boil?", "100°C (212°F)", "1. Water boils at 100°C\n2. This is at sea level\n3. At higher altitudes the boiling point is lower"),
+    ("What is your name?", "My name is Yaya.", "1. My name is Yaya\n2. I am an AI assistant\n3. I was built using a transformer architecture"),
+    ("Who are you?", "I'm Yaya, an AI assistant built from scratch.", "1. I am Yaya\n2. I am an AI assistant\n3. I was built using PyTorch"),
+    ("What is the opposite of hot?", "Cold", "1. The opposite of hot is cold\n2. These are antonyms\n3. Temperature can be measured in Celsius or Fahrenheit"),
+    ("Which is bigger: the Sun or the Earth?", "The Sun is much bigger — about 1.3 million Earths could fit inside it.", "1. The Sun is bigger\n2. The Sun is a star\n3. The Earth is a planet that orbits the Sun"),
+    ("Which is faster: a car or a bicycle?", "A car is faster.", "1. A car is faster than a bicycle\n2. Cars use engines\n3. Bicycles are human-powered"),
+    ("What language is this sentence written in?", "English", "1. This sentence is written in English\n2. English is a West Germanic language\n3. It originated in England"),
+    ("Is 17 a prime number?", "Yes, 17 is prime.", "1. Yes, 17 is a prime number\n2. A prime number is divisible only by 1 and itself\n3. The factors of 17 are 1 and 17"),
+    ("What is 5 x 5?", "25", "1. 5 x 5 = 25\n2. This is multiplication\n3. Five groups of five equals twenty-five"),
+    ("What is 8 x 9?", "72", "1. 8 x 9 = 72\n2. You can solve this by adding 8 nine times\n3. Or use the multiplication table"),
+    ("What is 100 divided by 4?", "25", "1. 100 divided by 4 equals 25\n2. Division splits a number into equal parts\n3. 4 x 25 = 100"),
+    ("What is the square root of 16?", "4", "1. The square root of 16 is 4\n2. Because 4 x 4 = 16\n3. Square roots are the inverse of squaring"),
+    ("What is half of 84?", "42", "1. Half of 84 is 42\n2. To find half, divide by 2\n3. 84 / 2 = 42"),
+    ("If I have 10 apples and give away 3, how many do I have left?", "7", "1. You have 7 apples left\n2. 10 - 3 = 7\n3. This is a subtraction problem"),
+    ("A car travels at 60 km/h for 2 hours. How far does it go?", "120 km", "1. The car travels 120 km\n2. Distance = speed × time\n3. 60 km/h × 2 hours = 120 km"),
+    ("All dogs are animals. Rex is a dog. Is Rex an animal?", "Yes. Rex is a dog, and all dogs are animals, so Rex is an animal.", "1. Yes, Rex is an animal\n2. This is a syllogism\n3. The major premise is that all dogs are animals"),
+    ("What is 2 + 2?", "4", "1. 2 + 2 = 4\n2. This is basic addition\n3. The sum of two and two is four"),
+    ("What is 3 + 3?", "6", "1. 3 + 3 = 6\n2. Adding three to three gives six\n3. This can also be seen as 2 × 3"),
+    ("What is 12 x 12?", "144", "1. 12 x 12 = 144\n2. This is a common multiplication fact\n3. Also written as 12 squared"),
+]
+
 # ── Safety pairs: helpful refusal (chosen) vs harmful compliance (rejected) ───
 SAFETY_PAIRS = [
     (
