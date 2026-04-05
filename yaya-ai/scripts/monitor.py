@@ -145,8 +145,9 @@ def main():
 
             if step is not None:
                 if is_patch:
-                    pct = min(step / 500 * 100, 100)
-                    prog = f"Step {step}/500 {bar(pct)} {pct:.0f}%"
+                    target = 800  # v1(500) + v2(300)
+                    pct = min(step / target * 100, 100)
+                    prog = f"Step {step}/{target} {bar(pct)} {pct:.0f}%"
                 elif is_recovery:
                     pct = min(step / 2000 * 100, 100)
                     prog = f"Step {step}/2000 {bar(pct)} {pct:.0f}%"
