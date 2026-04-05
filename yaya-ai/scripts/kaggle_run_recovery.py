@@ -218,11 +218,11 @@ if not training_ok:
 
         from src.utils.config import TrainingConfig as SrcTrainingConfig
         train_cfg = SrcTrainingConfig(
-            max_steps=3000,
+            max_steps=5000,
             learning_rate=5e-5,
             per_device_batch_size=4,
             gradient_accumulation_steps=4,
-            save_steps=500,
+            save_steps=250,
             save_dir=RECOVERY_CKPT,
             dtype=DTYPE,
         )
