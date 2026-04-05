@@ -207,9 +207,10 @@ if not training_ok:
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         model = model.to(device)
 
-        dataset = InstructionDataset(RECOVERY_DATA, tokenizer, max_seq_len=128)
+        dataset = InstructionDataset(RECOVERY_DATA, tokenizer, max_seq_length=128)
 
-        train_cfg = TrainingConfig(
+        from src.utils.config import TrainingConfig as SrcTrainingConfig
+        train_cfg = SrcTrainingConfig(
             max_steps=3000,
             learning_rate=5e-5,
             per_device_batch_size=4,
@@ -219,7 +220,12 @@ if not training_ok:
             dtype=DTYPE,
         )
 
-        trainer = Trainer(model, tokenizer, dataset, train_cfg)
+        train_loader = torch.utils.data.DataLoader(
+            dataset, batch_size=4, shuffle=True,
+            collate_fn=dataset.collate_fn if hasattr(dataset, 'collate_fn') else None,
+        )
+
+        trainer = Trainer(model, train_cfg, train_loader, tokenizer=tokenizer)
         trainer.train()
         training_ok = True
     except Exception as e:
