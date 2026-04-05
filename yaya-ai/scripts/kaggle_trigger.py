@@ -3,6 +3,13 @@
 Checks GPU quota, waits if needed, then triggers the notebook to run.
 Can be scheduled as a cron job or run manually.
 
+Setup (one-time):
+    1. Install kaggle API:  pip install kaggle
+    2. Get your Kaggle API token from https://www.kaggle.com/settings → API → Create New Token
+    3. Save to ~/.kaggle/kaggle.json  (it downloads automatically)
+    4. Add to .env:  KAGGLE_USERNAME=your_username
+                     KAGGLE_KEY=your_api_key
+
 Usage:
     # Run once — trigger now if quota available
     python scripts/kaggle_trigger.py
@@ -10,8 +17,11 @@ Usage:
     # Watch mode — poll until quota resets, then trigger
     python scripts/kaggle_trigger.py --watch
 
-    # Check status only
+    # Check status only (no trigger)
     python scripts/kaggle_trigger.py --status
+
+    # Force trigger even if already running
+    python scripts/kaggle_trigger.py --force
 """
 
 import sys
