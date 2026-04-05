@@ -255,6 +255,8 @@ _FACT_OVERRIDES: List[tuple] = [
     (r'heavier.*(?:iron|feather)|(?:iron|feather).*heavier',                     'They weigh the same — both are one kilogram.'),
     # Prime number checks for small numbers (model unreliable)
     (r'is\s+(\d+)\s+(?:a\s+)?prime',                                              None),  # computed below
+    # Discount: "costs X, Y% discount, how much do I pay?" → X*(1-Y/100)
+    (r'costs?\s+(\d+(?:\.\d+)?).*?(\d+(?:\.\d+)?)\s*%\s*discount',              None),  # computed below
 ]
 
 def _is_prime(n: int) -> bool:
