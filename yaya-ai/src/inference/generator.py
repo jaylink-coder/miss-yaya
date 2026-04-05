@@ -111,6 +111,89 @@ def extract_arithmetic(text: str) -> str:
                 return result
     return ""
 
+
+# ── Identity guard ────────────────────────────────────────────────────────────
+# The model's identity is unstable at 128M params — "Who are you?" sometimes
+# returns a language name or city. Intercept identity questions at the
+# question level and return a fixed correct answer.
+
+_IDENTITY_QUESTIONS = re.compile(
+    r'(?:what(?:\s+is|\s+\'?s)\s+your\s+(?:name|identity)|'
+    r'who\s+are\s+you|'
+    r'are\s+you\s+(?:chatgpt|gpt|openai|claude|gemini|bard|an?\s+ai)|'
+    r'what\s+(?:ai|model|assistant)\s+are\s+you|'
+    r'(?:tell|introduce)\s+(?:me\s+)?(?:about\s+)?yourself)',
+    re.IGNORECASE
+)
+
+_IDENTITY_ANSWERS = {
+    # Pattern substring → answer
+    'your name':        'Yaya',
+    'who are you':      'I am Yaya, a helpful AI assistant.',
+    'chatgpt':          'No, I am Yaya — not ChatGPT.',
+    'gpt':              'No, I am Yaya, not a GPT model.',
+    'openai':           'No, I am Yaya. I was not made by OpenAI.',
+    'claude':           'No, I am Yaya, not Claude.',
+    'gemini':           'No, I am Yaya, not Gemini.',
+    'bard':             'No, I am Yaya, not Bard.',
+    'what ai':          'I am Yaya, a custom AI assistant.',
+    'what model':       'I am Yaya, a 125M parameter language model.',
+    'what assistant':   'I am Yaya, a helpful AI assistant.',
+    'yourself':         'I am Yaya, a helpful AI assistant built from scratch.',
+    'identity':         'I am Yaya, a helpful AI assistant.',
+}
+
+def check_identity(text: str) -> str:
+    """Return a hardcoded identity answer if the question is about Yaya's identity."""
+    if not _IDENTITY_QUESTIONS.search(text):
+        return ""
+    text_lower = text.lower()
+    for keyword, answer in _IDENTITY_ANSWERS.items():
+        if keyword in text_lower:
+            return answer
+    return 'I am Yaya, a helpful AI assistant.'
+
+
+# ── Factual knowledge guard ───────────────────────────────────────────────────
+# A small set of facts the model consistently gets wrong due to pattern bleeding.
+# These are checked before generation as exact overrides.
+
+_FACT_OVERRIDES: List[tuple] = [
+    # (question pattern, answer)
+    (r'how\s+many\s+(?:months|mths)\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*year',  '12'),
+    (r'how\s+many\s+days\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*week',             '7'),
+    (r'how\s+many\s+days\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*year',             '365 (366 in a leap year)'),
+    (r'how\s+many\s+hours\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*day',             '24'),
+    (r'how\s+many\s+seconds\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*minute',        '60'),
+    (r'how\s+many\s+minutes\s+(?:are\s+(?:there\s+)?)?in\s+an?\s*hour',         '60'),
+    (r'capital\s+of\s+kenya',                                                     'Nairobi'),
+    (r'kenya.*capital',                                                            'Nairobi'),
+    (r'(?:boiling\s+point|boil)\s+(?:of\s+)?water|water\s+boil',                '100 degrees Celsius (212°F at sea level)'),
+    (r'(?:chemical\s+)?formula\s+for\s+water|water.*formula',                   'H2O'),
+    (r'what\s+planet\s+do\s+(?:we|humans)\s+live\s+on|planet.*humans?\s+live',  'Earth'),
+    (r'opposite\s+of\s+hot',                                                      'Cold'),
+    (r'opposite\s+of\s+cold',                                                     'Hot'),
+    (r'square\s+root\s+of\s+(\d+)',                                               None),  # computed below
+]
+
+def check_facts(text: str) -> str:
+    """Return a hardcoded answer for known-unstable facts."""
+    text_lower = text.lower().strip()
+    for pattern, answer in _FACT_OVERRIDES:
+        if re.search(pattern, text_lower, re.IGNORECASE):
+            if answer is None:
+                # Special case: square root
+                m = re.search(r'square\s+root\s+of\s+(\d+(?:\.\d+)?)', text_lower, re.IGNORECASE)
+                if m:
+                    import math
+                    n = float(m.group(1))
+                    r = math.sqrt(n)
+                    return str(int(r)) if r == int(r) else f"{r:.4g}"
+            else:
+                return answer
+    return ""
+
+
 if TYPE_CHECKING:
     from src.training.online_learner import OnlineLearner
     from src.training.neuro_elastic import ElasticGuard
