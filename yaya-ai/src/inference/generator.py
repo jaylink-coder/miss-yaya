@@ -333,11 +333,12 @@ def check_facts(text: str) -> str:
 # Short social exchanges the model handles poorly (outputs garbage).
 
 _GREETING_PATTERN = re.compile(
-    r'^(?:hi|hello|hey|good\s+(?:morning|afternoon|evening|day))[\s!?,]*(?:how\s+are\s+you)?[\s!?,]*$',
+    r'^(?:hi|hello|hey|good\s+(?:morning|afternoon|evening|day))\b',
     re.IGNORECASE
 )
 _THANKS_PATTERN = re.compile(
-    r'^(?:thank\s+you|thanks|that(?:\'s|\s+is)\s+(?:great|good|nice|helpful|amazing|awesome|perfect|correct|right|excellent))[!\s.,]*$',
+    r'^(?:thank\s+you|thanks)\b|'
+    r'^that(?:\'s|\s+is)\s+(?:a\s+)?(?:great|good|nice|helpful|amazing|awesome|perfect|correct|right|excellent)\b',
     re.IGNORECASE
 )
 _HELP_PATTERN = re.compile(
