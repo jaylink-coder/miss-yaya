@@ -223,6 +223,28 @@ class TextGenerator:
             if next_token_id in stop_ids:
                 break
 
+            # ── Calculator tool interception ──────────────────────────────
+            # If the response so far contains <|calc|>EXPR<|/calc|> without
+            # a result yet, evaluate and inject "=RESULT" into the token stream.
+            response_text = self.tokenizer.decode(generated_ids[n_prompt:])
+            calc_match = re.search(
+                re.escape(_CALC_OPEN) + r'([^<]+)' + re.escape(_CALC_CLOSE) + r'(?!=)',
+                response_text
+            )
+            if calc_match:
+                expr = calc_match.group(1)
+                result = _safe_eval(expr)
+                if result:
+                    injection = f"={result}"
+                    inject_ids = self.tokenizer.encode(injection, add_bos=False)
+                    generated_ids.extend(inject_ids)
+                    # Reset KV cache — full context needed after injection
+                    all_ids = generated_ids
+                    input_tensor = torch.tensor([all_ids], dtype=torch.long,
+                                                device=self.device)
+                    past_key_values = None
+                    continue
+
             # Update input for next iteration
             input_tensor = next_token.unsqueeze(0)
 
