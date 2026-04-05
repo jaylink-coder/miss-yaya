@@ -225,26 +225,27 @@ class TextGenerator:
                 break
 
             # ── Calculator tool interception ──────────────────────────────
-            # If the response so far contains <|calc|>EXPR<|/calc|> without
-            # a result yet, evaluate and inject "=RESULT" into the token stream.
+            # If the response so far contains a new <|calc|>EXPR<|/calc|>,
+            # evaluate it and inject "=RESULT" before continuing generation.
             response_text = self.tokenizer.decode(generated_ids[n_prompt:])
             calc_match = re.search(
                 re.escape(_CALC_OPEN) + r'([^<]+)' + re.escape(_CALC_CLOSE) + r'(?!=)',
                 response_text
             )
             if calc_match:
-                expr = calc_match.group(1)
-                result = _safe_eval(expr)
-                if result:
-                    injection = f"={result}"
-                    inject_ids = self.tokenizer.encode(injection, add_bos=False)
-                    generated_ids.extend(inject_ids)
-                    # Reset KV cache — full context needed after injection
-                    all_ids = generated_ids
-                    input_tensor = torch.tensor([all_ids], dtype=torch.long,
-                                                device=self.device)
-                    past_key_values = None
-                    continue
+                expr = calc_match.group(1).strip()
+                if expr not in _calc_injected:
+                    result = _safe_eval(expr)
+                    if result:
+                        _calc_injected.add(expr)
+                        injection = f"={result}"
+                        inject_ids = self.tokenizer.encode(injection, add_bos=False)
+                        generated_ids.extend(inject_ids)
+                        # Reset KV cache — need full context after injection
+                        input_tensor = torch.tensor([generated_ids], dtype=torch.long,
+                                                    device=self.device)
+                        past_key_values = None
+                        continue  # skip input_tensor update below
 
             # Update input for next iteration
             input_tensor = next_token.unsqueeze(0)
