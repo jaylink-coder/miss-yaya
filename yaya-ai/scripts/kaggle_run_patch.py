@@ -106,49 +106,44 @@ else:
     _already_done = False
 
 if not _already_done:
-    # Priority: local dpo2 > local recovery > Hub
+    # Priority for starting point: Hub patch > local dpo2 > Hub dpo2 > recovery
+    # IMPORTANT: always prefer patch-checkpoint from Hub — that's our best checkpoint
     DPO2_LOCAL = 'checkpoints/yaya-125m-dpo2'
-    RECOVERY_LOCAL = '/kaggle/working/yaya-recovery-checkpoints'
-    DPO_LOCAL = '/kaggle/working/yaya-dpo-checkpoints'
 
-    local_ckpt = (
-        find_local_checkpoint(DPO2_LOCAL, 'dpo2-checkpoint-') or
-        find_local_checkpoint(RECOVERY_LOCAL, 'checkpoint-') or
-        find_local_checkpoint(DPO_LOCAL, 'checkpoint-')
-    )
-
-    if local_ckpt:
-        print(f'  Found local: {local_ckpt}')
-        start_ckpt = local_ckpt
-    elif hf_token:
-        print('  No local checkpoint — pulling dpo2-checkpoint-00001500 from Hub...')
+    if hf_token:
+        print('  Checking Hub for best starting checkpoint...')
         try:
             from huggingface_hub import list_repo_files, snapshot_download
             hub_files = list(list_repo_files(repo_id=HUB_REPO, repo_type='model', token=hf_token))
-
-            # Priority: dpo2 > recovery > dpo
-            hub_ckpt = None
             all_names = sorted({f.split('/')[0] for f in hub_files if '/' in f and '_temp' not in f})
-            for prefix in ('dpo2-checkpoint-', 'recovery-checkpoint-', 'dpo-checkpoint-'):
+
+            # Priority: patch > dpo2 > recovery > dpo
+            hub_ckpt = None
+            for prefix in ('patch-checkpoint-', 'dpo2-checkpoint-', 'recovery-checkpoint-', 'dpo-checkpoint-'):
                 matches = [c for c in all_names if c.startswith(prefix)]
                 if matches:
                     hub_ckpt = matches[-1]
                     break
 
             if hub_ckpt:
-                print(f'  Downloading {hub_ckpt}...')
-                dl_dir = '/kaggle/working/yaya-dpo2-checkpoints'
-                os.makedirs(dl_dir, exist_ok=True)
-                snapshot_download(
-                    repo_id=HUB_REPO,
-                    allow_patterns=f'{hub_ckpt}/*',
-                    local_dir=dl_dir,
-                    repo_type='model',
-                    token=hf_token,
-                )
+                dl_dir = PATCH_CKPT if hub_ckpt.startswith('patch-') else '/kaggle/working/yaya-dpo2-checkpoints'
                 local_path = os.path.join(dl_dir, hub_ckpt)
-                if os.path.isdir(local_path):
+                if os.path.isdir(local_path) and os.path.exists(os.path.join(local_path, 'model.pt')):
+                    print(f'  Already local: {local_path}')
                     start_ckpt = local_path
+                else:
+                    print(f'  Downloading {hub_ckpt} from Hub...')
+                    os.makedirs(dl_dir, exist_ok=True)
+                    snapshot_download(
+                        repo_id=HUB_REPO,
+                        allow_patterns=f'{hub_ckpt}/*',
+                        local_dir=dl_dir,
+                        repo_type='model',
+                        token=hf_token,
+                    )
+                    local_path = os.path.join(dl_dir, hub_ckpt)
+                    if os.path.isdir(local_path):
+                        start_ckpt = local_path
                     print(f'  Restored: {start_ckpt}')
             else:
                 print('  ERROR: No dpo2/recovery/dpo checkpoint on Hub.')
