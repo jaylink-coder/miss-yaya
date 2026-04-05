@@ -124,12 +124,17 @@ def main():
             distributed=False,
         )
 
+    # Load tokenizer (needed for online learning, alignment monitoring, etc.)
+    from src.tokenizer.tokenizer import YayaTokenizer
+    tokenizer = YayaTokenizer(train_config.tokenizer_path)
+
     # Create trainer and start training
     trainer = Trainer(
         model=model,
         config=train_config,
         train_dataloader=train_dataloader,
         eval_dataloader=eval_dataloader,
+        tokenizer=tokenizer,
     )
 
     trainer.train(resume_from=args.resume)
