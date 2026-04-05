@@ -148,71 +148,84 @@ print('  Goal: overwrite numbered-list habit with direct answers')
 
 os.makedirs(RECOVERY_CKPT, exist_ok=True)
 
-train_script = os.path.join(REPO_ROOT, 'scripts/train_sft.py')
+# Write a temporary train config with recovery settings
+import yaml
+base_cfg_path = os.path.join(REPO_ROOT, 'configs/training/sft_125m.yaml')
+with open(base_cfg_path) as f:
+    recovery_cfg = yaml.safe_load(f)
 
+# Patch recovery-specific values
+recovery_cfg['training']['train_data']                = RECOVERY_DATA
+recovery_cfg['training']['max_steps']                 = 3000
+recovery_cfg['training']['learning_rate']             = 5e-5
+recovery_cfg['training']['max_seq_length']            = 128
+recovery_cfg['training']['save_steps']                = 500
+recovery_cfg['training']['checkpoint_dir']            = RECOVERY_CKPT
+recovery_cfg['training']['dtype']                     = DTYPE
+recovery_cfg['training']['pretrain_checkpoint']       = start_ckpt
+recovery_cfg['data']   = recovery_cfg.get('data', {})
+recovery_cfg['data']['train_data'] = RECOVERY_DATA
+
+tmp_cfg_path = '/kaggle/working/recovery_train_config.yaml'
+with open(tmp_cfg_path, 'w') as f:
+    yaml.dump(recovery_cfg, f)
+
+train_script = os.path.join(REPO_ROOT, 'scripts/train_sft.py')
 train_cmd = [
     sys.executable, train_script,
-    '--model_config',   os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml'),
-    '--train_config',   os.path.join(REPO_ROOT, 'configs/training/sft_125m.yaml'),
-    '--data',           RECOVERY_DATA,
-    '--checkpoint_dir', RECOVERY_CKPT,
-    '--resume',         start_ckpt,
-    '--max_steps',      '3000',
-    '--lr',             '5e-5',
-    '--seq_len',        '128',   # short sequences — force brief answers
-    '--save_steps',     '500',
-    '--dtype',          DTYPE,
-    '--hub_repo',       HUB_REPO,
-    '--hub_token',      hf_token or '',
+    '--model_config', os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml'),
+    '--train_config', tmp_cfg_path,
+    '--pretrain_checkpoint', start_ckpt,
 ]
 
-print(f'  Command: {" ".join(train_cmd[:6])} ...')
+print(f'  Command: {" ".join(train_cmd[:4])} ...')
 result = subprocess.run(train_cmd, cwd=REPO_ROOT)
 training_ok = result.returncode == 0
 
 if not training_ok:
-    # Fallback: use trainer.py directly with minimal config
-    print('  train_sft.py failed — trying trainer.py directly...')
-    from src.training.trainer import Trainer, TrainingConfig
-    from src.model.transformer import YayaTransformer
-    from src.model.config import ModelConfig
-    from src.tokenizer.tokenizer import YayaTokenizer
-    from src.data.dataset import InstructionDataset
+    # Fallback: drive the trainer directly
+    print('  train_sft.py failed — driving trainer directly...')
+    try:
+        from src.training.trainer import Trainer, TrainingConfig
+        from src.model.yaya_model import YayaForCausalLM
+        from src.model.config import ModelConfig
+        from src.tokenizer.tokenizer import YayaTokenizer
+        from src.data.dataset import InstructionDataset
 
-    import yaml
-    with open(os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml')) as f:
-        model_cfg_dict = yaml.safe_load(f)
+        with open(os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml')) as f:
+            model_cfg_dict = yaml.safe_load(f)
 
-    model_cfg = ModelConfig(**model_cfg_dict)
-    tokenizer = YayaTokenizer(TOKENIZER_PATH)
-    model = YayaTransformer(model_cfg)
+        model_cfg = ModelConfig(**model_cfg_dict)
+        tokenizer = YayaTokenizer(TOKENIZER_PATH)
+        model = YayaForCausalLM(model_cfg)
 
-    # Load checkpoint weights
-    ckpt_path = os.path.join(start_ckpt, 'model.pt')
-    state = torch.load(ckpt_path, map_location='cpu')
-    model.load_state_dict(state['model'] if 'model' in state else state)
-    print('  Model weights loaded.')
+        ckpt_file = os.path.join(start_ckpt, 'model.pt')
+        state = torch.load(ckpt_file, map_location='cpu')
+        weights = state.get('model', state)
+        model.load_state_dict(weights, strict=False)
+        print('  Model weights loaded.')
 
-    device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    model = model.to(device)
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        model = model.to(device)
 
-    dataset = InstructionDataset([RECOVERY_DATA], tokenizer, max_seq_len=128)
+        dataset = InstructionDataset(RECOVERY_DATA, tokenizer, max_seq_len=128)
 
-    train_cfg = TrainingConfig(
-        max_steps=3000,
-        learning_rate=5e-5,
-        batch_size=4,
-        gradient_accumulation_steps=4,
-        save_steps=500,
-        checkpoint_dir=RECOVERY_CKPT,
-        dtype=DTYPE,
-        hub_repo=HUB_REPO,
-        hub_token=hf_token or '',
-    )
+        train_cfg = TrainingConfig(
+            max_steps=3000,
+            learning_rate=5e-5,
+            batch_size=4,
+            gradient_accumulation_steps=4,
+            save_steps=500,
+            checkpoint_dir=RECOVERY_CKPT,
+            dtype=DTYPE,
+        )
 
-    trainer = Trainer(model, tokenizer, dataset, train_cfg)
-    trainer.train()
-    training_ok = True
+        trainer = Trainer(model, tokenizer, dataset, train_cfg)
+        trainer.train()
+        training_ok = True
+    except Exception as e:
+        print(f'  Fallback trainer also failed: {e}')
+        training_ok = False
 
 
 # ── Step 4: Benchmark ─────────────────────────────────────────────────────────
