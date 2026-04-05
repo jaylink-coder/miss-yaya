@@ -162,7 +162,8 @@ for gen_script in ['scripts/generate_antlist_dpo.py', 'scripts/add_format_enforc
 
 
 # ── Step 2: Build recovery dataset ────────────────────────────────────────────
-print('\n[2/4] Building recovery dataset...')
+if not _already_done:
+ print('\n[2/4] Building recovery dataset...')
 
 RECOVERY_DATA = os.path.join(DATA_DIR, 'yaya_recovery.jsonl')
 
