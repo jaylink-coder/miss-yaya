@@ -95,8 +95,8 @@ _ARITH_PATTERNS = [
      r'\1*\2'),
     # "half of X" → X/2
     (r'(?:what\s+is\s+)?half\s+of\s+(\d+(?:\.\d+)?)', r'\1/2'),
-    # "X times Y" / "X multiplied by Y"
-    (r'(\d+(?:\.\d+)?)\s*(?:times|multiplied\s+by)\s*(\d+(?:\.\d+)?)', r'\1*\2'),
+    # "X times Y" / "X multiplied by Y" / "X x Y"
+    (r'(\d+(?:\.\d+)?)\s*(?:times|multiplied\s+by|\bx\b)\s*(\d+(?:\.\d+)?)', r'\1*\2'),
     # "X minus Y" / "X subtract Y"
     (r'(\d+(?:\.\d+)?)\s*(?:minus|subtract(?:ed)?\s+(?:from)?\s*)\s*(\d+(?:\.\d+)?)', r'\1-\2'),
     # "X plus Y" / "X added to Y"
