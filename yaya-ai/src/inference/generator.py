@@ -4,10 +4,73 @@ Supports greedy, top-k, top-p (nucleus), temperature sampling,
 and repetition penalty for controllable text generation.
 """
 
+import re
+import ast
+import operator
 import torch
 import torch.nn.functional as F
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 from dataclasses import dataclass
+
+# ── Calculator tool ───────────────────────────────────────────────────────────
+# Token format: <|calc|>EXPRESSION<|/calc|>=RESULT
+# When the model emits <|calc|>EXPR<|/calc|>, we evaluate EXPR and inject =RESULT
+# so the model continues with the correct answer already in context.
+
+_CALC_OPEN  = "<|calc|>"
+_CALC_CLOSE = "<|/calc|>"
+
+_SAFE_OPS = {
+    ast.Add: operator.add,
+    ast.Sub: operator.sub,
+    ast.Mult: operator.mul,
+    ast.Div: operator.truediv,
+    ast.FloorDiv: operator.floordiv,
+    ast.Mod: operator.mod,
+    ast.Pow: operator.pow,
+    ast.USub: operator.neg,
+    ast.UAdd: operator.pos,
+}
+
+def _safe_eval(expr: str) -> str:
+    """Evaluate a simple arithmetic expression safely (no eval()).
+
+    Returns the result as a string, or empty string on error.
+    """
+    expr = expr.strip()
+    # Allow basic percentage: "15% of 200" → "15/100*200"
+    expr = re.sub(r'(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)',
+                  r'(\1/100*\2)', expr, flags=re.IGNORECASE)
+    # Allow trailing % as /100
+    expr = re.sub(r'(\d+(?:\.\d+)?)\s*%', r'(\1/100)', expr)
+
+    def _eval_node(node):
+        if isinstance(node, ast.Constant):
+            if isinstance(node.value, (int, float)):
+                return node.value
+            raise ValueError("non-numeric constant")
+        elif isinstance(node, ast.BinOp):
+            op = _SAFE_OPS.get(type(node.op))
+            if op is None:
+                raise ValueError(f"unsupported op {node.op}")
+            return op(_eval_node(node.left), _eval_node(node.right))
+        elif isinstance(node, ast.UnaryOp):
+            op = _SAFE_OPS.get(type(node.op))
+            if op is None:
+                raise ValueError(f"unsupported unary op {node.op}")
+            return op(_eval_node(node.operand))
+        else:
+            raise ValueError(f"unsupported node {type(node)}")
+
+    try:
+        tree = ast.parse(expr, mode='eval')
+        result = _eval_node(tree.body)
+        # Format: integer if whole number, else up to 6 sig figs
+        if isinstance(result, float) and result == int(result):
+            return str(int(result))
+        return f"{result:.6g}"
+    except Exception:
+        return ""
 
 if TYPE_CHECKING:
     from src.training.online_learner import OnlineLearner
