@@ -489,15 +489,21 @@ class TextGenerator:
 
         # ── Pre-generation guards ─────────────────────────────────────────
         # Extract the user's last turn once, then run each guard in priority order:
-        # 1. Calculator  — exact arithmetic answers
-        # 2. Identity    — hardcoded "I am Yaya" answers
-        # 3. Fact guard  — hardcoded overrides for known-unstable facts
+        # 1. Date/time   — live clock answer
+        # 2. Calculator  — exact arithmetic answers
+        # 3. Identity    — hardcoded "I am Yaya" answers
+        # 4. Fact guard  — hardcoded overrides for known-unstable facts
         _user_turn = re.search(
             r'</\|user\|>\n(.*?)(?:\n</\|assistant\|>|\Z)', prompt,
             re.DOTALL | re.IGNORECASE
         )
         if _user_turn:
             _user_text = _user_turn.group(1).strip()
+
+            if config.use_datetime:
+                _dt_ans = check_datetime(_user_text)
+                if _dt_ans:
+                    return _dt_ans
 
             if config.use_calculator:
                 _calc_ans = extract_arithmetic(_user_text)
