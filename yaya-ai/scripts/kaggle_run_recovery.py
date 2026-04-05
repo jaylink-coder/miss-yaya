@@ -137,6 +137,18 @@ if not start_ckpt:
 
 print(f'  Starting from: {start_ckpt}')
 
+# Check if recovery is already complete — skip training if so
+_meta_path = os.path.join(start_ckpt, 'metadata.json')
+_already_done = False
+if os.path.exists(_meta_path):
+    import json as _json
+    _meta = _json.load(open(_meta_path))
+    if _meta.get('step', 0) >= 5000 and os.path.basename(start_ckpt).startswith('recovery-'):
+        print(f'  Recovery already complete at step {_meta["step"]} (loss={_meta.get("loss","?")})')
+        print('  Skipping training — going straight to DPO2 + benchmark.')
+        _already_done = True
+        training_ok = True
+
 # ── Step 1b: Generate fresh data (anti-list DPO + concise SFT) ────────────────
 print('\n[1b/4] Generating anti-list DPO pairs and format-enforcement SFT data...')
 for gen_script in ['scripts/generate_antlist_dpo.py', 'scripts/add_format_enforcement.py']:
