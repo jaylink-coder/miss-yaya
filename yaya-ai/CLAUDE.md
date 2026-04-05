@@ -16,19 +16,26 @@ make benchmark       # Full 35-question benchmark across 6 categories
 ```
 
 ## Training (Kaggle)
-Training runs via `scripts/kaggle_run_sft.py` on Kaggle.
+- **SFT**: `scripts/kaggle_run_sft.py` — 40,000 steps, COMPLETE
+- **DPO**: `scripts/train_dpo.py` — 2,500 steps, COMPLETE
+- **Recovery**: `scripts/kaggle_run_recovery.py` — 3,000 steps on short_qa+facts only, NEXT
 - **Resume**: Just re-run the Kaggle notebook — auto-pulls latest checkpoint from HF Hub
 - **Monitor**: `python scripts/phase_tester.py --once --token $HF_TOKEN`
 - **Benchmark**: `python scripts/benchmark.py --checkpoint checkpoints/.../checkpoint-XXXXX`
-- **Auto-test per phase**: `python scripts/phase_tester.py --watch --token $HF_TOKEN`
 
-## Current training state (2026-04-04)
-- **Step**: 32,500 / 40,000 (81%) — Phase 14 "Advanced I", running on Kaggle
-- **Loss**: 2.76 (was 10.7 at start)
-- **HF Hub**: `Jaylink-coder/yaya-125m` — checkpoints pushed every 90s
-- **Latest local**: `checkpoints/yaya-125m-sft/checkpoint-00032500/`
-- **Benchmark**: Step 15k=29%, Step 30k=23% (model in math rut — short Q&A fix pending)
-- **After step 40,000**: DPO auto-launches, then pushes final checkpoint to Hub
+## Current training state (2026-04-05)
+- **SFT**: COMPLETE — 40,000 steps, final loss 2.78
+- **DPO**: COMPLETE — 2,500 steps, final loss 0.43, accuracy ~80%
+- **Latest checkpoint**: `dpo-checkpoint-00002500` on HF Hub `Jaylink-coder/yaya-125m`
+- **Benchmark history**:
+  - Step 15k: 29% (10/35)
+  - Step 30k: 23% (8/35) — math rut peak
+  - DPO final: 26% (9/35) — word problems 50%, identity 50%
+- **Next step**: Recovery SFT — 3,000 steps on `short_qa + quick_facts` only
+- **Problem**: Model outputs numbered lists (`"1. The main types of..."`) for all questions
+  - Root cause: 40k steps of math training burned in numbered-list format
+  - DPO (2,500 steps) insufficient to overcome it
+  - Fix: `scripts/kaggle_run_recovery.py` — targeted short-answer retraining
 
 ## Model configs
 - **Primary**: `configs/model/yaya_125m.yaml` — 129M params
@@ -61,6 +68,7 @@ powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$proc = Start-Process
 - **Training resume vs fresh start**: Use `--resume` for same dataset/config; `--pretrain_checkpoint` for new dataset
 - **Never use `required=True`** for `--checkpoint` or `--model_config` — all scripts auto-detect
 - **Always resume from latest checkpoint** — never restart from scratch
+- **HF_TOKEN must be set as module-level alias**: `HF_TOKEN = hf_token` after loading secret
 
 ## Token format
 - `SYSTEM_TOKEN = "<|system|>"`
@@ -74,13 +82,19 @@ powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$proc = Start-Process
 - `<|calc|>EXPRESSION<|/calc|>=RESULT` — calculator tool call
 
 ## Data files
-- `data/sft/yaya_reasoning_large.jsonl` — **~203K examples** (Kaggle-built: GSM8K + MetaMath + OpenHermes + Yaya)
-- `data/sft/yaya_short_qa.jsonl` — **2,634 direct Q&A pairs** (arithmetic, facts, identity) — fixes math rut
-- `data/sft/yaya_dpo_combined.jsonl` — **4,214 DPO preference pairs** (was 1,052)
+- `data/sft/yaya_reasoning_large.jsonl` — **~205K examples** (GSM8K + MetaMath + OpenHermes + Yaya + short_qa)
+- `data/sft/yaya_short_qa.jsonl` — **2,634 direct Q&A pairs** (arithmetic, facts, identity)
+- `data/sft/yaya_dpo_combined.jsonl` — **4,214 DPO preference pairs**
+- `data/sft/teach/quick_facts.jsonl` — **1,000 direct Q&A facts** (used in recovery)
 - `data/sft/yaya_reasoning_combined.jsonl` — 3,455 local CoT examples
 - `data/tokenizer/yaya_tokenizer.model` — SentencePiece tokenizer (vocab 32768)
 
 ## Known issues / recent fixes
+- **2026-04-05**: DPO complete. Model still outputs numbered lists for all questions.
+- **2026-04-05**: Last 5k SFT steps used only 24k examples (HF token expired mid-session)
+- **2026-04-05**: boost_weak_areas() kwarg bug fixed (phase_id → current_phase_id)
+- **2026-04-05**: DPO launch at step 40k fixed (was hitting sys.exit before DPO code)
+- **2026-04-04**: HF_TOKEN NameError in build_dataset() fixed (module-level alias added)
 - **2026-04-04**: Generator was returning full prompt+response; fixed to return response-only
 - **2026-04-04**: Repetition penalty was penalizing prompt tokens; fixed to response-only
 - **2026-04-04**: OpenHermes download was cutting off ~53K short; fixed to use streaming=True
