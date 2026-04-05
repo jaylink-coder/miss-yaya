@@ -1,138 +1,102 @@
-# Yaya AI — Multimodal Foundation Model
+---
+language: en
+tags:
+  - pytorch
+  - transformer
+  - causal-lm
+  - from-scratch
+license: apache-2.0
+---
 
-A multimodal AI system trained from scratch, combining language understanding, vision processing, and domain-specific capabilities for general-purpose, business, and creative applications.
+# Yaya-125M
 
-## Project Structure
+A 129M parameter causal language model trained from scratch in PyTorch — no HuggingFace Transformers dependency.
+
+## Model Details
+
+| Property | Value |
+|---|---|
+| Parameters | 128,994,048 (~129M) |
+| Architecture | Transformer (decoder-only) |
+| Layers | 12 |
+| Hidden size | 768 |
+| FFN size | 3,072 |
+| Attention heads | 12 (GQA: 4 KV heads) |
+| Vocab size | 32,768 (SentencePiece) |
+| Max sequence length | 1,024 |
+| Positional encoding | RoPE |
+| Activation | SwiGLU |
+| Tied embeddings | Yes |
+
+## Training
+
+- **Hardware**: Kaggle T4 GPU (float16)
+- **SFT**: 40,000 steps on ~205K examples (GSM8K + MetaMath + OpenHermes + custom Q&A)
+- **DPO**: 2,500 steps on 4,225 preference pairs
+- **Optimizer**: AdamW (lr=2e-5, β₁=0.9, β₂=0.95)
+- **Batch size**: 32 effective (4 × 8 grad accum)
+
+## Benchmark Results
+
+| Checkpoint | Overall | Arithmetic | Word Problems | Facts | Identity | Reasoning | Language |
+|---|---|---|---|---|---|---|---|
+| Step 15k | 29% | 50% | 33% | 25% | 25% | 20% | 0% |
+| Step 30k | 23% | 25% | 17% | 13% | 50% | 0% | 50% |
+| DPO final | 26% | 38% | 50% | 13% | 50% | 0% | 0% |
+
+## Usage
+
+```python
+import torch
+from src.model.transformer import YayaTransformer
+from src.model.config import ModelConfig
+from src.tokenizer.tokenizer import YayaTokenizer
+from src.inference.generator import TextGenerator, GenerationConfig
+
+# Load
+tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
+model = YayaTransformer(ModelConfig())
+state = torch.load("checkpoint/model.pt", map_location="cpu")
+model.load_state_dict(state["model"])
+model.eval()
+
+gen = TextGenerator(model, tokenizer)
+cfg = GenerationConfig(max_new_tokens=200, temperature=0.7, repetition_penalty=1.5)
+
+response = gen.generate("What is 2 + 2?", config=cfg)
+print(response)  # "4"
+```
+
+## Repo Structure
 
 ```
 yaya-ai/
-├── configs/                    # All configuration files
-│   ├── model/                  # Model architecture configs (1.5B, 7B, 13B, etc.)
-│   ├── training/               # Training hyperparameter configs
-│   ├── data/                   # Data pipeline configs
-│   └── serving/                # Inference & serving configs
-│
-├── src/                        # Core source code
-│   ├── model/                  # Model architecture
-│   │   ├── transformer.py      # Core transformer (blocks, layers)
-│   │   ├── attention.py        # GQA, FlashAttention, KV-cache
-│   │   ├── embeddings.py       # Token + positional embeddings (RoPE)
-│   │   ├── feedforward.py      # SwiGLU feed-forward network
-│   │   ├── normalization.py    # RMSNorm
-│   │   ├── vision_encoder.py   # Vision Transformer (ViT) encoder
-│   │   ├── multimodal.py       # Multimodal fusion (projector, combined model)
-│   │   └── yaya_model.py       # Top-level model class
-│   │
-│   ├── tokenizer/              # Tokenizer
-│   │   ├── trainer.py          # BPE tokenizer training
-│   │   ├── tokenizer.py        # Tokenizer wrapper with special tokens
-│   │   └── vocab.py            # Vocabulary management
-│   │
-│   ├── data/                   # Data pipeline
-│   │   ├── dataset.py          # Dataset classes (text, vision, multimodal)
-│   │   ├── dataloader.py       # Streaming dataloader with distributed support
-│   │   ├── processing.py       # Text cleaning, filtering, dedup
-│   │   ├── image_processing.py # Image preprocessing and augmentation
-│   │   └── mixing.py           # Data mixing and sampling strategy
-│   │
-│   ├── training/               # Training infrastructure
-│   │   ├── trainer.py          # Main training loop
-│   │   ├── distributed.py      # Distributed training setup (DeepSpeed, FSDP)
-│   │   ├── optimizer.py        # AdamW + learning rate schedulers
-│   │   ├── checkpointing.py    # Save/load checkpoints
-│   │   ├── logging_utils.py    # W&B and console logging
-│   │   └── loss.py             # Loss functions
-│   │
-│   ├── evaluation/             # Evaluation & benchmarking
-│   │   ├── evaluator.py        # Main evaluation orchestrator
-│   │   ├── benchmarks.py       # Benchmark runners (MMLU, HellaSwag, etc.)
-│   │   ├── metrics.py          # Metric computations
-│   │   └── safety.py           # Safety and toxicity evaluation
-│   │
-│   ├── inference/              # Inference & serving
-│   │   ├── generator.py        # Text generation (greedy, sampling, beam)
-│   │   ├── kv_cache.py         # KV-cache for efficient inference
-│   │   ├── quantization.py     # Post-training quantization (INT4, INT8, FP8)
-│   │   └── server.py           # FastAPI serving endpoint
-│   │
-│   └── utils/                  # Shared utilities
-│       ├── config.py           # Configuration loading and validation
-│       ├── io_utils.py         # File I/O helpers
-│       ├── distributed_utils.py # Distributed computing helpers
-│       └── profiling.py        # Performance profiling tools
-│
-├── scripts/                    # Executable scripts
-│   ├── train.py                # Main training entry point
-│   ├── train_tokenizer.py      # Tokenizer training script
-│   ├── evaluate.py             # Evaluation entry point
-│   ├── generate.py             # Interactive generation script
-│   ├── serve.py                # Launch serving endpoint
-│   ├── prepare_data.py         # Data preparation pipeline
-│   └── convert_checkpoint.py   # Checkpoint format conversion
-│
-├── tests/                      # Unit and integration tests
-│   ├── test_model.py           # Model architecture tests
-│   ├── test_attention.py       # Attention mechanism tests
-│   ├── test_tokenizer.py       # Tokenizer tests
-│   ├── test_data.py            # Data pipeline tests
-│   ├── test_training.py        # Training loop tests
-│   └── test_inference.py       # Inference tests
-│
-├── docs/                       # Documentation
-│   ├── architecture.md         # Architecture design document
-│   ├── training_guide.md       # Training guide
-│   └── api.md                  # API documentation
-│
-├── requirements.txt            # Python dependencies
-├── setup.py                    # Package setup
-├── pyproject.toml              # Modern Python project config
-├── Dockerfile                  # Container for training/serving
-├── docker-compose.yml          # Multi-container orchestration
-├── Makefile                    # Common commands
-└── .gitignore                  # Git ignore rules
+├── src/
+│   ├── model/          # Transformer architecture
+│   ├── tokenizer/      # SentencePiece wrapper
+│   ├── training/       # Trainer, DPO trainer
+│   ├── inference/      # TextGenerator
+│   └── data/           # Dataset classes
+├── scripts/
+│   ├── kaggle_run_sft.py       # Main Kaggle SFT runner (40k steps, DONE)
+│   ├── kaggle_run_recovery.py  # Recovery fine-tune (anti-list-format)
+│   ├── train_dpo.py            # DPO alignment (DONE)
+│   ├── benchmark.py            # 35-question eval suite
+│   ├── chat.py                 # CLI chat
+│   ├── web_ui.py               # Gradio web UI
+│   ├── quantize.py             # int8 quantization (492MB → 219MB)
+│   └── update_dashboard.py     # Regenerate dashboard from benchmark data
+├── configs/
+│   ├── model/yaya_125m.yaml
+│   └── training/milestones.yaml
+└── docs/
+    ├── dashboard.html           # Training progress dashboard
+    └── benchmark_results.jsonl
 ```
 
-## Quick Start
+## Notes
 
-```bash
-# Install dependencies
-pip install -e ".[dev]"
-
-# Train tokenizer
-python scripts/train_tokenizer.py --config configs/data/tokenizer.yaml
-
-# Train model (single GPU)
-python scripts/train.py --config configs/training/train_1.5b.yaml
-
-# Train model (distributed)
-torchrun --nproc_per_node=8 scripts/train.py --config configs/training/train_1.5b.yaml
-
-# Evaluate
-python scripts/evaluate.py --checkpoint checkpoints/latest --benchmarks mmlu,hellaswag
-
-# Generate text
-python scripts/generate.py --checkpoint checkpoints/latest --prompt "Hello, I am Yaya"
-
-# Serve API
-python scripts/serve.py --checkpoint checkpoints/latest --port 8000
-```
-
-## Architecture
-
-- **LLM Core:** Dense transformer with RMSNorm, GQA, RoPE, SwiGLU
-- **Vision:** Vision Transformer (ViT) encoder with learned patch embeddings
-- **Multimodal Fusion:** Unified embedding decoder architecture (Method A)
-- **Training:** BF16 mixed precision, DeepSpeed ZeRO-2/3, gradient checkpointing
-- **Inference:** KV-cache, INT4/INT8 quantization, continuous batching
-
-## Model Configurations
-
-| Config | Params | Layers | Hidden | Heads | KV Heads |
-|--------|--------|--------|--------|-------|----------|
-| Yaya-1.5B | 1.5B | 24 | 2048 | 16 | 4 |
-| Yaya-7B | 7B | 32 | 4096 | 32 | 8 |
-| Yaya-13B | 13B | 40 | 5120 | 40 | 8 |
-
-## License
-
-Proprietary — All rights reserved.
+- Built entirely from scratch — no HuggingFace Transformers dependency
+- Token format: `<|system|>`, `</|user|>`, `</|assistant|>`
+- Checkpoints pushed to HF Hub every 90s during Kaggle training
+- See `docs/dashboard.html` for training progress visualization
