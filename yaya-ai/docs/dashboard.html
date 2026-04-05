@@ -167,20 +167,12 @@ let lossHistory = lossPoints.map(p => p.loss);
 // ── Benchmark + phase data (auto-updated by scripts/update_dashboard.py) ────
 // LOSS_JSONL: one entry per checkpoint with known loss, for the loss curve
 // Format: {"step": N, "loss": F, "label": "..."}
-const LOSS_JSONL = `{"step":0,"loss":10.7,"label":"start"}
-{"step":5000,"loss":5.2,"label":"step 5k"}
-{"step":10000,"loss":3.8,"label":"step 10k"}
-{"step":15000,"loss":3.1,"label":"step 15k"}
-{"step":20000,"loss":2.9,"label":"step 20k"}
-{"step":25000,"loss":2.85,"label":"step 25k"}
-{"step":30000,"loss":2.82,"label":"step 30k"}
-{"step":35000,"loss":2.80,"label":"step 35k"}
-{"step":40000,"loss":2.78,"label":"SFT final"}
-{"step":42500,"loss":0.43,"label":"DPO final"}`;
+const LOSS_JSONL = `{"step":2500,"loss":0.4284,"label":"dpo-checkpoint-00002500"}`;
 const PHASE_JSONL = ``;
 const BENCH_JSONL = `{"checkpoint":"checkpoint-00015000","step":null,"loss":null,"overall":"10/35","overall_pct":28.6,"timestamp":"2026-04-04 16:03:20","categories":{"Basic Arithmetic":{"pass":4,"total":8,"pct":50.0},"Word Problems":{"pass":2,"total":6,"pct":33.3},"Factual Knowledge":{"pass":2,"total":8,"pct":25.0},"Identity":{"pass":1,"total":4,"pct":25.0},"Reasoning":{"pass":1,"total":5,"pct":20.0},"Language":{"pass":0,"total":4,"pct":0.0}}}
 {"checkpoint":"checkpoint-00030000","step":null,"loss":null,"overall":"8/35","overall_pct":22.9,"timestamp":"2026-04-04 16:52:02","categories":{"Basic Arithmetic":{"pass":2,"total":8,"pct":25.0},"Word Problems":{"pass":1,"total":6,"pct":16.7},"Factual Knowledge":{"pass":1,"total":8,"pct":12.5},"Identity":{"pass":2,"total":4,"pct":50.0},"Reasoning":{"pass":0,"total":5,"pct":0.0},"Language":{"pass":2,"total":4,"pct":50.0}}}
-{"checkpoint":"dpo-checkpoint-00002500","step":2500,"loss":0.4284,"overall":"9/35","overall_pct":25.7,"timestamp":"2026-04-05","categories":{"Basic Arithmetic":{"pass":3,"total":8,"pct":37.5},"Word Problems":{"pass":3,"total":6,"pct":50.0},"Factual Knowledge":{"pass":1,"total":8,"pct":12.5},"Identity":{"pass":2,"total":4,"pct":50.0},"Reasoning":{"pass":0,"total":5,"pct":0.0},"Language":{"pass":0,"total":4,"pct":0.0}}}`;
+{"checkpoint":"dpo-checkpoint-00002500","step":2500,"loss":0.4284,"overall":"9/35","overall_pct":25.7,"timestamp":"2026-04-05","categories":{"Basic Arithmetic":{"pass":3,"total":8,"pct":37.5},"Word Problems":{"pass":3,"total":6,"pct":50.0},"Factual Knowledge":{"pass":1,"total":8,"pct":12.5},"Identity":{"pass":2,"total":4,"pct":50.0},"Reasoning":{"pass":0,"total":5,"pct":0.0},"Language":{"pass":0,"total":4,"pct":0.0}}}
+{"checkpoint":"dpo2-checkpoint-00001500","step":null,"loss":null,"overall":"25/35","overall_pct":71.4,"timestamp":"2026-04-05 17:26:15","categories":{"Basic Arithmetic":{"pass":8,"total":8,"pct":100.0},"Word Problems":{"pass":4,"total":6,"pct":66.7},"Factual Knowledge":{"pass":3,"total":8,"pct":37.5},"Identity":{"pass":4,"total":4,"pct":100.0},"Reasoning":{"pass":4,"total":5,"pct":80.0},"Language":{"pass":2,"total":4,"pct":50.0}}}`;
 
 function parseBenchJsonl(raw) {
   return raw.trim().split("\n").map(l => {
