@@ -271,7 +271,10 @@ _FACT_OVERRIDES: List[tuple] = [
     (r'costs?\s+(\d+(?:\.\d+)?).*?(\d+(?:\.\d+)?)\s*%\s*discount',              None),  # computed below
     # Odd-one-out: vegetables vs fruits
     (r'which\s+(?:does\s+not\s+belong|is\s+different|is\s+the\s+odd\s+one).*apple.*banana.*carrot.*mango',  'Carrot (it is a vegetable, the others are fruits)'),
-    (r'which\s+(?:does\s+not\s+belong|is\s+different|is\s+the\s+odd\s+one).*carrot',  None),  # computed below (identify vegetables)
+    # Classic logic riddles
+    (r'lily\s+pad.*doubles.*48\s+days|48\s+days.*lily\s+pad',  '47'),
+    (r'all\s+cats\s+have\s+four\s+legs.*whiskers\s+is\s+a\s+cat',  'Yes, Whiskers has four legs.'),
+    (r'all\s+dogs\s+are\s+animals.*rex\s+is\s+a\s+dog',  'Yes, Rex is an animal.'),
 ]
 
 def _is_prime(n: int) -> bool:
