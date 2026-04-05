@@ -198,6 +198,21 @@ class TextGenerator:
             import dataclasses
             config = dataclasses.replace(config, **overrides)
 
+        # ── Pre-generation calculator intercept ───────────────────────────
+        # Extract the user's last message from the prompt and check if it's
+        # a pure arithmetic question we can answer exactly.
+        if config.use_calculator:
+            # Find the last user turn content
+            user_turn = re.search(
+                r'</\|user\|>\n(.*?)(?:\n</\|assistant\|>|\Z)', prompt,
+                re.DOTALL | re.IGNORECASE
+            )
+            if user_turn:
+                user_text = user_turn.group(1).strip()
+                calc_answer = extract_arithmetic(user_text)
+                if calc_answer:
+                    return calc_answer
+
         # Inject persistent memory context into the prompt
         actual_prompt = prompt
         if self.memory is not None:
