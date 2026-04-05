@@ -265,18 +265,88 @@ if recovery_ckpts:
         except Exception as e:
             print(f'[Hub] Push failed (non-fatal): {e}')
 
-    # Benchmark
+    # ── Second DPO run on recovery checkpoint ─────────────────────────────────
+    print('\n[4b/4] Running second DPO alignment on recovery checkpoint...')
+    dpo_data     = os.path.join(DATA_DIR, 'yaya_dpo_combined.jsonl')
+    dpo2_ckpt    = '/kaggle/working/yaya-dpo2-checkpoints'
+    os.makedirs(dpo2_ckpt, exist_ok=True)
+
+    if os.path.exists(dpo_data):
+        dpo_cmd = [
+            sys.executable, os.path.join(REPO_ROOT, 'scripts/train_dpo.py'),
+            '--sft_checkpoint', best_ckpt,
+            '--dpo_data',       dpo_data,
+            '--tokenizer',      TOKENIZER_PATH,
+            '--save_dir',       dpo2_ckpt,
+            '--lr',             '3e-7',   # lower LR — don't overwrite recovery gains
+            '--max_steps',      '1500',   # shorter — targeted alignment only
+            '--batch_size',     '4',
+        ]
+        print(f'  DPO2 command: {" ".join(dpo_cmd[:4])} ...')
+        dpo2_result = subprocess.run(dpo_cmd, cwd=REPO_ROOT)
+
+        if dpo2_result.returncode == 0:
+            print('Second DPO complete!')
+            dpo2_ckpts = sorted(glob.glob(os.path.join(dpo2_ckpt, 'checkpoint-*')))
+            if dpo2_ckpts:
+                best_ckpt = dpo2_ckpts[-1]  # benchmark the DPO2 checkpoint
+                # Push DPO2 to Hub
+                if HF_TOKEN:
+                    try:
+                        from huggingface_hub import upload_folder, upload_file
+                        import io
+                        dpo2_name = 'dpo2-' + os.path.basename(best_ckpt)
+                        upload_folder(
+                            folder_path=best_ckpt,
+                            repo_id=HUB_REPO, path_in_repo=dpo2_name,
+                            repo_type='model', token=hf_token,
+                            ignore_patterns=['optimizer.pt'],
+                            commit_message=f'DPO2 checkpoint: {dpo2_name}',
+                        )
+                        upload_file(
+                            path_or_fileobj=io.BytesIO(f'{{"latest": "{dpo2_name}"}}'.encode()),
+                            path_in_repo='latest.json', repo_id=HUB_REPO,
+                            repo_type='model', token=hf_token,
+                            commit_message=f'Update latest → {dpo2_name}',
+                        )
+                        print(f'[Hub] DPO2 checkpoint pushed → {HUB_REPO}/{dpo2_name}')
+                    except Exception as e:
+                        print(f'[Hub] DPO2 push failed (non-fatal): {e}')
+        else:
+            print('Second DPO failed — benchmarking recovery checkpoint instead.')
+    else:
+        print(f'  DPO data not found at {dpo_data} — skipping second DPO.')
+
+    # ── Benchmark ──────────────────────────────────────────────────────────────
+    print('\n[4c/4] Running final benchmark...')
     bench_cmd = [
         sys.executable,
         os.path.join(REPO_ROOT, 'scripts/benchmark.py'),
         '--checkpoint', best_ckpt,
     ]
     subprocess.run(bench_cmd, cwd=REPO_ROOT)
+
+    # ── Push README model card to Hub ──────────────────────────────────────────
+    if HF_TOKEN:
+        try:
+            from huggingface_hub import upload_file
+            readme = os.path.join(REPO_ROOT, 'README.md')
+            if os.path.exists(readme):
+                upload_file(
+                    path_or_fileobj=readme,
+                    path_in_repo='README.md',
+                    repo_id=HUB_REPO, repo_type='model', token=hf_token,
+                    commit_message='Update model card',
+                )
+                print(f'[Hub] Model card pushed → {HUB_REPO}')
+        except Exception as e:
+            print(f'[Hub] Model card push failed (non-fatal): {e}')
+
 else:
-    print('  No recovery checkpoint found — benchmark skipped.')
+    print('  No recovery checkpoint found — skipping DPO2 and benchmark.')
 
 print()
 print('=' * 60)
-print(' RECOVERY COMPLETE' if training_ok else ' RECOVERY FAILED')
+print(' RECOVERY + DPO2 COMPLETE' if training_ok else ' RECOVERY FAILED')
 print('=' * 60)
 sys.exit(0 if training_ok else 1)
