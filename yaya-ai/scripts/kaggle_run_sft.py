@@ -95,7 +95,7 @@ import yaml
 with open(MILESTONES_PATH) as f:
     milestone_cfg = yaml.safe_load(f)
 
-HUB_REPO   = milestone_cfg.get('hub_repo', 'jaylinkcoder/yaya-125m')
+HUB_REPO   = milestone_cfg.get('hub_repo', 'Jaylink-coder/yaya-125m')
 PHASES     = milestone_cfg['phases']
 TOTAL_STEPS = milestone_cfg.get('total_steps', 40000)
 
