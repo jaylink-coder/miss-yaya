@@ -105,6 +105,17 @@ if not start_ckpt:
 
 print(f'  Starting from: {start_ckpt}')
 
+# ── Step 1b: Generate fresh data (anti-list DPO + concise SFT) ────────────────
+print('\n[1b/4] Generating anti-list DPO pairs and format-enforcement SFT data...')
+for gen_script in ['scripts/generate_antlist_dpo.py', 'scripts/add_format_enforcement.py']:
+    script_path = os.path.join(REPO_ROOT, gen_script)
+    if os.path.exists(script_path):
+        r = subprocess.run([sys.executable, script_path], cwd=REPO_ROOT)
+        if r.returncode != 0:
+            print(f'  WARNING: {gen_script} failed (non-fatal, will use existing data)')
+    else:
+        print(f'  WARNING: {gen_script} not found — skipping')
+
 
 # ── Step 2: Build recovery dataset ────────────────────────────────────────────
 print('\n[2/4] Building recovery dataset...')
