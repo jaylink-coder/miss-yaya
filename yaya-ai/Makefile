@@ -469,6 +469,14 @@ dpo:
 		--save_steps 500 \
 		--log_steps 50
 
+## Quick 5-question sanity check — runs in <30s on CPU, auto-finds latest checkpoint
+quick-check:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/quick_check.py
+
+## Full 35-question benchmark (saves results + updates dashboard)
+benchmark:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/benchmark.py
+
 ## Evaluate instruction-following (auto-detects best 125m checkpoint)
 eval:
 	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_instruction.py --model_config configs/model/yaya_125m.yaml
