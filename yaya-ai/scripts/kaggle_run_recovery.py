@@ -137,17 +137,38 @@ if not start_ckpt:
 
 print(f'  Starting from: {start_ckpt}')
 
-# Check if recovery is already complete — skip training if so
+# Check if recovery is already complete at the NEW target (2000 steps)
+# NOTE: old recovery-checkpoint-00005000 is NOT reused — that one was overfit (loss=8e-6)
+# We always retrain with the improved diverse dataset from DPO checkpoint
 _meta_path = os.path.join(start_ckpt, 'metadata.json')
 _already_done = False
 if os.path.exists(_meta_path):
     import json as _json
     _meta = _json.load(open(_meta_path))
-    if _meta.get('step', 0) >= 5000 and os.path.basename(start_ckpt).startswith('recovery-'):
-        print(f'  Recovery already complete at step {_meta["step"]} (loss={_meta.get("loss","?")})')
-        print('  Skipping training — going straight to DPO2 + benchmark.')
+    _ckpt_step = _meta.get('step', 0)
+    _ckpt_name = os.path.basename(start_ckpt)
+    # Only skip if it's a recovery checkpoint at the new target step range (1500-2500)
+    # and loss is not near-zero (indicating healthy generalization, not memorization)
+    _ckpt_loss = _meta.get('loss', 1.0) or 1.0
+    if _ckpt_name.startswith('recovery-') and 1500 <= _ckpt_step <= 2500 and _ckpt_loss > 0.01:
+        print(f'  Recovery already complete at step {_ckpt_step} (loss={_ckpt_loss:.4f}) — skipping.')
         _already_done = True
         training_ok = True
+    elif _ckpt_name.startswith('recovery-') and _ckpt_loss < 0.01:
+        print(f'  WARNING: Previous recovery overfit (loss={_ckpt_loss:.2e}) — retraining from DPO checkpoint.')
+        # Find DPO checkpoint to retrain from
+        _dpo_ckpt = None
+        for _d in [DPO_CKPT_DIR, SFT_CKPT_DIR]:
+            _cands = sorted(glob.glob(os.path.join(_d, 'checkpoint-*')))
+            if _cands:
+                _dpo_ckpt = _cands[-1]
+                break
+        if _dpo_ckpt:
+            print(f'  Retraining from: {_dpo_ckpt}')
+            start_ckpt = _dpo_ckpt
+        else:
+            print('  No DPO checkpoint found locally — will pull from Hub.')
+            start_ckpt = None  # triggers Hub pull below
 
 # ── Step 1b: Generate fresh data (anti-list DPO + concise SFT) ────────────────
 print('\n[1b/4] Generating anti-list DPO pairs and format-enforcement SFT data...')
