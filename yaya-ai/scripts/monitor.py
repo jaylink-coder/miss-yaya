@@ -137,8 +137,11 @@ def main():
 
             if step is not None:
                 if is_recovery:
-                    pct = min(step / 3000 * 100, 100)
-                    prog = f"Step {step}/3000 {bar(pct)} {pct:.0f}%"
+                    pct = min(step / 5000 * 100, 100)
+                    prog = f"Step {step}/5000 {bar(pct)} {pct:.0f}%"
+                elif "dpo2" in ckpt.lower():
+                    pct = min(step / 1500 * 100, 100)
+                    prog = f"Step {step}/1500 {bar(pct)} {pct:.0f}%"
                 elif is_dpo:
                     pct = min(step / 2500 * 100, 100)
                     prog = f"Step {step}/2500 {bar(pct)} {pct:.0f}%"
