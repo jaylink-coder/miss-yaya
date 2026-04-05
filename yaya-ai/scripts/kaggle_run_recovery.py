@@ -162,13 +162,13 @@ with open(base_cfg_path) as f:
     recovery_cfg = yaml.safe_load(f)
 
 # Patch recovery-specific values into correct yaml blocks
-recovery_cfg['training']['max_steps']      = 3000
+recovery_cfg['training']['max_steps']      = 5000
 recovery_cfg['training']['learning_rate']  = 5e-5
 recovery_cfg['training']['max_seq_length'] = 128
 recovery_cfg['training']['dtype']          = DTYPE
 
 recovery_cfg['checkpointing'] = recovery_cfg.get('checkpointing', {})
-recovery_cfg['checkpointing']['save_steps'] = 500
+recovery_cfg['checkpointing']['save_steps'] = 250   # frequent saves — Kaggle can crash
 recovery_cfg['checkpointing']['save_dir']   = RECOVERY_CKPT
 
 recovery_cfg['data'] = recovery_cfg.get('data', {})
