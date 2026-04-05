@@ -150,7 +150,7 @@ print(f'  Saved → {RECOVERY_DATA}')
 
 # ── Step 3: Train ─────────────────────────────────────────────────────────────
 print('\n[3/4] Launching recovery training...')
-print('  Strategy: high LR (5e-5), 3,000 steps, short sequences only')
+print('  Strategy: high LR (5e-5), 5,000 steps, short sequences only, save every 250 steps')
 print('  Goal: overwrite numbered-list habit with direct answers')
 
 os.makedirs(RECOVERY_CKPT, exist_ok=True)
