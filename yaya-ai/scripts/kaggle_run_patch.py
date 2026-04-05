@@ -134,18 +134,22 @@ except Exception as e:
     sys.exit(1)
 
 # Decide if we should train or just benchmark
-# If already a patch checkpoint with step >= 300 (v2 done), skip to benchmark
+# patch-checkpoint-00000500 = v1 (run v2 from it)
+# patch-checkpoint-00000300 = v2 done (benchmark only)
+# anything else = run patch from scratch
 _is_patch = hub_ckpt.startswith('patch-')
-_skip_training = _is_patch and start_step >= 300 and start_loss < 0.35
+_ckpt_num = int(hub_ckpt.split('-')[-1]) if _is_patch else 0
+_v2_done = _is_patch and _ckpt_num == 300  # v2 produces step=300
+_v1_done = _is_patch and _ckpt_num == 500  # v1 produces step=500 — run v2 from here
+_skip_training = _v2_done
 
 if _skip_training:
-    print(f'  Patch v2 already complete (step={start_step}, loss={start_loss:.4f}) — skipping to benchmark.')
+    print(f'  Patch v2 already complete ({hub_ckpt}) — skipping to benchmark.')
     patch_ckpt = start_ckpt
+elif _v1_done:
+    print(f'  Patch v1 found ({hub_ckpt}) — running v2 (300 steps, lr=5e-6).')
 else:
-    if _is_patch:
-        print(f'  Patch v1 found at step={start_step} — running v2 (300 more steps).')
-    else:
-        print(f'  Running patch from {hub_ckpt} (500 steps).')
+    print(f'  No patch checkpoint — running v1 (500 steps, lr=1e-5) from {hub_ckpt}.')
 
 
 # ── Step 2: Build patch dataset ───────────────────────────────────────────────
