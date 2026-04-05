@@ -42,6 +42,22 @@ def jsonl_to_js_string(rows):
     return "\n".join(lines)
 
 
+def build_loss_points(phase_rows, bench_rows):
+    """Build loss curve data from phase test + benchmark results."""
+    points = {}
+    for row in phase_rows:
+        step = row.get("step")
+        loss = row.get("loss")
+        if step and loss:
+            points[step] = {"step": step, "loss": round(loss, 4), "label": row.get("checkpoint", f"step {step}")}
+    for row in bench_rows:
+        step = row.get("step")
+        loss = row.get("loss")
+        if step and loss:
+            points[step] = {"step": step, "loss": round(loss, 4), "label": row.get("checkpoint", f"step {step}")}
+    return sorted(points.values(), key=lambda x: x["step"])
+
+
 def update_dashboard(bench_rows, phase_rows):
     if not os.path.exists(DASHBOARD):
         print(f"Dashboard not found: {DASHBOARD}")
@@ -49,6 +65,17 @@ def update_dashboard(bench_rows, phase_rows):
 
     with open(DASHBOARD, encoding="utf-8") as f:
         html = f.read()
+
+    # Replace LOSS_JSONL with real loss data from phase/bench results
+    loss_points = build_loss_points(phase_rows, bench_rows)
+    if loss_points:
+        loss_js = jsonl_to_js_string(loss_points)
+        html = re.sub(
+            r'(const LOSS_JSONL\s*=\s*`)[^`]*(`;)',
+            lambda m: m.group(1) + loss_js + m.group(2),
+            html,
+            flags=re.DOTALL,
+        )
 
     # Replace the embedded BENCH_JSONL constant
     bench_js = jsonl_to_js_string(bench_rows)
@@ -69,7 +96,6 @@ def update_dashboard(bench_rows, phase_rows):
             flags=re.DOTALL,
         )
     else:
-        # Inject after BENCH_JSONL line
         html = html.replace(
             "const BENCH_JSONL",
             f"const PHASE_JSONL = `{phase_js}`;\nconst BENCH_JSONL",
