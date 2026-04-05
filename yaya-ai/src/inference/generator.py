@@ -88,8 +88,8 @@ _ARITH_PATTERNS = [
     (r'(?:travels|covers|goes)\s+(\d+(?:\.\d+)?)\s*km\s+in\s+(\d+(?:\.\d+)?)\s*hours?',
      r'\1/\2'),
     # "costs X [shillings/dollars]. I buy Y [items]. How much?" → X*Y
-    (r'costs?\s+(\d+(?:\.\d+)?)\s*(?:shilling|dollar|ksh|usd|kes)?s?[.\s]+(?:i\s+buy|buy|I\s+purchase)\s+(\d+(?:\.\d+)?)',
-     r'\1*\2'),
+    (r'costs?\s+(\d+(?:\.\d+)?)\s*(?:shilling|dollar|ksh|usd|kes)?s?[.\s]+(?:i\s+buy|buy|i\s+purchase)\s+(\d+(?:\.\d+)?)',
+     r'\1*\2', re.IGNORECASE),
     # "save X [shillings] per [week/month]. Y [weeks/months]" → X*Y
     (r'save\s+(\d+(?:\.\d+)?)\s*(?:shilling|dollar)?s?\s+per\s+(?:week|month)[^\d]*(\d+(?:\.\d+)?)\s*(?:week|month)',
      r'\1*\2'),
