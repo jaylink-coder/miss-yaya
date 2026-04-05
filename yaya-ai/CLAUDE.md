@@ -9,10 +9,11 @@ Training runs on Kaggle T4 GPU and persists checkpoints to HuggingFace Hub.
 ```
 make chat            # Interactive CLI chat (auto-picks latest checkpoint)
 make web-ui          # Gradio web chat at http://localhost:7860
+make quick-check     # 5-question sanity check in <30s on CPU
+make benchmark       # Full 35-question benchmark across 6 categories
 make eval-math       # Math evaluation (20 questions, per-stage scores)
 make dpo             # DPO alignment (auto-detects best SFT checkpoint)
 make training-status # Show step/loss/checkpoint status
-make benchmark       # Full 35-question benchmark across 6 categories
 ```
 
 ## Training (Kaggle)
