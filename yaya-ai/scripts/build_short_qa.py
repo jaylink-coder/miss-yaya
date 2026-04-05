@@ -202,6 +202,68 @@ def build():
     for q, a in word_problems:
         examples.append(make(q, a))
 
+    # ── 9. Extended reasoning ─────────────────────────────────────────────────
+    reasoning = [
+        ("A bat and ball cost $1.10. The bat costs $1 more than the ball. How much is the ball?", "$0.05"),
+        ("A lily pad doubles every day. After 48 days it covers the lake. When was it half covered?", "Day 47"),
+        ("Is 17 a prime number?", "Yes"),
+        ("Is 21 a prime number?", "No, 21 = 3 x 7"),
+        ("Is 29 a prime number?", "Yes"),
+        ("Is 100 a prime number?", "No"),
+        ("All cats are animals. Whiskers is a cat. Is Whiskers an animal?", "Yes"),
+        ("All birds have wings. A penguin is a bird. Does a penguin have wings?", "Yes"),
+        ("If A is bigger than B, and B is bigger than C, which is smallest?", "C"),
+        ("If it rains, the ground is wet. The ground is wet. Did it rain?", "Not necessarily — the ground could be wet for other reasons."),
+        ("What is the next number in the sequence: 2, 4, 6, 8?", "10"),
+        ("What is the next number in the sequence: 1, 3, 5, 7?", "9"),
+        ("What is the next number in the sequence: 1, 2, 4, 8?", "16"),
+        ("If you have 3 boxes with 5 items each, how many items total?", "15"),
+        ("A clock shows 3:00. What is the angle between the hands?", "90 degrees"),
+        ("How many minutes in 2 hours?", "120"),
+        ("How many seconds in 2 minutes?", "120"),
+        ("How many hours in 3 days?", "72"),
+        ("If you flip a fair coin, what is the chance of heads?", "50%"),
+        ("What comes next: Monday, Tuesday, Wednesday?", "Thursday"),
+    ]
+    for q, a in reasoning:
+        examples.append(make(q, a))
+
+    # ── 10. Language understanding ────────────────────────────────────────────
+    language = [
+        ("What is the opposite of tall?", "Short"),
+        ("What is the opposite of loud?", "Quiet"),
+        ("What is the opposite of open?", "Closed"),
+        ("What is the opposite of east?", "West"),
+        ("What is the opposite of north?", "South"),
+        ("What is the opposite of up?", "Down"),
+        ("What is the opposite of happy?", "Sad"),
+        ("What is the opposite of love?", "Hate"),
+        ("What is the opposite of light?", "Dark"),
+        ("What is the opposite of old?", "Young"),
+        ("Which is bigger: the Sun or the Moon?", "The Sun"),
+        ("Which is longer: a kilometer or a mile?", "A mile"),
+        ("Which is heavier: a kilogram or a pound?", "A kilogram"),
+        ("What language do people speak in France?", "French"),
+        ("What language do people speak in Germany?", "German"),
+        ("What language do people speak in Brazil?", "Portuguese"),
+        ("What language do people speak in Japan?", "Japanese"),
+        ("What language do people speak in Kenya?", "Swahili and English"),
+        ("What is the plural of mouse?", "Mice"),
+        ("What is the plural of child?", "Children"),
+        ("What is the plural of tooth?", "Teeth"),
+        ("What is the plural of foot?", "Feet"),
+        ("What rhymes with cat?", "Bat, hat, mat, rat, sat"),
+        ("What is a synonym for happy?", "Joyful"),
+        ("What is a synonym for big?", "Large"),
+        ("What is a synonym for fast?", "Quick"),
+        ("Complete the sentence: The sky is ___.", "Blue"),
+        ("Complete the sentence: Water is ___.", "Wet"),
+        ("Complete the sentence: Fire is ___.", "Hot"),
+        ("Spell the word 'necessary'.", "N-E-C-E-S-S-A-R-Y"),
+    ]
+    for q, a in language:
+        examples.append(make(q, a))
+
     # Deduplicate by question
     seen, deduped = set(), []
     for ex in examples:
