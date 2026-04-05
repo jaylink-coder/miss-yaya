@@ -139,6 +139,17 @@ def main():
     print(f"DPO pairs: {len(dataset)}, max_steps: {args.max_steps}, lr: {args.lr}")
 
     ckpt_mgr = CheckpointManager(save_dir=args.save_dir, keep_last_n=3)
+
+    # Optional hub watcher — push each checkpoint as it saves
+    hf_token = os.environ.get("HF_TOKEN", "")
+    if args.hub_repo and hf_token:
+        try:
+            from scripts.hub_utils import start_watcher, ensure_repo
+            ensure_repo(args.hub_repo, hf_token)
+            _hub_watcher = start_watcher(args.save_dir, args.hub_repo, hf_token, interval_sec=120)
+        except Exception as _we:
+            print(f"WARNING: Hub watcher failed to start: {_we}")
+
     step = 0
     policy.train()
     running_loss = 0.0
