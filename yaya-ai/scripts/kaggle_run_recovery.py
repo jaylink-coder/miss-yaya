@@ -161,8 +161,13 @@ for gen_script in ['scripts/generate_antlist_dpo.py', 'scripts/add_format_enforc
         print(f'  WARNING: {gen_script} not found — skipping')
 
 
+if _already_done:
+    # Recovery already complete — jump straight to DPO2 + benchmark
+    best_recovery_ckpt = start_ckpt
+
 # ── Step 2: Build recovery dataset ────────────────────────────────────────────
-print('\n[2/4] Building recovery dataset...')
+if not _already_done:
+ print('\n[2/4] Building recovery dataset...')
 
 RECOVERY_DATA = os.path.join(DATA_DIR, 'yaya_recovery.jsonl')
 
