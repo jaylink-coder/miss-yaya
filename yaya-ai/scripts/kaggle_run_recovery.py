@@ -189,11 +189,10 @@ if not training_ok:
     try:
         from src.training.trainer import Trainer, TrainingConfig
         from src.model.yaya_model import YayaForCausalLM
-        from src.utils.config import ModelConfig
+        from src.utils.config import load_model_config
         from src.tokenizer.tokenizer import YayaTokenizer
         from src.data.dataset import InstructionDataset
 
-        from src.utils.config import load_model_config
         model_cfg = load_model_config(os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml'))
         tokenizer = YayaTokenizer(TOKENIZER_PATH)
         model = YayaForCausalLM(model_cfg)
