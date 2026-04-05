@@ -221,10 +221,7 @@ if not training_ok:
             dtype=DTYPE,
         )
 
-        train_loader = torch.utils.data.DataLoader(
-            dataset, batch_size=4, shuffle=True,
-            collate_fn=dataset.collate_fn if hasattr(dataset, 'collate_fn') else None,
-        )
+        train_loader = create_dataloader(dataset, batch_size=4, shuffle=True, num_workers=0)
 
         trainer = Trainer(model, train_cfg, train_loader, tokenizer=tokenizer)
         trainer.train()
