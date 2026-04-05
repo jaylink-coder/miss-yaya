@@ -94,8 +94,38 @@ start_ckpt = (
 if not start_ckpt and HF_TOKEN:
     print('  No local checkpoint — pulling from HF Hub...')
     try:
-        from scripts.hub_utils import pull_latest_checkpoint
-        start_ckpt = pull_latest_checkpoint(HUB_REPO, DPO_CKPT_DIR, hf_token)
+        from huggingface_hub import list_repo_files, snapshot_download
+        # Scan Hub for best starting checkpoint — prefer DPO > SFT final
+        hub_files = list(list_repo_files(repo_id=HUB_REPO, repo_type='model', token=hf_token))
+        hub_ckpt_names = sorted({
+            f.split('/')[0] for f in hub_files
+            if '/' in f and not f.split('/')[0].startswith('recovery-')
+            and '_temp' not in f
+        })
+        hub_ckpt = None
+        for prefix in ('dpo-checkpoint-', 'checkpoint-'):
+            matches = [c for c in hub_ckpt_names if c.startswith(prefix)]
+            if matches:
+                hub_ckpt = matches[-1]
+                break
+        if hub_ckpt:
+            print(f'  Downloading {hub_ckpt} from Hub...')
+            os.makedirs(DPO_CKPT_DIR, exist_ok=True)
+            snapshot_download(
+                repo_id=HUB_REPO,
+                allow_patterns=f'{hub_ckpt}/*',
+                local_dir=DPO_CKPT_DIR,
+                repo_type='model',
+                token=hf_token,
+            )
+            local_path = os.path.join(DPO_CKPT_DIR, hub_ckpt)
+            if os.path.isdir(local_path):
+                start_ckpt = local_path
+                print(f'  Restored: {start_ckpt}')
+            else:
+                print(f'  WARNING: download succeeded but {local_path} not found')
+        else:
+            print('  No suitable checkpoint found on Hub.')
     except Exception as e:
         print(f'  Hub pull failed: {e}')
 
