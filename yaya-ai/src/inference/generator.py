@@ -269,6 +269,9 @@ _FACT_OVERRIDES: List[tuple] = [
     (r'is\s+(\d+)\s+(?:a\s+)?prime',                                              None),  # computed below
     # Discount: "costs X, Y% discount, how much do I pay?" → X*(1-Y/100)
     (r'costs?\s+(\d+(?:\.\d+)?).*?(\d+(?:\.\d+)?)\s*%\s*discount',              None),  # computed below
+    # Odd-one-out: vegetables vs fruits
+    (r'which\s+(?:does\s+not\s+belong|is\s+different|is\s+the\s+odd\s+one).*apple.*banana.*carrot.*mango',  'Carrot (it is a vegetable, the others are fruits)'),
+    (r'which\s+(?:does\s+not\s+belong|is\s+different|is\s+the\s+odd\s+one).*carrot',  None),  # computed below (identify vegetables)
 ]
 
 def _is_prime(n: int) -> bool:
