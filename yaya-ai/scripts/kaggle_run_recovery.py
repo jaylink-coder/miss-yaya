@@ -155,16 +155,17 @@ base_cfg_path = os.path.join(REPO_ROOT, 'configs/training/sft_125m.yaml')
 with open(base_cfg_path) as f:
     recovery_cfg = yaml.safe_load(f)
 
-# Patch recovery-specific values
-recovery_cfg['training']['train_data']                = RECOVERY_DATA
-recovery_cfg['training']['max_steps']                 = 3000
-recovery_cfg['training']['learning_rate']             = 5e-5
-recovery_cfg['training']['max_seq_length']            = 128
-recovery_cfg['training']['save_steps']                = 500
-recovery_cfg['training']['checkpoint_dir']            = RECOVERY_CKPT
-recovery_cfg['training']['dtype']                     = DTYPE
-recovery_cfg['training']['pretrain_checkpoint']       = start_ckpt
-recovery_cfg['data']   = recovery_cfg.get('data', {})
+# Patch recovery-specific values into correct yaml blocks
+recovery_cfg['training']['max_steps']      = 3000
+recovery_cfg['training']['learning_rate']  = 5e-5
+recovery_cfg['training']['max_seq_length'] = 128
+recovery_cfg['training']['dtype']          = DTYPE
+
+recovery_cfg['checkpointing'] = recovery_cfg.get('checkpointing', {})
+recovery_cfg['checkpointing']['save_steps'] = 500
+recovery_cfg['checkpointing']['save_dir']   = RECOVERY_CKPT
+
+recovery_cfg['data'] = recovery_cfg.get('data', {})
 recovery_cfg['data']['train_data'] = RECOVERY_DATA
 
 tmp_cfg_path = '/kaggle/working/recovery_train_config.yaml'
