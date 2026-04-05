@@ -45,14 +45,20 @@ def load_token():
     return ""
 
 
+_MONITOR_CACHE = os.path.join(os.path.expanduser("~"), ".cache", "yaya_monitor")
+
+_CKPT_PREFIXES = ("checkpoint-", "recovery-", "dpo-checkpoint-", "dpo2-checkpoint-")
+
+
 def get_hub_status(token):
     try:
         from huggingface_hub import hf_hub_download, list_repo_files
+        os.makedirs(_MONITOR_CACHE, exist_ok=True)
         # get latest pointer
         try:
             lp = hf_hub_download(
                 repo_id=HUB_REPO, filename="latest.json",
-                repo_type="model", token=token, local_dir="/tmp/yaya_monitor",
+                repo_type="model", token=token, local_dir=_MONITOR_CACHE,
                 force_download=True,
             )
             with open(lp) as f:
@@ -60,16 +66,22 @@ def get_hub_status(token):
         except Exception:
             files = list(list_repo_files(repo_id=HUB_REPO, repo_type="model", token=token))
             ckpts = sorted({f.split("/")[0] for f in files
-                           if f.split("/")[0].startswith(("checkpoint-", "recovery-"))})
+                           if f.split("/")[0].startswith(_CKPT_PREFIXES)})
             if not ckpts:
                 return None
+            # Priority: dpo2 > recovery > dpo > sft
             latest_name = ckpts[-1]
+            for prefix in ("dpo2-checkpoint-", "recovery-checkpoint-", "dpo-checkpoint-"):
+                matches = [c for c in ckpts if c.startswith(prefix)]
+                if matches:
+                    latest_name = matches[-1]
+                    break
 
         # fetch metadata
         try:
             mp = hf_hub_download(
                 repo_id=HUB_REPO, filename=f"{latest_name}/metadata.json",
-                repo_type="model", token=token, local_dir="/tmp/yaya_monitor",
+                repo_type="model", token=token, local_dir=_MONITOR_CACHE,
                 force_download=True,
             )
             with open(mp) as f:
