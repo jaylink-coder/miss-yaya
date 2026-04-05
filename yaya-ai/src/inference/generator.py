@@ -329,6 +329,34 @@ def check_facts(text: str) -> str:
     return ""
 
 
+# ── Conversational guard ──────────────────────────────────────────────────────
+# Short social exchanges the model handles poorly (outputs garbage).
+
+_GREETING_PATTERN = re.compile(
+    r'^(?:hi|hello|hey|good\s+(?:morning|afternoon|evening|day))[\s!?,]*(?:how\s+are\s+you)?[\s!?,]*$',
+    re.IGNORECASE
+)
+_THANKS_PATTERN = re.compile(
+    r'^(?:thank\s+you|thanks|that(?:\'s|\s+is)\s+(?:great|good|nice|helpful|amazing|awesome|perfect|correct|right|excellent))[!\s.,]*$',
+    re.IGNORECASE
+)
+_HELP_PATTERN = re.compile(
+    r'^can\s+you\s+help\s+me',
+    re.IGNORECASE
+)
+
+def check_conversational(text: str) -> str:
+    """Return a canned response for short social exchanges."""
+    text = text.strip()
+    if _GREETING_PATTERN.match(text):
+        return "Hello! I'm Yaya, a helpful AI assistant. How can I help you?"
+    if _THANKS_PATTERN.match(text):
+        return "You're welcome! I'm glad I could help."
+    if _HELP_PATTERN.match(text):
+        return "Of course! I'm happy to help. What is your question?"
+    return ""
+
+
 if TYPE_CHECKING:
     from src.training.online_learner import OnlineLearner
     from src.training.neuro_elastic import ElasticGuard
