@@ -8,10 +8,10 @@ Usage (in kaggle_run_sft.py):
     from scripts.hub_utils import push_checkpoint, pull_latest_checkpoint, start_watcher
 
     # Session start — restore progress
-    pull_latest_checkpoint("jaylinkcoder/yaya-125m", "/kaggle/working/yaya-ckpts", token)
+    pull_latest_checkpoint("Jaylink-coder/yaya-125m", "/kaggle/working/yaya-ckpts", token)
 
     # During training — background watcher auto-pushes every new checkpoint
-    watcher = start_watcher("/kaggle/working/yaya-ckpts", "jaylinkcoder/yaya-125m", token)
+    watcher = start_watcher("/kaggle/working/yaya-ckpts", "Jaylink-coder/yaya-125m", token)
 """
 
 import os
