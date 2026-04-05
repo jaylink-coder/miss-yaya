@@ -415,6 +415,7 @@ class GenerationConfig:
     use_calculator: bool = True           # intercept arithmetic questions
     use_identity_guard: bool = True       # hardcoded identity answers
     use_fact_guard: bool = True           # hardcoded stable facts
+    use_datetime: bool = True             # return live date/time
     use_conversational_guard: bool = True # canned social exchange responses
 
 
