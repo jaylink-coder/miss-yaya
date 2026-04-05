@@ -48,8 +48,8 @@ A 129M parameter causal language model trained from scratch in PyTorch — no Hu
 
 ```python
 import torch
-from src.model.transformer import YayaTransformer
-from src.model.config import ModelConfig
+from src.model.yaya_model import YayaForCausalLM
+from src.utils.config import ModelConfig
 from src.tokenizer.tokenizer import YayaTokenizer
 from src.inference.generator import TextGenerator, GenerationConfig
 
