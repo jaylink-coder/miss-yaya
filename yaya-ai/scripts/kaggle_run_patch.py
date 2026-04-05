@@ -211,8 +211,8 @@ if not _skip_training:
         patch_cfg = yaml.safe_load(f)
 
     # Conservative settings — minimize forgetting
-    n_steps = 300 if _is_patch else 500
-    lr      = 5e-6 if _is_patch else 1e-5
+    n_steps = 300 if _v1_done else 500
+    lr      = 5e-6 if _v1_done else 1e-5
     patch_cfg['training']['max_steps']      = n_steps
     patch_cfg['training']['learning_rate']  = lr
     patch_cfg['training']['max_seq_length'] = 256
