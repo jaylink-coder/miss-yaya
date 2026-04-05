@@ -111,34 +111,40 @@ print('\n[2/4] Building recovery dataset...')
 
 RECOVERY_DATA = os.path.join(DATA_DIR, 'yaya_recovery.jsonl')
 
-SHORT_QA  = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
-QUICK_FACTS = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
-SHORT_QA_COMBINED = os.path.join(DATA_DIR, 'yaya_reasoning_combined.jsonl')
+SHORT_QA     = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
+QUICK_FACTS  = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
+CONCISE_SFT  = os.path.join(DATA_DIR, 'yaya_concise_sft.jsonl')
+# NOTE: yaya_reasoning_combined intentionally excluded — it reinforces list format
 
+# Base sources (1x): short_qa + quick_facts + concise-system-prompt variants
 sources = []
-for src in [SHORT_QA, QUICK_FACTS, SHORT_QA_COMBINED]:
+for src in [SHORT_QA, QUICK_FACTS, CONCISE_SFT]:
     if os.path.exists(src):
         with open(src, encoding='utf-8', errors='replace') as f:
             lines = [l.strip() for l in f if l.strip()]
         sources.extend(lines)
         print(f'  + {os.path.basename(src)}: {len(lines)} examples')
+    else:
+        print(f'  ! Missing: {os.path.basename(src)} — run generate_antlist_dpo.py and add_format_enforcement.py first')
 
-# Oversample short_qa and quick_facts 5x to overpower the math habit
+# 10x oversample short_qa and quick_facts to overpower 40k-step math habit
 boosted = []
 for src in [SHORT_QA, QUICK_FACTS]:
     if os.path.exists(src):
         with open(src, encoding='utf-8', errors='replace') as f:
             lines = [l.strip() for l in f if l.strip()]
-        boosted.extend(lines * 5)
+        boosted.extend(lines * 10)
+        print(f'  + {os.path.basename(src)}: 10x boost = {len(lines) * 10} examples')
 
+import random; random.seed(42)
 all_examples = sources + boosted
-import random; random.seed(42); random.shuffle(all_examples)
+random.shuffle(all_examples)
 
 with open(RECOVERY_DATA, 'w', encoding='utf-8') as f:
     for line in all_examples:
         f.write(line + '\n')
 
-print(f'  Recovery dataset: {len(all_examples)} examples (with 5x oversampling)')
+print(f'  Recovery dataset: {len(all_examples)} examples (with 10x oversampling, no reasoning data)')
 print(f'  Saved → {RECOVERY_DATA}')
 
 
