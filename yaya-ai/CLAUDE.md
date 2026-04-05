@@ -39,22 +39,20 @@ echo "HF_TOKEN=hf_xxx" >> yaya-ai/.env
 ## Current training state (2026-04-05)
 - **SFT**: COMPLETE — 40,000 steps, final loss 2.78
 - **DPO**: COMPLETE — 2,500 steps, final loss 0.43, accuracy ~80%
-- **Latest checkpoint**: `dpo-checkpoint-00002500` on HF Hub `Jaylink-coder/yaya-125m`
+- **Recovery SFT**: COMPLETE — 2,000 steps, final step loss 1.92 (healthy), loss at save 2.77
+- **DPO2**: COMPLETE — 1,500 steps, lr=3e-7, loss 0.0001 (near-zero — fast convergence on anti-list pairs)
+- **Latest checkpoint**: `dpo2-checkpoint-00001500` on HF Hub `Jaylink-coder/yaya-125m`
 - **Benchmark history**:
-  - Step 15k: 29% (10/35)
+  - Step 15k: 29% (10/35) — best SFT
   - Step 30k: 23% (8/35) — math rut peak
   - DPO final: 26% (9/35) — word problems 50%, identity 50%
-- **Next step**: Recovery SFT — trigger on Kaggle with `kaggle_run_recovery.py`
-- **After recovery**: DPO2 auto-launches (1,500 steps, lr=3e-7), then final benchmark
-- **Problem**: Model outputs numbered lists (`"1. The main types of..."`) for all questions
-  - Root cause: 40k steps of math training burned in numbered-list format; 108k/205k examples were numbered-list math
-  - DPO (2,500 steps, 4,225 pairs) insufficient to overcome it
-  - Fix: `scripts/kaggle_run_recovery.py` — 5,000 steps, 10x oversampled short_qa+facts, no reasoning data
+  - Recovery+DPO2: TBD (benchmark pending)
+- **Next step**: Run benchmark on `dpo2-checkpoint-00001500` to verify numbered-list habit is fixed
 
 ## Recovery SFT details (2026-04-05)
-- **Steps**: 5,000 (up from 3,000)
-- **Oversampling**: 10x short_qa + quick_facts (up from 5x)
-- **Data**: short_qa (2,683) + quick_facts (1,000) + concise_sft (3,683) + 10x boost = ~40K examples
+- **Steps**: 2,000 (reduced from 5,000 to prevent overfitting)
+- **Oversampling**: 2x short_qa + quick_facts only (reduced from 10x)
+- **Data**: 6 sources — short_qa (2,683) + quick_facts (1,000) + concise_sft (3,683) + factual_qa + qa_focused + yaya_instruct_clean (4,957 non-chess) = 20,306 examples
 - **Excluded**: yaya_reasoning_combined — reinforces list format
 - **Save frequency**: every 250 steps (up from 500)
 - **DPO pairs**: 9,560 total (up from 4,225) — 5,335 new anti-list pairs added
