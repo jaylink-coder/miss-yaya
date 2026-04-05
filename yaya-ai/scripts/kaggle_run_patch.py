@@ -223,8 +223,12 @@ if not _skip_training:
         patch_cfg = yaml.safe_load(f)
 
     # Conservative settings — minimize forgetting
-    n_steps = 300 if _v1_done else 500
-    lr      = 5e-6 if _v1_done else 1e-5
+    if _v2_done:
+        n_steps, lr = 500, 3e-6   # v3: Kenya/Swahili injection
+    elif _v1_done:
+        n_steps, lr = 300, 5e-6   # v2: targeted failure fix
+    else:
+        n_steps, lr = 500, 1e-5   # v1: from dpo2
     patch_cfg['training']['max_steps']      = n_steps
     patch_cfg['training']['learning_rate']  = lr
     patch_cfg['training']['max_seq_length'] = 256
