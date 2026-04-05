@@ -188,7 +188,7 @@ if not training_ok:
     # Fallback: drive the trainer directly
     print('  train_sft.py failed — driving trainer directly...')
     try:
-        from src.training.trainer import Trainer, TrainingConfig
+        from src.training.trainer import Trainer
         from src.model.yaya_model import YayaForCausalLM
         from src.utils.config import load_model_config
         from src.tokenizer.tokenizer import YayaTokenizer
