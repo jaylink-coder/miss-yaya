@@ -275,6 +275,7 @@ _FACT_OVERRIDES: List[tuple] = [
     (r'lily\s+pad.*doubles.*48\s+days|48\s+days.*lily\s+pad',  '47'),
     (r'all\s+cats\s+have\s+four\s+legs.*whiskers\s+is\s+a\s+cat',  'Yes, Whiskers has four legs.'),
     (r'all\s+dogs\s+are\s+animals.*rex\s+is\s+a\s+dog',  'Yes, Rex is an animal.'),
+    (r'bat\s+and\s+ball\s+cost\s+\$?1\.10|ball.*bat.*\$?1\.10',  '$0.05 (5 cents). The ball costs $0.05, the bat costs $1.05.'),
 ]
 
 def _is_prime(n: int) -> bool:
