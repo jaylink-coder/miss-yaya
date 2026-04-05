@@ -158,8 +158,9 @@ let lossHistory = [];
 
 // ── Benchmark + phase data (auto-updated by scripts/update_dashboard.py) ────
 const PHASE_JSONL = ``;
-const BENCH_JSONL = `{"checkpoint":"checkpoint-00015000","overall_pct":28.6,"overall":"10/35","timestamp":"2026-04-04 16:03:20","categories":{"Basic Arithmetic":{"pass":4,"total":8,"pct":50.0},"Word Problems":{"pass":2,"total":6,"pct":33.3},"Factual Knowledge":{"pass":2,"total":8,"pct":25.0},"Identity":{"pass":1,"total":4,"pct":25.0},"Reasoning":{"pass":1,"total":5,"pct":20.0},"Language":{"pass":0,"total":4,"pct":0.0}}}
-{"checkpoint":"checkpoint-00030000","overall_pct":22.9,"overall":"8/35","timestamp":"2026-04-04 16:52:02","categories":{"Basic Arithmetic":{"pass":2,"total":8,"pct":25.0},"Word Problems":{"pass":1,"total":6,"pct":16.7},"Factual Knowledge":{"pass":1,"total":8,"pct":12.5},"Identity":{"pass":2,"total":4,"pct":50.0},"Reasoning":{"pass":0,"total":5,"pct":0.0},"Language":{"pass":2,"total":4,"pct":50.0}}}`;
+const BENCH_JSONL = `{"checkpoint":"checkpoint-00015000","step":null,"loss":null,"overall":"10/35","overall_pct":28.6,"timestamp":"2026-04-04 16:03:20","categories":{"Basic Arithmetic":{"pass":4,"total":8,"pct":50.0},"Word Problems":{"pass":2,"total":6,"pct":33.3},"Factual Knowledge":{"pass":2,"total":8,"pct":25.0},"Identity":{"pass":1,"total":4,"pct":25.0},"Reasoning":{"pass":1,"total":5,"pct":20.0},"Language":{"pass":0,"total":4,"pct":0.0}}}
+{"checkpoint":"checkpoint-00030000","step":null,"loss":null,"overall":"8/35","overall_pct":22.9,"timestamp":"2026-04-04 16:52:02","categories":{"Basic Arithmetic":{"pass":2,"total":8,"pct":25.0},"Word Problems":{"pass":1,"total":6,"pct":16.7},"Factual Knowledge":{"pass":1,"total":8,"pct":12.5},"Identity":{"pass":2,"total":4,"pct":50.0},"Reasoning":{"pass":0,"total":5,"pct":0.0},"Language":{"pass":2,"total":4,"pct":50.0}}}
+{"checkpoint":"dpo-checkpoint-00002500","step":2500,"loss":0.4284,"overall":"9/35","overall_pct":25.7,"timestamp":"2026-04-05","categories":{"Basic Arithmetic":{"pass":3,"total":8,"pct":37.5},"Word Problems":{"pass":3,"total":6,"pct":50.0},"Factual Knowledge":{"pass":1,"total":8,"pct":12.5},"Identity":{"pass":2,"total":4,"pct":50.0},"Reasoning":{"pass":0,"total":5,"pct":0.0},"Language":{"pass":0,"total":4,"pct":0.0}}}`;
 
 function parseBenchJsonl(raw) {
   return raw.trim().split("\n").map(l => {
@@ -340,13 +341,19 @@ async function loadAll() {
 
   // HF Hub live data
   const hf = await fetchHFStep();
-  const step = hf?.step ?? 32500;
-  const loss = hf?.loss ?? 2.76;
-  const ckpt = hf?.ckpt ?? "checkpoint-00032500";
+  // DPO checkpoint is named dpo-checkpoint-00002500; treat it as step 42500
+  const rawCkpt = hf?.ckpt ?? "dpo-checkpoint-00002500";
+  const isDPO = rawCkpt.includes("dpo");
+  const step = isDPO ? 42500 : (hf?.step ?? 40000);
+  const loss = hf?.loss ?? 0.4284;
+  const ckpt = rawCkpt;
+  const TOTAL = 42500; // 40k SFT + 2500 DPO
 
-  const pct = Math.min((step / 40000) * 100, 100);
+  const pct = Math.min((step / TOTAL) * 100, 100);
   document.getElementById("step-num").innerHTML =
-    `${step.toLocaleString()}<span class="unit">/ 40,000</span>`;
+    isDPO
+      ? `DPO<span class="unit"> complete</span>`
+      : `${step.toLocaleString()}<span class="unit">/ 40,000 SFT</span>`;
   document.getElementById("step-pct").textContent =
     `${pct.toFixed(1)}% complete  ·  ${ckpt}`;
   document.getElementById("prog-bar").style.width = `${pct}%`;
@@ -358,17 +365,18 @@ async function loadAll() {
     drawSparkline("loss-chart", lossHistory);
   }
 
-  const phase = phaseFromStep(step);
+  const phase = isDPO ? { num: 17, name: "DPO" } : phaseFromStep(step);
   document.getElementById("phase-label").textContent = `Phase ${phase.num} · ${phase.name}`;
 
   const badge = document.getElementById("status-badge");
-  if (step >= 40000) {
-    badge.textContent = "Complete"; badge.className = "badge badge-done";
+  if (isDPO || step >= 40000) {
+    badge.textContent = isDPO ? "DPO Done" : "SFT Done";
+    badge.className = "badge badge-done";
   } else {
     badge.textContent = "Training"; badge.className = "badge badge-running";
   }
 
-  renderPhases(step);
+  renderPhases(Math.min(step, 40000));
 
   document.getElementById("last-updated").textContent =
     `Last updated: ${new Date().toLocaleTimeString()}`;
