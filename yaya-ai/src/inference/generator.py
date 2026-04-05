@@ -181,21 +181,48 @@ _FACT_OVERRIDES: List[tuple] = [
     (r'is\s+(\d+)\s+(?:a\s+)?prime',                                              None),  # computed below
 ]
 
+def _is_prime(n: int) -> bool:
+    if n < 2:
+        return False
+    if n == 2:
+        return True
+    if n % 2 == 0:
+        return False
+    for i in range(3, int(n**0.5) + 1, 2):
+        if n % i == 0:
+            return False
+    return True
+
+
 def check_facts(text: str) -> str:
     """Return a hardcoded answer for known-unstable facts."""
+    import math
     text_lower = text.lower().strip()
     for pattern, answer in _FACT_OVERRIDES:
         if re.search(pattern, text_lower, re.IGNORECASE):
-            if answer is None:
-                # Special case: square root
+            if answer is not None:
+                return answer
+            # Computed special cases
+            if 'square' in pattern:
                 m = re.search(r'square\s+root\s+of\s+(\d+(?:\.\d+)?)', text_lower, re.IGNORECASE)
                 if m:
-                    import math
                     n = float(m.group(1))
                     r = math.sqrt(n)
                     return str(int(r)) if r == int(r) else f"{r:.4g}"
-            else:
-                return answer
+            elif 'prime' in pattern:
+                m = re.search(r'is\s+(\d+)\s+(?:a\s+)?prime', text_lower, re.IGNORECASE)
+                if m:
+                    n = int(m.group(1))
+                    return f"Yes, {n} is a prime number." if _is_prime(n) else f"No, {n} is not a prime number."
+            elif 'faster' in pattern or 'car' in pattern or 'bicycle' in pattern:
+                # Speed comparisons — car is faster than bicycle
+                has_car = bool(re.search(r'\b(?:car|automobile|vehicle)\b', text_lower))
+                has_bike = bool(re.search(r'\b(?:bike|bicycle|cycle)\b', text_lower))
+                if has_car and has_bike:
+                    if re.search(r'\bfaster\b|\bquicker\b', text_lower):
+                        return 'A car is faster than a bicycle.'
+                    elif re.search(r'\bslower\b', text_lower):
+                        return 'A bicycle is slower than a car.'
     return ""
 
 
