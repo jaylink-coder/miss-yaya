@@ -193,6 +193,7 @@ if not training_ok:
         from src.utils.config import load_model_config
         from src.tokenizer.tokenizer import YayaTokenizer
         from src.data.dataset import InstructionDataset
+        from src.data.dataloader import create_dataloader
 
         model_cfg = load_model_config(os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml'))
         tokenizer = YayaTokenizer(TOKENIZER_PATH)
