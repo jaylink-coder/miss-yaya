@@ -146,13 +146,18 @@ if not _already_done:
                         start_ckpt = local_path
                     print(f'  Restored: {start_ckpt}')
             else:
-                print('  ERROR: No dpo2/recovery/dpo checkpoint on Hub.')
+                print('  ERROR: No patch/dpo2/recovery checkpoint on Hub.')
                 sys.exit(1)
         except Exception as e:
             print(f'  Hub pull failed: {e}')
+            import traceback; traceback.print_exc()
             sys.exit(1)
     else:
-        print('ERROR: No checkpoint found and no HF_TOKEN.')
+        print('ERROR: No HF_TOKEN — cannot pull checkpoint.')
+        sys.exit(1)
+
+    if not start_ckpt:
+        print('ERROR: start_ckpt not set after Hub pull.')
         sys.exit(1)
 
     print(f'  Starting from: {start_ckpt}')
