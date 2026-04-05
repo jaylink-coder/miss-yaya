@@ -156,11 +156,12 @@ else:
 if not _skip_training:
     print('\n[2/4] Building patch dataset...')
 
-    PATCH_DATA  = '/kaggle/working/yaya_patch_data.jsonl'
-    PATCH_SFT   = os.path.join(DATA_DIR, 'yaya_patch_sft.jsonl')
-    SHORT_QA    = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
-    QUICK_FACTS = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
-    FACTUAL_QA  = os.path.join(DATA_DIR, 'yaya_factual_qa.jsonl')
+    PATCH_DATA      = '/kaggle/working/yaya_patch_data.jsonl'
+    PATCH_SFT       = os.path.join(DATA_DIR, 'yaya_patch_sft.jsonl')
+    SHORT_QA        = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
+    QUICK_FACTS     = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
+    FACTUAL_QA      = os.path.join(DATA_DIR, 'yaya_factual_qa.jsonl')
+    KENYA_SWAHILI   = os.path.join(DATA_DIR, 'yaya_kenya_swahili.jsonl')
 
     all_lines = []
 
@@ -169,15 +170,22 @@ if not _skip_training:
         subprocess.run([sys.executable, os.path.join(REPO_ROOT, 'scripts/generate_patch_data.py')],
                        cwd=REPO_ROOT)
 
+    # Auto-generate Kenya/Swahili data if missing
+    if not os.path.exists(KENYA_SWAHILI):
+        print(f'  Generating Kenya/Swahili data...')
+        subprocess.run([sys.executable, os.path.join(REPO_ROOT, 'scripts/generate_kenya_swahili_data.py')],
+                       cwd=REPO_ROOT)
+
     with open(PATCH_SFT, encoding='utf-8', errors='replace') as f:
         patch_lines = [l.strip() for l in f if l.strip()]
     # 5x oversample for v2 (targeting 6 specific failures)
     all_lines.extend(patch_lines * 5)
     print(f'  + yaya_patch_sft.jsonl: {len(patch_lines)} x5 = {len(patch_lines)*5}')
 
-    for path, label, mult in [(SHORT_QA, 'yaya_short_qa.jsonl', 2),
-                               (QUICK_FACTS, 'quick_facts.jsonl', 2),
-                               (FACTUAL_QA, 'yaya_factual_qa.jsonl', 1)]:
+    for path, label, mult in [(SHORT_QA,      'yaya_short_qa.jsonl',      2),
+                               (QUICK_FACTS,   'quick_facts.jsonl',        2),
+                               (FACTUAL_QA,    'yaya_factual_qa.jsonl',    1),
+                               (KENYA_SWAHILI, 'yaya_kenya_swahili.jsonl', 4)]:
         if os.path.exists(path):
             with open(path, encoding='utf-8', errors='replace') as f:
                 lines = [l.strip() for l in f if l.strip()]
