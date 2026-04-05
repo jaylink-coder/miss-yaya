@@ -236,12 +236,32 @@ recovery_ckpts = sorted(glob.glob(os.path.join(RECOVERY_CKPT, 'checkpoint-*')))
 if recovery_ckpts:
     best_ckpt = recovery_ckpts[-1]
 
-    # Push to Hub
+    # Push to Hub with recovery- prefix to avoid collision with SFT/DPO checkpoints
     if HF_TOKEN:
         try:
-            from scripts.hub_utils import push_checkpoint
-            push_checkpoint(best_ckpt, HUB_REPO, hf_token)
-            print(f'[Hub] Recovery checkpoint pushed → {HUB_REPO}')
+            from scripts.hub_utils import _get_api
+            from huggingface_hub import upload_folder, upload_file
+            import io
+            ckpt_name = RECOVERY_HUB_PREFIX + os.path.basename(best_ckpt)
+            print(f'[Hub] Pushing {ckpt_name} → {HUB_REPO}...')
+            upload_folder(
+                folder_path=best_ckpt,
+                repo_id=HUB_REPO,
+                path_in_repo=ckpt_name,
+                repo_type='model',
+                token=hf_token,
+                ignore_patterns=['optimizer.pt'],
+                commit_message=f'Recovery checkpoint: {ckpt_name}',
+            )
+            upload_file(
+                path_or_fileobj=io.BytesIO(f'{{"latest": "{ckpt_name}"}}'.encode()),
+                path_in_repo='latest.json',
+                repo_id=HUB_REPO,
+                repo_type='model',
+                token=hf_token,
+                commit_message=f'Update latest → {ckpt_name}',
+            )
+            print(f'[Hub] Recovery checkpoint pushed → {HUB_REPO}/{ckpt_name}')
         except Exception as e:
             print(f'[Hub] Push failed (non-fatal): {e}')
 
