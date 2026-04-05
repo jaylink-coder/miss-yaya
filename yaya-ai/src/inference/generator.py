@@ -121,7 +121,8 @@ _IDENTITY_QUESTIONS = re.compile(
     r'(?:what(?:\s+is|\s+\'?s)\s+your\s+(?:name|identity)|'
     r'who\s+are\s+you|'
     r'are\s+you\s+(?:chatgpt|gpt|openai|claude|gemini|bard|an?\s+ai)|'
-    r'what\s+(?:ai|model|assistant)\s+are\s+you|'
+    r'what\s+(?:ai|model|assistant)(?:\s+\w+)?\s+are\s+you|'
+    r'what\s+(?:type|kind)\s+of\s+(?:ai|model|assistant)|'
     r'(?:tell|introduce)\s+(?:me\s+)?(?:about\s+)?yourself)',
     re.IGNORECASE
 )
