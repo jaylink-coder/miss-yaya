@@ -132,13 +132,24 @@ def main():
 
             # Determine phase
             is_recovery = ckpt.startswith("recovery-")
-            is_dpo      = "dpo" in ckpt.lower() and not is_recovery
-            phase_str   = "Recovery" if is_recovery else ("DPO" if is_dpo else "SFT")
+            is_patch    = ckpt.startswith("patch-")
+            is_dpo      = "dpo" in ckpt.lower() and not is_recovery and not is_patch
+            if is_patch:
+                phase_str = "Patch"
+            elif is_recovery:
+                phase_str = "Recovery"
+            elif is_dpo:
+                phase_str = "DPO"
+            else:
+                phase_str = "SFT"
 
             if step is not None:
-                if is_recovery:
-                    pct = min(step / 5000 * 100, 100)
-                    prog = f"Step {step}/5000 {bar(pct)} {pct:.0f}%"
+                if is_patch:
+                    pct = min(step / 500 * 100, 100)
+                    prog = f"Step {step}/500 {bar(pct)} {pct:.0f}%"
+                elif is_recovery:
+                    pct = min(step / 2000 * 100, 100)
+                    prog = f"Step {step}/2000 {bar(pct)} {pct:.0f}%"
                 elif "dpo2" in ckpt.lower():
                     pct = min(step / 1500 * 100, 100)
                     prog = f"Step {step}/1500 {bar(pct)} {pct:.0f}%"
