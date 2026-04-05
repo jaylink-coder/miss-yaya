@@ -373,9 +373,10 @@ class GenerationConfig:
     repetition_penalty: float = 1.5
     do_sample: bool = True
     stop_token_ids: Optional[List[int]] = None
-    use_calculator: bool = True      # intercept arithmetic questions
-    use_identity_guard: bool = True  # hardcoded identity answers
-    use_fact_guard: bool = True      # hardcoded stable facts
+    use_calculator: bool = True           # intercept arithmetic questions
+    use_identity_guard: bool = True       # hardcoded identity answers
+    use_fact_guard: bool = True           # hardcoded stable facts
+    use_conversational_guard: bool = True # canned social exchange responses
 
 
 class TextGenerator:
