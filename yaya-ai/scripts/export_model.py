@@ -91,7 +91,7 @@ def load_yaya(export_dir=None):
         cfg_dict = json.load(f)
     cfg = ModelConfig(**cfg_dict)
     tokenizer = YayaTokenizer(os.path.join(export_dir, "tokenizer.model"))
-    model = YayaTransformer(cfg)
+    model = YayaForCausalLM(cfg)
     weights = torch.load(os.path.join(export_dir, "model.pt"), map_location="cpu")
     model.load_state_dict(weights, strict=False)
     model.eval()
@@ -188,9 +188,9 @@ def main():
     shutil.copy(TOKENIZER_PATH, os.path.join(args.output, "tokenizer.model"))
 
     if args.quantize:
-        from src.model.transformer import YayaTransformer
+        from src.model.transformer import YayaForCausalLM
         from src.model.config import ModelConfig
-        model = YayaTransformer(ModelConfig(**cfg_dict))
+        model = YayaForCausalLM(ModelConfig(**cfg_dict))
         model.load_state_dict(weights, strict=False)
         model.eval()
         model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
