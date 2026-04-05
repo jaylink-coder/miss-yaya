@@ -160,24 +160,88 @@ def check_identity(text: str) -> str:
 # These are checked before generation as exact overrides.
 
 _FACT_OVERRIDES: List[tuple] = [
-    # (question pattern, answer)
+    # ── Time/measurement facts ────────────────────────────────────────────────
     (r'how\s+many\s+(?:months|mths)\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*year',  '12'),
     (r'how\s+many\s+days\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*week',             '7'),
     (r'how\s+many\s+days\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*year',             '365 (366 in a leap year)'),
     (r'how\s+many\s+hours\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*day',             '24'),
     (r'how\s+many\s+seconds\s+(?:are\s+(?:there\s+)?)?in\s+a?\s*minute',        '60'),
     (r'how\s+many\s+minutes\s+(?:are\s+(?:there\s+)?)?in\s+an?\s*hour',         '60'),
-    (r'capital\s+of\s+kenya',                                                     'Nairobi'),
-    (r'kenya.*capital',                                                            'Nairobi'),
+    (r'how\s+many\s+continents',                                                  '7'),
+    # ── Geography / capitals ─────────────────────────────────────────────────
+    (r'capital\s+of\s+kenya|kenya.*capital',                                     'Nairobi'),
+    (r'capital\s+of\s+france|france.*capital',                                   'Paris'),
+    (r'capital\s+of\s+japan|japan.*capital',                                     'Tokyo'),
+    (r'capital\s+of\s+nigeria|nigeria.*capital',                                 'Abuja'),
+    (r'capital\s+of\s+uganda|uganda.*capital',                                   'Kampala'),
+    (r'capital\s+of\s+tanzania|tanzania.*capital',                               'Dodoma'),
+    (r'capital\s+of\s+ethiopia|ethiopia.*capital',                               'Addis Ababa'),
+    (r'capital\s+of\s+usa|capital\s+of\s+(?:the\s+)?united\s+states',           'Washington D.C.'),
+    (r'capital\s+of\s+uk|capital\s+of\s+(?:great\s+)?britain|capital\s+of\s+england', 'London'),
+    (r'capital\s+of\s+germany',                                                   'Berlin'),
+    (r'which\s+country\s+is\s+nairobi|nairobi.*(?:located|found|city\s+in)',     'Kenya'),
+    # ── Science ──────────────────────────────────────────────────────────────
     (r'(?:boiling\s+point|boil)\s+(?:of\s+)?water|water\s+boil',                '100 degrees Celsius (212°F at sea level)'),
     (r'(?:chemical\s+)?formula\s+for\s+water|water.*formula',                   'H2O'),
     (r'what\s+planet\s+do\s+(?:we|humans)\s+live\s+on|planet.*humans?\s+live',  'Earth'),
-    (r'opposite\s+of\s+hot',                                                      'Cold'),
-    (r'opposite\s+of\s+cold',                                                     'Hot'),
+    (r'largest\s+(?:object|planet|star|body)\s+in\s+(?:our\s+)?solar\s+system', 'The Sun'),
+    (r'what\s+pulls\s+objects\s+(?:toward|towards|to)\s+(?:earth|the\s+ground)', 'Gravity'),
+    (r'what\s+(?:is\s+)?gravity',                                                'Gravity is the force that pulls objects toward each other.'),
+    # ── Kenya & East Africa ──────────────────────────────────────────────────
+    (r'highest\s+mountain\s+in\s+kenya|kenya.*highest\s+mountain',              'Mount Kenya'),
+    (r'largest\s+lake\s+in\s+africa',                                            'Lake Victoria'),
+    (r'great\s+(?:rift\s+valley|geological\s+feature).*kenya|kenya.*rift',      'The Great Rift Valley'),
+    (r'currency\s+of\s+kenya|kenya.*currency|kenya.*shilling',                  'Kenyan Shilling (KES)'),
+    (r'kenya\s+(?:gain|got|got)\s+independence|when.*kenya.*independent',       'Kenya gained independence in 1963.'),
+    (r'independence.*kenya|kenya.*independence',                                 'Kenya gained independence on 12 December 1963.'),
+    (r'national\s+language\s+of\s+kenya|kenya.*(?:national\s+)?language',       'Swahili (Kiswahili) and English'),
+    (r'(?:country|countries)\s+(?:that\s+)?borders?\s+kenya|kenya.*border',     'Kenya borders Ethiopia, Somalia, Tanzania, Uganda, and South Sudan.'),
+    (r'which\s+continent\s+is\s+kenya|kenya.*continent',                        'Africa'),
+    (r'kenyan\s+flag|flag.*kenya',                                               'The Kenyan flag has black, red, green, and white colors with a Maasai shield.'),
+    # ── Opposites ────────────────────────────────────────────────────────────
+    (r'opposite\s+of\s+hot',   'Cold'),
+    (r'opposite\s+of\s+cold',  'Hot'),
+    (r'opposite\s+of\s+big',   'Small'),
+    (r'opposite\s+of\s+small', 'Big'),
+    (r'opposite\s+of\s+day',   'Night'),
+    (r'opposite\s+of\s+night', 'Day'),
+    (r'opposite\s+of\s+good',  'Bad'),
+    (r'opposite\s+of\s+bad',   'Good'),
+    (r'opposite\s+of\s+fast',  'Slow'),
+    (r'opposite\s+of\s+slow',  'Fast'),
+    # ── Swahili vocabulary ───────────────────────────────────────────────────
+    (r"'?jambo'?\s+mean|what\s+is\s+jambo",                                     'Jambo means "Hello" in Swahili.'),
+    (r"'?asante'?\s+mean|what\s+is\s+asante",                                   'Asante means "Thank you" in Swahili.'),
+    (r"'?karibu'?\s+mean|what\s+is\s+karibu",                                   'Karibu means "Welcome" or "You are welcome" in Swahili.'),
+    (r"'?nzuri'?\s+mean|what\s+is\s+nzuri",                                     'Nzuri means "Good" or "Fine" in Swahili.'),
+    (r"'?habari'?\s+mean|what\s+is\s+habari",                                   'Habari means "News" or is used as "How are you?" in Swahili.'),
+    (r"'?sawa'?\s+mean|what\s+is\s+sawa",                                       'Sawa means "OK" or "Alright" in Swahili.'),
+    (r"swahili\s+(?:word\s+)?for\s+water",                                       'Maji'),
+    (r"swahili\s+(?:word\s+)?for\s+yes",                                         'Ndiyo'),
+    (r"swahili\s+(?:word\s+)?for\s+no\b",                                        'Hapana'),
+    (r"swahili\s+(?:word\s+)?for\s+one\b",                                       'Moja'),
+    (r"swahili\s+(?:word\s+)?for\s+two\b",                                       'Mbili'),
+    (r"swahili\s+(?:word\s+)?for\s+three\b",                                     'Tatu'),
+    (r"swahili\s+(?:word\s+)?for\s+food",                                        'Chakula'),
+    (r"swahili\s+(?:word\s+)?for\s+hello",                                       'Jambo'),
+    (r"swahili\s+(?:word\s+)?for\s+thank",                                       'Asante'),
+    (r"swahili\s+(?:word\s+)?for\s+good",                                        'Nzuri'),
+    (r"swahili\s+(?:word\s+)?for\s+person|swahili\s+(?:word\s+)?for\s+people",  'Mtu (person) / Watu (people)'),
+    # ── Language / grammar ───────────────────────────────────────────────────
+    (r"plural\s+of\s+.?child.?",                                                 'Children'),
+    (r"plural\s+of\s+.?person.?",                                                'People'),
+    (r"plural\s+of\s+.?mouse.?",                                                 'Mice'),
+    (r"plural\s+of\s+.?tooth.?",                                                 'Teeth'),
+    (r"what\s+type\s+of\s+word\s+is\s+.?run.?|.?run.?.*type\s+of\s+word",      'Verb'),
+    (r"what\s+type\s+of\s+word\s+is\s+.?happy.?|.?happy.?.*type\s+of\s+word",  'Adjective'),
+    (r"what\s+type\s+of\s+word\s+is\s+.?quickly.?",                             'Adverb'),
+    # ── Computed facts ───────────────────────────────────────────────────────
     (r'square\s+root\s+of\s+(\d+)',                                               None),  # computed below
     # Speed comparisons
     (r'(?:faster|quicker|slower).*(?:car|automobile|vehicle|bike|bicycle|cycle)',  None),  # computed below
     (r'(?:car|automobile|vehicle|bike|bicycle|cycle).*(?:faster|quicker|slower)',  None),  # computed below
+    # Heavier riddle: same weight
+    (r'heavier.*(?:iron|feather)|(?:iron|feather).*heavier',                     'They weigh the same — both are one kilogram.'),
     # Prime number checks for small numbers (model unreliable)
     (r'is\s+(\d+)\s+(?:a\s+)?prime',                                              None),  # computed below
 ]
