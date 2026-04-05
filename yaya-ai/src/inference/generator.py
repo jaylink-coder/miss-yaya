@@ -160,6 +160,18 @@ def check_identity(text: str) -> str:
     if not _IDENTITY_QUESTIONS.search(text):
         return ""
     text_lower = text.lower()
+    # Check specific brand names first (highest priority)
+    for kw in ('chatgpt', 'openai', 'claude', 'gemini', 'bard', 'gpt'):
+        if kw in text_lower:
+            return _IDENTITY_ANSWERS[kw]
+    # Check for "model" specifically (word boundary)
+    if re.search(r'\bmodel\b', text_lower):
+        return _IDENTITY_ANSWERS['what model']
+    if re.search(r'\bassistant\b', text_lower):
+        return _IDENTITY_ANSWERS['what assistant']
+    if re.search(r'\bai\b', text_lower):
+        return _IDENTITY_ANSWERS['what ai']
+    # Generic identity patterns
     for keyword, answer in _IDENTITY_ANSWERS.items():
         if keyword in text_lower:
             return answer
