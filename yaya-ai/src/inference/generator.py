@@ -78,20 +78,31 @@ _ARITH_PATTERNS = [
     (r'(\d+(?:\.\d+)?)\s*divided\s+by\s*(\d+(?:\.\d+)?)', r'\1/\2'),
     # "What is 15% of 200?"
     (r'(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)', r'\1/100*\2'),
-    # "A car travels at 60 km/h for 2 hours" → 60*2
+    # "A car travels at 60 km/h for 2 hours. How far?" → 60*2
     (r'(?:at|travels|goes|moves|drives|runs|walks|flies)\s+(?:at\s+)?(\d+(?:\.\d+)?)\s*(?:km/h|mph|km per hour|miles per hour)[^\d]*?(?:for\s+)?(\d+(?:\.\d+)?)\s*(?:hour|hr)',
      r'\1*\2'),
     # "speed is X km/h, time is Y hours, distance = ?"
     (r'speed.*?(\d+(?:\.\d+)?)\s*km.?h.*?time.*?(\d+(?:\.\d+)?)\s*hour',
      r'\1*\2', re.IGNORECASE | re.DOTALL),
+    # "A train travels X km in Y hours. Speed?" → X/Y
+    (r'(?:travels|covers|goes)\s+(\d+(?:\.\d+)?)\s*km\s+in\s+(\d+(?:\.\d+)?)\s*hours?',
+     r'\1/\2'),
+    # "costs X [shillings/dollars]. I buy Y [items]. How much?" → X*Y
+    (r'costs?\s+(\d+(?:\.\d+)?)\s*(?:shilling|dollar|ksh|usd|kes)?s?[.\s]+(?:i\s+buy|buy|I\s+purchase)\s+(\d+(?:\.\d+)?)',
+     r'\1*\2'),
+    # "save X [shillings] per [week/month]. Y [weeks/months]" → X*Y
+    (r'save\s+(\d+(?:\.\d+)?)\s*(?:shilling|dollar)?s?\s+per\s+(?:week|month)[^\d]*(\d+(?:\.\d+)?)\s*(?:week|month)',
+     r'\1*\2'),
+    # "half of X" → X/2
+    (r'(?:what\s+is\s+)?half\s+of\s+(\d+(?:\.\d+)?)', r'\1/2'),
     # "X times Y" / "X multiplied by Y"
-    (r'(\d+(?:\.\d+)?)\s*(?:times|multiplied\s+by|x)\s*(\d+(?:\.\d+)?)', r'\1*\2'),
+    (r'(\d+(?:\.\d+)?)\s*(?:times|multiplied\s+by)\s*(\d+(?:\.\d+)?)', r'\1*\2'),
     # "X minus Y" / "X subtract Y"
     (r'(\d+(?:\.\d+)?)\s*(?:minus|subtract(?:ed)?\s+(?:from)?\s*)\s*(\d+(?:\.\d+)?)', r'\1-\2'),
     # "X plus Y" / "X added to Y"
     (r'(\d+(?:\.\d+)?)\s*(?:plus|added\s+to)\s*(\d+(?:\.\d+)?)', r'\1+\2'),
-    # Bare expression "100 / 4" or "15 * 3"
-    (r'^(\d+(?:\.\d+)?)\s*([+\-*/])\s*(\d+(?:\.\d+)?)$', r'\1\2\3'),
+    # Bare expression "100 / 4" or "15 * 3" (exact match only)
+    (r'^(?:what\s+is\s+)?(\d+(?:\.\d+)?)\s*([+\-*/])\s*(\d+(?:\.\d+)?)[\s?]*$', r'\1\2\3'),
 ]
 
 def extract_arithmetic(text: str) -> str:
