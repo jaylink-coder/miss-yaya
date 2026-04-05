@@ -55,7 +55,7 @@ from src.inference.generator import TextGenerator, GenerationConfig
 
 # Load
 tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
-model = YayaTransformer(ModelConfig())
+model = YayaForCausalLM(ModelConfig())
 state = torch.load("checkpoint/model.pt", map_location="cpu")
 model.load_state_dict(state["model"])
 model.eval()
