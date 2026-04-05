@@ -107,10 +107,11 @@ powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$proc = Start-Process
 
 ## Data files
 - `data/sft/yaya_reasoning_large.jsonl` — **~205K examples** (GSM8K + MetaMath + OpenHermes + Yaya + short_qa)
-- `data/sft/yaya_short_qa.jsonl` — **2,634 direct Q&A pairs** (arithmetic, facts, identity)
-- `data/sft/yaya_dpo_combined.jsonl` — **4,214 DPO preference pairs**
-- `data/sft/teach/quick_facts.jsonl` — **1,000 direct Q&A facts** (used in recovery)
-- `data/sft/yaya_reasoning_combined.jsonl` — 3,455 local CoT examples
+- `data/sft/yaya_short_qa.jsonl` — **2,683 direct Q&A pairs** (arithmetic, facts, identity, reasoning, language)
+- `data/sft/yaya_dpo_combined.jsonl` — **9,560 DPO preference pairs** (anti-list pairs added 2026-04-05)
+- `data/sft/teach/quick_facts.jsonl` — **1,000 direct Q&A facts** (converted to messages format 2026-04-05)
+- `data/sft/yaya_concise_sft.jsonl` — **3,683 examples** with "Answer directly, no lists" system prompts
+- `data/sft/yaya_reasoning_combined.jsonl` — 3,455 local CoT examples (NOT used in recovery)
 - `data/tokenizer/yaya_tokenizer.model` — SentencePiece tokenizer (vocab 32768)
 
 ## Known issues / recent fixes
