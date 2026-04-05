@@ -170,7 +170,7 @@ def test_checkpoint(ckpt_name, tokenizer, token=None, step=None, loss=None):
 
     pct = passed / len(results) * 100
     print(f"\n  Score: {passed}/{len(results)} ({pct:.0f}%)")
-    if loss:
+    if loss is not None:
         record = save_results(ckpt_name, step, loss, phase, results, passed)
     print(f"{'='*60}\n")
     return passed, len(results)
