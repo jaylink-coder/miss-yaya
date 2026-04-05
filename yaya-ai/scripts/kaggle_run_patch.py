@@ -92,13 +92,14 @@ if patch_ckpt:
     meta = _j.load(open(os.path.join(patch_ckpt, 'metadata.json'))) if os.path.exists(os.path.join(patch_ckpt, 'metadata.json')) else {}
     _step = meta.get('step', 0)
     _loss = meta.get('loss', 99)
-    if _step >= 400 and _loss > 0.1:
-        print(f'  Patch already complete at step {_step} (loss={_loss:.4f}) — skipping to benchmark.')
+    if _step >= 600 and _loss > 0.05:
+        print(f'  Patch v2 already complete at step {_step} (loss={_loss:.4f}) — skipping to benchmark.')
         start_ckpt = patch_ckpt
         _already_done = True
     else:
-        print(f'  Patch incomplete at step {_step} — rerunning.')
-        start_ckpt = None
+        # v1 done (500 steps) — run v2 micro-patch (300 more steps) from patch ckpt
+        print(f'  Patch v1 at step {_step} — running v2 micro-patch (300 more steps).')
+        start_ckpt = patch_ckpt
         _already_done = False
 else:
     start_ckpt = None
