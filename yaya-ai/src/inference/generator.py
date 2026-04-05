@@ -474,6 +474,11 @@ class TextGenerator:
                 if _fact_ans:
                     return _fact_ans
 
+            if config.use_conversational_guard:
+                _conv_ans = check_conversational(_user_text)
+                if _conv_ans:
+                    return _conv_ans
+
         # Inject persistent memory context into the prompt
         actual_prompt = prompt
         if self.memory is not None:
