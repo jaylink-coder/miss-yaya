@@ -301,6 +301,16 @@ def check_facts(text: str) -> str:
                         return 'A car is faster than a bicycle.'
                     elif re.search(r'\bslower\b', text_lower):
                         return 'A bicycle is slower than a car.'
+            elif 'discount' in pattern:
+                # "costs X, Y% discount, how much to pay?" → X*(1-Y/100)
+                m = re.search(r'costs?\s+(\d+(?:\.\d+)?).*?(\d+(?:\.\d+)?)\s*%\s*discount',
+                              text_lower, re.IGNORECASE)
+                if m:
+                    price = float(m.group(1))
+                    pct = float(m.group(2))
+                    result = price * (1 - pct / 100)
+                    ans = str(int(result)) if result == int(result) else f"{result:.2f}"
+                    return ans
     return ""
 
 
