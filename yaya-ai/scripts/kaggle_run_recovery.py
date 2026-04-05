@@ -189,7 +189,7 @@ if not training_ok:
     try:
         from src.training.trainer import Trainer, TrainingConfig
         from src.model.yaya_model import YayaForCausalLM
-        from src.model.config import ModelConfig
+        from src.utils.config import ModelConfig
         from src.tokenizer.tokenizer import YayaTokenizer
         from src.data.dataset import InstructionDataset
 
