@@ -193,10 +193,8 @@ if not training_ok:
         from src.tokenizer.tokenizer import YayaTokenizer
         from src.data.dataset import InstructionDataset
 
-        with open(os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml')) as f:
-            model_cfg_dict = yaml.safe_load(f)
-
-        model_cfg = ModelConfig(**model_cfg_dict)
+        from src.utils.config import load_model_config
+        model_cfg = load_model_config(os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml'))
         tokenizer = YayaTokenizer(TOKENIZER_PATH)
         model = YayaForCausalLM(model_cfg)
 
