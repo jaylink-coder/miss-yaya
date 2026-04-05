@@ -23,6 +23,18 @@ make benchmark       # Full 35-question benchmark across 6 categories
 - **Monitor**: `python scripts/phase_tester.py --once --token $HF_TOKEN`
 - **Benchmark**: `python scripts/benchmark.py --checkpoint checkpoints/.../checkpoint-XXXXX`
 
+## Monitoring (local)
+```bash
+# One-time setup — add token to .env
+echo "HF_TOKEN=hf_xxx" >> yaya-ai/.env
+
+# Live monitor (polls HF Hub every 60s)
+.venv/Scripts/python.exe scripts/monitor.py
+
+# Single check
+.venv/Scripts/python.exe scripts/monitor.py --once
+```
+
 ## Current training state (2026-04-05)
 - **SFT**: COMPLETE — 40,000 steps, final loss 2.78
 - **DPO**: COMPLETE — 2,500 steps, final loss 0.43, accuracy ~80%
