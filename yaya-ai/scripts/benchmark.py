@@ -130,7 +130,7 @@ SUITE = {
     "Conversational": [
         ("greet",       "Hello! How are you?",                             ["good", "well", "fine", "great", "hello", "hi", "yaya"]),
         ("help",        "Can you help me with a question?",                ["yes", "sure", "of course", "happy", "glad"]),
-        ("thank",       "Thank you for your help!",                        ["welcome", "pleasure", "glad", "happy"]),
+        ("thank",       "Thank you for your help!",                        ["welcome", "pleasure", "glad", "happy", "help"]),
         ("what do",     "What can you do?",                                ["help", "answer", "assist", "question"]),
         ("good",        "That is a great answer!",                         ["thank", "glad", "happy", "welcome"]),
     ],
