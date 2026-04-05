@@ -43,7 +43,8 @@ echo "HF_TOKEN=hf_xxx" >> yaya-ai/.env
   - Step 15k: 29% (10/35)
   - Step 30k: 23% (8/35) — math rut peak
   - DPO final: 26% (9/35) — word problems 50%, identity 50%
-- **Next step**: Recovery SFT — 3,000 steps on `short_qa + quick_facts` only
+- **Next step**: Recovery SFT running on Kaggle now (3,000 steps on short_qa+facts, 5x oversampled)
+- **After recovery**: DPO2 auto-launches (1,500 steps, lr=3e-7), then final benchmark
 - **Problem**: Model outputs numbered lists (`"1. The main types of..."`) for all questions
   - Root cause: 40k steps of math training burned in numbered-list format
   - DPO (2,500 steps) insufficient to overcome it
