@@ -353,6 +353,14 @@ if recovery_ckpts:
             '--max_steps',      '1500',   # shorter — targeted alignment only
             '--batch_size',     '4',
         ]
+        # Start DPO2 watcher so checkpoints survive Kaggle crash
+        if HF_TOKEN:
+            try:
+                from scripts.hub_utils import start_watcher
+                _dpo2_watcher = start_watcher(dpo2_ckpt, HUB_REPO, hf_token, interval_sec=120)
+            except Exception as _we:
+                print(f'  WARNING: DPO2 hub watcher failed: {_we}')
+
         print(f'  DPO2 command: {" ".join(dpo_cmd[:4])} ...')
         dpo2_result = subprocess.run(dpo_cmd, cwd=REPO_ROOT)
 
