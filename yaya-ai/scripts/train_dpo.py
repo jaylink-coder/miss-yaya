@@ -100,6 +100,10 @@ def main():
     parser.add_argument("--batch_size",     type=int, default=2)
     parser.add_argument("--log_steps",      type=int, default=50)
     parser.add_argument("--save_steps",     type=int, default=500)
+    parser.add_argument("--hub_repo",       type=str, default=None,
+                        help="HF Hub repo to push checkpoints to (e.g. Jaylink-coder/yaya-125m)")
+    parser.add_argument("--hub_prefix",     type=str, default="dpo-checkpoint",
+                        help="Prefix for Hub checkpoint folder name")
     args = parser.parse_args()
 
     sft_ckpt = args.sft_checkpoint or _find_sft_checkpoint()
