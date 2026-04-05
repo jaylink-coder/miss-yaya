@@ -13,9 +13,9 @@ from typing import Optional, List, Dict, Any, TYPE_CHECKING
 from dataclasses import dataclass
 
 # ── Calculator tool ───────────────────────────────────────────────────────────
-# Token format: <|calc|>EXPRESSION<|/calc|>=RESULT
-# When the model emits <|calc|>EXPR<|/calc|>, we evaluate EXPR and inject =RESULT
-# so the model continues with the correct answer already in context.
+# Two modes:
+# 1. Pre-generation: extract arithmetic from the question and compute directly.
+# 2. Token-level: intercept <|calc|>EXPR<|/calc|> if the model emits it.
 
 _CALC_OPEN  = "<|calc|>"
 _CALC_CLOSE = "<|/calc|>"
@@ -38,10 +38,10 @@ def _safe_eval(expr: str) -> str:
     Returns the result as a string, or empty string on error.
     """
     expr = expr.strip()
-    # Allow basic percentage: "15% of 200" → "15/100*200"
+    # "15% of 200" → "(15/100*200)"
     expr = re.sub(r'(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)',
                   r'(\1/100*\2)', expr, flags=re.IGNORECASE)
-    # Allow trailing % as /100
+    # "15%" → "(15/100)"
     expr = re.sub(r'(\d+(?:\.\d+)?)\s*%', r'(\1/100)', expr)
 
     def _eval_node(node):
@@ -65,12 +65,51 @@ def _safe_eval(expr: str) -> str:
     try:
         tree = ast.parse(expr, mode='eval')
         result = _eval_node(tree.body)
-        # Format: integer if whole number, else up to 6 sig figs
         if isinstance(result, float) and result == int(result):
             return str(int(result))
         return f"{result:.6g}"
     except Exception:
         return ""
+
+
+# Patterns that signal a pure arithmetic question — extract expression and answer
+_ARITH_PATTERNS = [
+    # "What is 100 divided by 4?" / "100 / 4"
+    (r'(\d+(?:\.\d+)?)\s*divided\s+by\s*(\d+(?:\.\d+)?)', r'\1/\2'),
+    # "What is 15% of 200?"
+    (r'(\d+(?:\.\d+)?)\s*%\s*of\s*(\d+(?:\.\d+)?)', r'\1/100*\2'),
+    # "A car travels at 60 km/h for 2 hours" → 60*2
+    (r'(?:at|travels|goes|moves|drives|runs|walks|flies)\s+(?:at\s+)?(\d+(?:\.\d+)?)\s*(?:km/h|mph|km per hour|miles per hour)[^\d]*?(?:for\s+)?(\d+(?:\.\d+)?)\s*(?:hour|hr)',
+     r'\1*\2'),
+    # "speed is X km/h, time is Y hours, distance = ?"
+    (r'speed.*?(\d+(?:\.\d+)?)\s*km.?h.*?time.*?(\d+(?:\.\d+)?)\s*hour',
+     r'\1*\2', re.IGNORECASE | re.DOTALL),
+    # "X times Y" / "X multiplied by Y"
+    (r'(\d+(?:\.\d+)?)\s*(?:times|multiplied\s+by|x)\s*(\d+(?:\.\d+)?)', r'\1*\2'),
+    # "X minus Y" / "X subtract Y"
+    (r'(\d+(?:\.\d+)?)\s*(?:minus|subtract(?:ed)?\s+(?:from)?\s*)\s*(\d+(?:\.\d+)?)', r'\1-\2'),
+    # "X plus Y" / "X added to Y"
+    (r'(\d+(?:\.\d+)?)\s*(?:plus|added\s+to)\s*(\d+(?:\.\d+)?)', r'\1+\2'),
+    # Bare expression "100 / 4" or "15 * 3"
+    (r'^(\d+(?:\.\d+)?)\s*([+\-*/])\s*(\d+(?:\.\d+)?)$', r'\1\2\3'),
+]
+
+def extract_arithmetic(text: str) -> str:
+    """Try to extract and evaluate arithmetic from a question string.
+
+    Returns the numeric result string if found, else empty string.
+    """
+    text = text.strip()
+    for item in _ARITH_PATTERNS:
+        pattern, replacement = item[0], item[1]
+        flags = item[2] if len(item) > 2 else 0
+        m = re.search(pattern, text, flags)
+        if m:
+            expr = re.sub(pattern, replacement, m.group(0), flags=flags)
+            result = _safe_eval(expr)
+            if result:
+                return result
+    return ""
 
 if TYPE_CHECKING:
     from src.training.online_learner import OnlineLearner
