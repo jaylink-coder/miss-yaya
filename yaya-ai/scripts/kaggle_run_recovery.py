@@ -227,6 +227,15 @@ train_cmd = [
     '--pretrain_checkpoint', start_ckpt,
 ]
 
+# Start Hub watcher before training so checkpoints are pushed even if script crashes
+if HF_TOKEN:
+    try:
+        from scripts.hub_utils import start_watcher, ensure_repo
+        ensure_repo(HUB_REPO, hf_token)
+        _watcher = start_watcher(RECOVERY_CKPT, HUB_REPO, hf_token, interval_sec=120)
+    except Exception as e:
+        print(f'  WARNING: Hub watcher failed to start: {e}')
+
 print(f'  Command: {" ".join(train_cmd[:4])} ...')
 result = subprocess.run(train_cmd, cwd=REPO_ROOT)
 training_ok = result.returncode == 0
