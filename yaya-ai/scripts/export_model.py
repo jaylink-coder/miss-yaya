@@ -78,8 +78,8 @@ def write_generate_script(output_dir):
 import sys, os, json, torch
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from src.model.transformer import YayaTransformer
-from src.model.config import ModelConfig
+from src.model.yaya_model import YayaForCausalLM
+from src.utils.config import ModelConfig
 from src.tokenizer.tokenizer import YayaTokenizer
 from src.inference.generator import TextGenerator, GenerationConfig
 
