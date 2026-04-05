@@ -85,32 +85,12 @@ def find_local_checkpoint(ckpt_dir, prefix='checkpoint-'):
     return ckpts[-1] if ckpts else None
 
 
-# Check if patch already completed
-patch_ckpt = find_local_checkpoint(PATCH_CKPT, 'patch-checkpoint-')
-if patch_ckpt:
-    import json as _j
-    meta = _j.load(open(os.path.join(patch_ckpt, 'metadata.json'))) if os.path.exists(os.path.join(patch_ckpt, 'metadata.json')) else {}
-    _step = meta.get('step', 0)
-    _loss = meta.get('loss', 99)
-    if _step >= 600 and _loss > 0.05:
-        print(f'  Patch v2 already complete at step {_step} (loss={_loss:.4f}) — skipping to benchmark.')
-        start_ckpt = patch_ckpt
-        _already_done = True
-    else:
-        # v1 done (500 steps) — run v2 micro-patch (300 more steps) from patch ckpt
-        print(f'  Patch v1 at step {_step} — running v2 micro-patch (300 more steps).')
-        start_ckpt = patch_ckpt
-        _already_done = False
-else:
-    start_ckpt = None
-    _already_done = False
+# Always pull the best checkpoint from Hub first (patch > dpo2 > recovery > dpo)
+# This ensures we always start from the right checkpoint even on a fresh session
+start_ckpt = None
+_already_done = False
 
-if not _already_done:
-    # Priority for starting point: Hub patch > local dpo2 > Hub dpo2 > recovery
-    # IMPORTANT: always prefer patch-checkpoint from Hub — that's our best checkpoint
-    DPO2_LOCAL = 'checkpoints/yaya-125m-dpo2'
-
-    if hf_token:
+if hf_token:
         print('  Checking Hub for best starting checkpoint...')
         try:
             from huggingface_hub import list_repo_files, snapshot_download
