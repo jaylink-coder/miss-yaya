@@ -124,7 +124,8 @@ def pull_latest_checkpoint(repo_id, local_dir, token, verbose=True):
             # No latest.json — find most recent checkpoint by listing files
             # Scan all checkpoint prefix types: checkpoint-, dpo-checkpoint-, recovery-, dpo2-
             files = list(list_repo_files(repo_id=repo_id, repo_type="model", token=token))
-            CKPT_PREFIXES = ("checkpoint-", "dpo-checkpoint-", "recovery-checkpoint-", "dpo2-checkpoint-")
+            CKPT_PREFIXES = ("checkpoint-", "dpo-checkpoint-", "recovery-checkpoint-",
+                             "dpo2-checkpoint-", "patch-checkpoint-")
             ckpt_names = sorted({
                 f.split("/")[0] for f in files
                 if any(f.split("/")[0].startswith(p) for p in CKPT_PREFIXES)
@@ -133,8 +134,8 @@ def pull_latest_checkpoint(repo_id, local_dir, token, verbose=True):
             if not ckpt_names:
                 print(f"[Hub] No checkpoints found in {repo_id}.")
                 return None
-            # Prefer dpo2 > recovery > dpo > sft (best training stage)
-            for prefix in ("dpo2-checkpoint-", "recovery-checkpoint-", "dpo-checkpoint-"):
+            # Prefer patch > dpo2 > recovery > dpo > sft (best training stage)
+            for prefix in ("patch-checkpoint-", "dpo2-checkpoint-", "recovery-checkpoint-", "dpo-checkpoint-"):
                 prefixed = [c for c in ckpt_names if c.startswith(prefix)]
                 if prefixed:
                     latest_name = prefixed[-1]
