@@ -283,20 +283,32 @@ class TextGenerator:
             import dataclasses
             config = dataclasses.replace(config, **overrides)
 
-        # ── Pre-generation calculator intercept ───────────────────────────
-        # Extract the user's last message from the prompt and check if it's
-        # a pure arithmetic question we can answer exactly.
-        if config.use_calculator:
-            # Find the last user turn content
-            user_turn = re.search(
-                r'</\|user\|>\n(.*?)(?:\n</\|assistant\|>|\Z)', prompt,
-                re.DOTALL | re.IGNORECASE
-            )
-            if user_turn:
-                user_text = user_turn.group(1).strip()
-                calc_answer = extract_arithmetic(user_text)
-                if calc_answer:
-                    return calc_answer
+        # ── Pre-generation guards ─────────────────────────────────────────
+        # Extract the user's last turn once, then run each guard in priority order:
+        # 1. Calculator  — exact arithmetic answers
+        # 2. Identity    — hardcoded "I am Yaya" answers
+        # 3. Fact guard  — hardcoded overrides for known-unstable facts
+        _user_turn = re.search(
+            r'</\|user\|>\n(.*?)(?:\n</\|assistant\|>|\Z)', prompt,
+            re.DOTALL | re.IGNORECASE
+        )
+        if _user_turn:
+            _user_text = _user_turn.group(1).strip()
+
+            if config.use_calculator:
+                _calc_ans = extract_arithmetic(_user_text)
+                if _calc_ans:
+                    return _calc_ans
+
+            if config.use_identity_guard:
+                _id_ans = check_identity(_user_text)
+                if _id_ans:
+                    return _id_ans
+
+            if config.use_fact_guard:
+                _fact_ans = check_facts(_user_text)
+                if _fact_ans:
+                    return _fact_ans
 
         # Inject persistent memory context into the prompt
         actual_prompt = prompt
