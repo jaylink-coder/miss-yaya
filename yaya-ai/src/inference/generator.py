@@ -174,6 +174,11 @@ _FACT_OVERRIDES: List[tuple] = [
     (r'opposite\s+of\s+hot',                                                      'Cold'),
     (r'opposite\s+of\s+cold',                                                     'Hot'),
     (r'square\s+root\s+of\s+(\d+)',                                               None),  # computed below
+    # Speed comparisons
+    (r'(?:faster|quicker|slower).*(?:car|automobile|vehicle|bike|bicycle|cycle)',  None),  # computed below
+    (r'(?:car|automobile|vehicle|bike|bicycle|cycle).*(?:faster|quicker|slower)',  None),  # computed below
+    # Prime number checks for small numbers (model unreliable)
+    (r'is\s+(\d+)\s+(?:a\s+)?prime',                                              None),  # computed below
 ]
 
 def check_facts(text: str) -> str:
