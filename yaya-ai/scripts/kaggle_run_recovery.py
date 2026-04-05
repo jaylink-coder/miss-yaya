@@ -211,10 +211,10 @@ if not training_ok:
         train_cfg = TrainingConfig(
             max_steps=3000,
             learning_rate=5e-5,
-            batch_size=4,
+            per_device_batch_size=4,
             gradient_accumulation_steps=4,
             save_steps=500,
-            checkpoint_dir=RECOVERY_CKPT,
+            save_dir=RECOVERY_CKPT,
             dtype=DTYPE,
         )
 
