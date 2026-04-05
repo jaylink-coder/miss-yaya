@@ -234,8 +234,8 @@ if not _already_done:
     with open(base_cfg_path) as f:
         patch_cfg = yaml.safe_load(f)
 
-    patch_cfg['training']['max_steps']      = 500    # short — just patch specific failures
-    patch_cfg['training']['learning_rate']  = 1e-5   # conservative — avoid forgetting
+    patch_cfg['training']['max_steps']      = 300    # v2 micro-patch (300 steps for remaining 6 failures)
+    patch_cfg['training']['learning_rate']  = 5e-6   # very conservative — minimal forgetting
     patch_cfg['training']['max_seq_length'] = 256
     patch_cfg['training']['dtype']          = DTYPE
     patch_cfg['checkpointing'] = patch_cfg.get('checkpointing', {})
