@@ -178,6 +178,7 @@ class TextGenerator:
         generated_ids = list(input_ids)
         n_prompt = len(input_ids)  # track prompt length for repetition penalty
         past_key_values = None
+        _calc_injected: set = set()  # track already-evaluated calc expressions
 
         for _ in range(config.max_new_tokens):
             # Forward pass
