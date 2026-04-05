@@ -143,11 +143,13 @@ _v2_done = _is_patch and _ckpt_num == 300   # v2 produces step=300 (old — no K
 _v3_done = _is_patch and _ckpt_num == 800   # v3 = 500+300 — done if we also did v3
 _v1_done = _is_patch and _ckpt_num == 500   # v1 produces step=500 — run v2 from here
 # v3: run from v2 (step=300) adding Kenya/Swahili, 500 more steps, lr=3e-6
-_skip_training = _v2_done
+_skip_training = _v3_done
 
 if _skip_training:
-    print(f'  Patch v2 already complete ({hub_ckpt}) — skipping to benchmark.')
+    print(f'  Patch v3 already complete ({hub_ckpt}) — skipping to benchmark.')
     patch_ckpt = start_ckpt
+elif _v2_done:
+    print(f'  Patch v2 found ({hub_ckpt}) — running v3 (500 steps, lr=3e-6, Kenya/Swahili data).')
 elif _v1_done:
     print(f'  Patch v1 found ({hub_ckpt}) — running v2 (300 steps, lr=5e-6).')
 else:
