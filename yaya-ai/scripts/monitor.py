@@ -136,7 +136,7 @@ def main():
             else:
                 prog = ckpt
 
-            loss_str = f"Loss: {loss:.4f}" if loss else "Loss: ?"
+            loss_str = f"Loss: {loss:.4f}" if loss is not None else "Loss: ?"
             delta = ""
             if prev_step is not None and step is not None and step != prev_step:
                 delta = f" (+{step - prev_step} steps)"
