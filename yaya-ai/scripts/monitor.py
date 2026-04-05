@@ -47,7 +47,7 @@ def load_token():
 
 _MONITOR_CACHE = os.path.join(os.path.expanduser("~"), ".cache", "yaya_monitor")
 
-_CKPT_PREFIXES = ("checkpoint-", "recovery-", "dpo-checkpoint-", "dpo2-checkpoint-")
+_CKPT_PREFIXES = ("checkpoint-", "recovery-", "dpo-checkpoint-", "dpo2-checkpoint-", "patch-checkpoint-")
 
 
 def get_hub_status(token):
