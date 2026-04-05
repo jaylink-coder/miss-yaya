@@ -133,7 +133,7 @@ def main():
 
     tokenizer = YayaTokenizer(args.tokenizer)
     dataset = DPODataset(args.dpo_data, tokenizer)
-    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=pad_collate)
+    loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, collate_fn=pad_collate, num_workers=0)
     optimizer = torch.optim.AdamW(policy.parameters(), lr=args.lr, betas=(0.9, 0.95), weight_decay=0.1)
 
     print(f"DPO pairs: {len(dataset)}, max_steps: {args.max_steps}, lr: {args.lr}")
