@@ -104,7 +104,8 @@ if not start_ckpt and HF_TOKEN:
                     ('recovery-checkpoint-', 'dpo-checkpoint-', 'checkpoint-'))
         })
         hub_ckpt = None
-        for prefix in ('recovery-checkpoint-', 'dpo-checkpoint-', 'checkpoint-'):
+        # Priority for starting point: dpo > sft (NOT recovery — avoid reusing overfit ckpt)
+        for prefix in ('dpo-checkpoint-', 'checkpoint-'):
             matches = [c for c in hub_ckpt_names if c.startswith(prefix)]
             if matches:
                 hub_ckpt = matches[-1]
