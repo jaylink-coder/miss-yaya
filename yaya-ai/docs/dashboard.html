@@ -154,7 +154,15 @@ const PHASES = [
   {name:"DPO",             steps:2500},
 ];
 
-let lossHistory = [];
+// Seed loss history from embedded LOSS_JSONL
+function parseLossJsonl(raw) {
+  if (!raw.trim()) return [];
+  return raw.trim().split("\n").map(l => {
+    try { return JSON.parse(l); } catch { return null; }
+  }).filter(Boolean).sort((a, b) => a.step - b.step);
+}
+const lossPoints = parseLossJsonl(LOSS_JSONL);
+let lossHistory = lossPoints.map(p => p.loss);
 
 // ── Benchmark + phase data (auto-updated by scripts/update_dashboard.py) ────
 // LOSS_JSONL: one entry per checkpoint with known loss, for the loss curve
