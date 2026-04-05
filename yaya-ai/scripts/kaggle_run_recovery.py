@@ -413,6 +413,7 @@ if best_ckpt:
 
 else:
     print('  No recovery checkpoint found — skipping DPO2 and benchmark.')
+    training_ok = False
 
 print()
 print('=' * 60)
