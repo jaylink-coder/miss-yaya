@@ -182,18 +182,19 @@ def main():
     weights = extract_weights(state)
     print(f"  Step: {meta.get('step','?')}  Loss: {meta.get('loss','?')}")
 
-    import yaml
-    with open(os.path.join(REPO_ROOT, "configs/model/yaya_125m.yaml")) as f:
-        cfg_dict = yaml.safe_load(f)
+    import dataclasses
+    from src.utils.config import load_model_config
+    model_yaml = os.path.join(REPO_ROOT, "configs/model/yaya_125m.yaml")
+    cfg_obj = load_model_config(model_yaml)
+    cfg_flat = dataclasses.asdict(cfg_obj)  # vision becomes a nested dict — intentional
     with open(os.path.join(args.output, "config.json"), "w") as f:
-        json.dump(cfg_dict, f, indent=2)
+        json.dump(cfg_flat, f, indent=2)
 
     shutil.copy(TOKENIZER_PATH, os.path.join(args.output, "tokenizer.model"))
 
     if args.quantize:
-        from src.model.transformer import YayaForCausalLM
-        from src.model.config import ModelConfig
-        model = YayaForCausalLM(ModelConfig(**cfg_dict))
+        from src.model.yaya_model import YayaForCausalLM
+        model = YayaForCausalLM(cfg_obj)
         model.load_state_dict(weights, strict=False)
         model.eval()
         model = torch.quantization.quantize_dynamic(model, {torch.nn.Linear}, dtype=torch.qint8)
