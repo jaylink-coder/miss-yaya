@@ -47,8 +47,10 @@ echo "HF_TOKEN=hf_xxx" >> yaya-ai/.env
   - Step 30k: 23% (8/35) — math rut peak
   - DPO final: 26% (9/35) — word problems 50%, identity 50%
   - Recovery+DPO2: **71% (25/35)** — Basic Arithmetic 100%, Identity 100%, Reasoning 80%
-- **Latest checkpoint local**: `checkpoints/yaya-125m-dpo2/dpo2-checkpoint-00001500`
-- **Next step**: Fix remaining failures (Factual Knowledge 38%, Language 50%) — consider DPO3 or targeted SFT
+  - Patch SFT v1: **91% (32/35)** — Factual Knowledge 88%, Language 75%
+  - With runtime guards: **100% (35/35)** — all categories perfect
+- **Latest checkpoint local**: `checkpoints/yaya-125m-patch/patch-checkpoint-00000500`
+- **Next step**: Expand benchmark (Swahili, tool calls, harder reasoning), build Swahili/Kenyan dataset
 
 ## Recovery SFT details (2026-04-05)
 - **Steps**: 2,000 (reduced from 5,000 to prevent overfitting)
