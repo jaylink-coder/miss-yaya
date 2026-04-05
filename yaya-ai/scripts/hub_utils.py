@@ -176,16 +176,23 @@ def start_watcher(ckpt_dir, repo_id, token, interval_sec=90):
         print("[Hub] No token — checkpoint watcher disabled.")
         return None
 
+    _GLOB_PATTERNS = ["checkpoint-*", "patch-checkpoint-*", "dpo2-checkpoint-*",
+                      "recovery-checkpoint-*", "dpo-checkpoint-*"]
+
     pushed = set()
     # Pre-populate with any checkpoints that already exist (don't re-push)
-    for ckpt in glob.glob(os.path.join(ckpt_dir, "checkpoint-*")):
-        pushed.add(ckpt)
+    for pat in _GLOB_PATTERNS:
+        for ckpt in glob.glob(os.path.join(ckpt_dir, pat)):
+            pushed.add(ckpt)
 
     def watch():
         while True:
             time.sleep(interval_sec)
             try:
-                for ckpt in sorted(glob.glob(os.path.join(ckpt_dir, "checkpoint-*"))):
+                all_ckpts = []
+                for pat in _GLOB_PATTERNS:
+                    all_ckpts.extend(glob.glob(os.path.join(ckpt_dir, pat)))
+                for ckpt in sorted(all_ckpts):
                     if ckpt.endswith('_temp'):
                         continue
                     if ckpt not in pushed:
