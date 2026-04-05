@@ -324,6 +324,10 @@ def build_pairs():
     for prompt, chosen, rejected in REASONING_PAIRS:
         pairs.append(make_pair(prompt, chosen, rejected))
 
+    # Anti-numbered-list: direct answers vs math-list format
+    for prompt, chosen, rejected in ANTI_LIST_PAIRS:
+        pairs.append(make_pair(prompt, chosen, rejected))
+
     return pairs
 
 
