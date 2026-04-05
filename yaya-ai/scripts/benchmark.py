@@ -128,7 +128,7 @@ SUITE = {
         ("good sw",     "What does 'Nzuri' mean in English?",              ["good", "fine", "nice", "great"]),
     ],
     "Conversational": [
-        ("greet",       "Hello! How are you?",                             ["good", "well", "fine", "great", "hello", "hi"]),
+        ("greet",       "Hello! How are you?",                             ["good", "well", "fine", "great", "hello", "hi", "yaya"]),
         ("help",        "Can you help me with a question?",                ["yes", "sure", "of course", "happy", "glad"]),
         ("thank",       "Thank you for your help!",                        ["welcome", "pleasure", "glad", "happy"]),
         ("what do",     "What can you do?",                                ["help", "answer", "assist", "question"]),
