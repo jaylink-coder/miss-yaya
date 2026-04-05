@@ -1,0 +1,248 @@
+"""Kaggle Recovery SFT for Yaya-125M.
+
+Targeted 3,000-step re-training on short Q&A + quick facts ONLY.
+Loads the DPO checkpoint and overwrites the numbered-list habit with
+direct, concise answers.
+
+Usage (Kaggle notebook cell):
+    !git clone https://github.com/jaylink-coder/miss-yaya.git /kaggle/working/miss-yaya 2>/dev/null || \
+        (cd /kaggle/working/miss-yaya && git pull origin main)
+    !pip install -q sentencepiece pyyaml huggingface_hub
+    import os; os.chdir('/kaggle/working/miss-yaya/yaya-ai')
+    !python scripts/kaggle_run_recovery.py
+"""
+
+import json
+import os
+import sys
+import glob
+import subprocess
+from pathlib import Path
+
+REPO_ROOT       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+RECOVERY_CKPT   = '/kaggle/working/yaya-recovery-checkpoints'
+DPO_CKPT_DIR    = '/kaggle/working/yaya-dpo-checkpoints'
+SFT_CKPT_DIR    = '/kaggle/working/yaya-sft-checkpoints'
+DATA_DIR        = os.path.join(REPO_ROOT, 'data/sft')
+TOKENIZER_PATH  = os.path.join(REPO_ROOT, 'data/tokenizer/yaya_tokenizer.model')
+HUB_REPO        = 'Jaylink-coder/yaya-125m'
+
+sys.path.insert(0, REPO_ROOT)
+os.chdir(REPO_ROOT)
+
+os.environ['PYTORCH_CUDA_ALLOC_CONF'] = 'expandable_segments:True'
+os.environ['PYTHONIOENCODING'] = 'utf-8'
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+
+
+# ── Secrets ───────────────────────────────────────────────────────────────────
+def load_secret(name):
+    val = os.environ.get(name)
+    if val:
+        return val
+    try:
+        from kaggle_secrets import UserSecretsClient
+        return UserSecretsClient().get_secret(name)
+    except Exception:
+        return None
+
+
+hf_token = load_secret('HF_TOKEN')
+HF_TOKEN = hf_token
+
+if hf_token:
+    os.environ['HF_TOKEN'] = hf_token
+    print('HF_TOKEN loaded.')
+else:
+    print('WARNING: No HF_TOKEN — checkpoints will NOT persist!')
+
+os.environ['WANDB_DISABLED'] = 'true'
+os.environ['WANDB_MODE'] = 'disabled'
+
+import torch
+if torch.cuda.is_available():
+    props = torch.cuda.get_device_properties(0)
+    print(f'GPU: {props.name}  VRAM: {props.total_memory/1e9:.1f}GB')
+    DTYPE = 'float16'
+else:
+    print('WARNING: No GPU.')
+    DTYPE = 'float32'
+
+print()
+print('=' * 60)
+print(' YAYA-125M RECOVERY SFT')
+print('=' * 60)
+
+
+# ── Step 1: Find best starting checkpoint ─────────────────────────────────────
+print('\n[1/4] Finding starting checkpoint...')
+
+def find_local_checkpoint(ckpt_dir):
+    ckpts = sorted(glob.glob(os.path.join(ckpt_dir, 'checkpoint-*')))
+    return ckpts[-1] if ckpts else None
+
+# Priority: recovery > DPO > SFT > Hub
+start_ckpt = (
+    find_local_checkpoint(RECOVERY_CKPT) or
+    find_local_checkpoint(DPO_CKPT_DIR) or
+    find_local_checkpoint(SFT_CKPT_DIR)
+)
+
+if not start_ckpt and HF_TOKEN:
+    print('  No local checkpoint — pulling from HF Hub...')
+    try:
+        from scripts.hub_utils import pull_latest_checkpoint
+        start_ckpt = pull_latest_checkpoint(HUB_REPO, DPO_CKPT_DIR, hf_token)
+    except Exception as e:
+        print(f'  Hub pull failed: {e}')
+
+if not start_ckpt:
+    print('ERROR: No checkpoint found. Cannot run recovery.')
+    sys.exit(1)
+
+print(f'  Starting from: {start_ckpt}')
+
+
+# ── Step 2: Build recovery dataset ────────────────────────────────────────────
+print('\n[2/4] Building recovery dataset...')
+
+RECOVERY_DATA = os.path.join(DATA_DIR, 'yaya_recovery.jsonl')
+
+SHORT_QA  = os.path.join(DATA_DIR, 'yaya_short_qa.jsonl')
+QUICK_FACTS = os.path.join(DATA_DIR, 'teach/quick_facts.jsonl')
+SHORT_QA_COMBINED = os.path.join(DATA_DIR, 'yaya_reasoning_combined.jsonl')
+
+sources = []
+for src in [SHORT_QA, QUICK_FACTS, SHORT_QA_COMBINED]:
+    if os.path.exists(src):
+        with open(src, encoding='utf-8', errors='replace') as f:
+            lines = [l.strip() for l in f if l.strip()]
+        sources.extend(lines)
+        print(f'  + {os.path.basename(src)}: {len(lines)} examples')
+
+# Oversample short_qa and quick_facts 5x to overpower the math habit
+boosted = []
+for src in [SHORT_QA, QUICK_FACTS]:
+    if os.path.exists(src):
+        with open(src, encoding='utf-8', errors='replace') as f:
+            lines = [l.strip() for l in f if l.strip()]
+        boosted.extend(lines * 5)
+
+all_examples = sources + boosted
+import random; random.seed(42); random.shuffle(all_examples)
+
+with open(RECOVERY_DATA, 'w', encoding='utf-8') as f:
+    for line in all_examples:
+        f.write(line + '\n')
+
+print(f'  Recovery dataset: {len(all_examples)} examples (with 5x oversampling)')
+print(f'  Saved → {RECOVERY_DATA}')
+
+
+# ── Step 3: Train ─────────────────────────────────────────────────────────────
+print('\n[3/4] Launching recovery training...')
+print('  Strategy: high LR (5e-5), 3,000 steps, short sequences only')
+print('  Goal: overwrite numbered-list habit with direct answers')
+
+os.makedirs(RECOVERY_CKPT, exist_ok=True)
+
+train_script = os.path.join(REPO_ROOT, 'scripts/train_sft.py')
+
+train_cmd = [
+    sys.executable, train_script,
+    '--model_config',   os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml'),
+    '--train_config',   os.path.join(REPO_ROOT, 'configs/training/sft_125m.yaml'),
+    '--data',           RECOVERY_DATA,
+    '--checkpoint_dir', RECOVERY_CKPT,
+    '--resume',         start_ckpt,
+    '--max_steps',      '3000',
+    '--lr',             '5e-5',
+    '--seq_len',        '128',   # short sequences — force brief answers
+    '--save_steps',     '500',
+    '--dtype',          DTYPE,
+    '--hub_repo',       HUB_REPO,
+    '--hub_token',      hf_token or '',
+]
+
+print(f'  Command: {" ".join(train_cmd[:6])} ...')
+result = subprocess.run(train_cmd, cwd=REPO_ROOT)
+training_ok = result.returncode == 0
+
+if not training_ok:
+    # Fallback: use trainer.py directly with minimal config
+    print('  train_sft.py failed — trying trainer.py directly...')
+    from src.training.trainer import Trainer, TrainingConfig
+    from src.model.transformer import YayaTransformer
+    from src.model.config import ModelConfig
+    from src.tokenizer.tokenizer import YayaTokenizer
+    from src.data.dataset import InstructionDataset
+
+    import yaml
+    with open(os.path.join(REPO_ROOT, 'configs/model/yaya_125m.yaml')) as f:
+        model_cfg_dict = yaml.safe_load(f)
+
+    model_cfg = ModelConfig(**model_cfg_dict)
+    tokenizer = YayaTokenizer(TOKENIZER_PATH)
+    model = YayaTransformer(model_cfg)
+
+    # Load checkpoint weights
+    ckpt_path = os.path.join(start_ckpt, 'model.pt')
+    state = torch.load(ckpt_path, map_location='cpu')
+    model.load_state_dict(state['model'] if 'model' in state else state)
+    print('  Model weights loaded.')
+
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    model = model.to(device)
+
+    dataset = InstructionDataset([RECOVERY_DATA], tokenizer, max_seq_len=128)
+
+    train_cfg = TrainingConfig(
+        max_steps=3000,
+        learning_rate=5e-5,
+        batch_size=4,
+        gradient_accumulation_steps=4,
+        save_steps=500,
+        checkpoint_dir=RECOVERY_CKPT,
+        dtype=DTYPE,
+        hub_repo=HUB_REPO,
+        hub_token=hf_token or '',
+    )
+
+    trainer = Trainer(model, tokenizer, dataset, train_cfg)
+    trainer.train()
+    training_ok = True
+
+
+# ── Step 4: Benchmark ─────────────────────────────────────────────────────────
+print('\n[4/4] Running benchmark on recovery checkpoint...')
+
+recovery_ckpts = sorted(glob.glob(os.path.join(RECOVERY_CKPT, 'checkpoint-*')))
+if recovery_ckpts:
+    best_ckpt = recovery_ckpts[-1]
+
+    # Push to Hub
+    if HF_TOKEN:
+        try:
+            from scripts.hub_utils import push_checkpoint
+            push_checkpoint(best_ckpt, HUB_REPO, hf_token)
+            print(f'[Hub] Recovery checkpoint pushed → {HUB_REPO}')
+        except Exception as e:
+            print(f'[Hub] Push failed (non-fatal): {e}')
+
+    # Benchmark
+    bench_cmd = [
+        sys.executable,
+        os.path.join(REPO_ROOT, 'scripts/benchmark.py'),
+        '--checkpoint', best_ckpt,
+    ]
+    subprocess.run(bench_cmd, cwd=REPO_ROOT)
+else:
+    print('  No recovery checkpoint found — benchmark skipped.')
+
+print()
+print('=' * 60)
+print(' RECOVERY COMPLETE' if training_ok else ' RECOVERY FAILED')
+print('=' * 60)
+sys.exit(0 if training_ok else 1)
