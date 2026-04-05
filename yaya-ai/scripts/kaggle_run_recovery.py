@@ -23,6 +23,7 @@ REPO_ROOT       = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RECOVERY_CKPT   = '/kaggle/working/yaya-recovery-checkpoints'
 DPO_CKPT_DIR    = '/kaggle/working/yaya-dpo-checkpoints'
 SFT_CKPT_DIR    = '/kaggle/working/yaya-sft-checkpoints'
+RECOVERY_HUB_PREFIX = 'recovery-'  # prefix Hub uploads to avoid collision with SFT/DPO
 DATA_DIR        = os.path.join(REPO_ROOT, 'data/sft')
 TOKENIZER_PATH  = os.path.join(REPO_ROOT, 'data/tokenizer/yaya_tokenizer.model')
 HUB_REPO        = 'Jaylink-coder/yaya-125m'
