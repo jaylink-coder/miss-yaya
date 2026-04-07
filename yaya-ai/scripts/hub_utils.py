@@ -185,6 +185,8 @@ def start_watcher(ckpt_dir, repo_id, token, interval_sec=90):
     for pat in _GLOB_PATTERNS:
         for ckpt in glob.glob(os.path.join(ckpt_dir, pat)):
             pushed.add(ckpt)
+        for ckpt in glob.glob(os.path.join(ckpt_dir, "*", pat)):
+            pushed.add(ckpt)
 
     def watch():
         while True:
@@ -193,6 +195,7 @@ def start_watcher(ckpt_dir, repo_id, token, interval_sec=90):
                 all_ckpts = []
                 for pat in _GLOB_PATTERNS:
                     all_ckpts.extend(glob.glob(os.path.join(ckpt_dir, pat)))
+                    all_ckpts.extend(glob.glob(os.path.join(ckpt_dir, "*", pat)))
                 for ckpt in sorted(all_ckpts):
                     if ckpt.endswith('_temp'):
                         continue
