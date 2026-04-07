@@ -2,7 +2,7 @@
         test test-model test-data test-inference test-cov test-vision test-training test-all \
         test-agent test-rag test-safety test-serving test-neuroplasticity test-continual \
         test-curriculum test-reward-model test-persistent-memory \
-        sft-tiny sft-tiny-focused sft-tiny-merged sft-tiny-filtered dpo-tiny eval-tiny eval-tiny-all eval-loop eval-loop-retrain chat-tiny web-ui continuous-learn self-eval self-improve training-status quick-check benchmark \
+        sft-tiny sft-tiny-focused sft-tiny-merged sft-tiny-filtered dpo-tiny eval-tiny eval-tiny-all eval-loop eval-loop-retrain chat-tiny web-ui continuous-learn self-eval self-improve training-status quick-check benchmark benchmark-dual benchmark-model-only \
         lint format typecheck \
         train-tokenizer prepare-data \
         train-1b train-1b-2gpu train-1.5b train-7b \
@@ -31,7 +31,7 @@
         sft dpo export agent rag safety \
         maml-1.5b \
         reasoning reasoning-resume eval-reasoning chat-reasoning \
-        train-125m
+        train-125m train-350m sft-350m
 
 # MAML meta-learning
 maml-1.5b:
@@ -473,9 +473,17 @@ dpo:
 quick-check:
 	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/quick_check.py
 
-## Full 35-question benchmark (saves results + updates dashboard)
+## Full 135-question benchmark (saves results + updates dashboard)
 benchmark:
 	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/benchmark.py
+
+## Dual benchmark: guarded vs model-only side-by-side comparison
+benchmark-dual:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/benchmark.py --dual
+
+## Model-only benchmark: raw model capability without runtime guards
+benchmark-model-only:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/benchmark.py --model-only
 
 ## Evaluate instruction-following (auto-detects best 125m checkpoint)
 eval:
@@ -667,6 +675,60 @@ chat-reasoning:
 train-125m:
 	@echo "Yaya-125M pretrain — 129M params, requires GPU (T4/A100)" && \
 	powershell.exe -Command "cd 'C:\Users\USER\Yaya\yaya-ai'; \$$proc = Start-Process -FilePath '.venv\Scripts\python.exe' -ArgumentList '-u scripts/train_sft.py --model_config configs/model/yaya_125m.yaml --train_config configs/training/sft_125m.yaml' -RedirectStandardOutput 'logs\train_125m.log' -RedirectStandardError 'logs\train_125m_err.log' -WindowStyle Hidden -PassThru; Write-Host PID: \$$(\$$proc.Id)"
+
+## ─────────────────────────────────────────────────────────────────────────────
+## 350M — Intermediate scaling milestone (24 layers, hidden 1024, context 2048)
+## ─────────────────────────────────────────────────────────────────────────────
+
+## Pretrain Yaya-350M (requires A100/L4 or T4 with small batch)
+train-350m:
+	@echo "Yaya-350M pretrain — ~350M params, requires GPU (A100 recommended)" && \
+	python scripts/train.py \
+		--model_config configs/model/yaya_350m.yaml \
+		--train_config configs/training/train_350m.yaml
+
+## SFT Yaya-350M (from pre-trained checkpoint)
+sft-350m:
+	@echo "Yaya-350M SFT — requires pre-trained checkpoint" && \
+	python scripts/train_sft.py \
+		--model_config configs/model/yaya_350m.yaml \
+		--train_config configs/training/sft_350m.yaml
+
+## ─────────────────────────────────────────────────────────────
+## TRUE AI CURRICULUM (milestones_v2)
+## ─────────────────────────────────────────────────────────────
+
+## Generate training data for all 16 curriculum phases
+gen-curriculum:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/generate_curriculum_data.py --phase 1-16
+
+## Generate data for a single phase (usage: make gen-phase PHASE=5)
+gen-phase:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/generate_curriculum_data.py --phase $(PHASE)
+
+## Run a specific curriculum phase (usage: make run-phase PHASE=1)
+run-phase:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/run_milestone.py --phase $(PHASE)
+
+## Auto-detect and run the next incomplete phase
+run-next:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/run_milestone.py --auto
+
+## Evaluate a specific phase (usage: make eval-phase PHASE=1)
+eval-phase:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_milestone.py --phase $(PHASE)
+
+## Evaluate all curriculum phases
+eval-curriculum:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_milestone.py --all
+
+## Evaluate all phases in model-only mode (no runtime guards)
+eval-curriculum-raw:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_milestone.py --all --model-only
+
+## Evaluate and save results to JSON
+eval-curriculum-save:
+	PYTHONIOENCODING=utf-8 .venv/Scripts/python.exe scripts/eval_milestone.py --all --save data/eval/curriculum_eval.json
 
 # Cleanup
 clean:
