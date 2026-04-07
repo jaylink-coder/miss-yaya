@@ -32,7 +32,7 @@ import subprocess
 import time
 import yaml
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, timezone
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 REPO_ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -406,7 +406,7 @@ def run_phase(phase, checkpoint_path, progress):
             'phase_name': phase_name,
             'status': 'complete',
             'checkpoint': os.path.basename(new_ckpt) if new_ckpt else None,
-            'completed_at': datetime.utcnow().isoformat(),
+            'completed_at': datetime.now(timezone.utc).isoformat(),
         })
         save_progress(progress)
         print(f'\n  Phase {phase_id} COMPLETE')
@@ -415,7 +415,7 @@ def run_phase(phase, checkpoint_path, progress):
             'phase_id': phase_id,
             'phase_name': phase_name,
             'status': 'failed',
-            'completed_at': datetime.utcnow().isoformat(),
+            'completed_at': datetime.now(timezone.utc).isoformat(),
         })
         save_progress(progress)
         print(f'\n  Phase {phase_id} FAILED')

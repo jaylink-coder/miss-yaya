@@ -23,6 +23,9 @@ import threading
 from pathlib import Path
 
 
+_hub_rate_limited_until = 0  # module-level rate limit tracker
+
+
 def _get_api(token):
     from huggingface_hub import HfApi
     return HfApi(token=token)
@@ -45,10 +48,18 @@ def push_checkpoint(ckpt_path, repo_id, token, verbose=True):
     The checkpoint is stored at path_in_repo = basename(ckpt_path).
     e.g. /kaggle/working/yaya-ckpts/checkpoint-05000 → checkpoint-05000/
     """
+    global _hub_rate_limited_until
     if not token:
         return False
     ckpt_path = str(ckpt_path)
     if not os.path.isdir(ckpt_path):
+        return False
+
+    # Skip if rate limited — don't waste time uploading 516MB to get rejected
+    if time.time() < _hub_rate_limited_until:
+        if verbose:
+            mins_left = (_hub_rate_limited_until - time.time()) / 60
+            print(f"[Hub] Skipping push — rate limited for {mins_left:.0f} more min", flush=True)
         return False
 
     try:
@@ -82,7 +93,12 @@ def push_checkpoint(ckpt_path, repo_id, token, verbose=True):
             print(f"[Hub] {ckpt_name} pushed successfully.", flush=True)
         return True
     except Exception as e:
-        print(f"[Hub] Push failed for {ckpt_path}: {e}", flush=True)
+        err_str = str(e)
+        if '429' in err_str or 'rate limit' in err_str.lower():
+            _hub_rate_limited_until = time.time() + 3600
+            print(f"[Hub] Rate limited — skipping pushes for 1 hour", flush=True)
+        else:
+            print(f"[Hub] Push failed for {ckpt_path}: {e}", flush=True)
         return False
 
 
@@ -222,6 +238,7 @@ def start_watcher(ckpt_dir, repo_id, token, interval_sec=90):
                       "recovery-checkpoint-*", "dpo-checkpoint-*"]
 
     pushed = set()
+    rate_limited_until = [0]  # mutable container for closure
     # Pre-populate with any checkpoints that already exist (don't re-push)
     for pat in _GLOB_PATTERNS:
         for ckpt in glob.glob(os.path.join(ckpt_dir, pat)):
@@ -232,6 +249,9 @@ def start_watcher(ckpt_dir, repo_id, token, interval_sec=90):
     def watch():
         while True:
             time.sleep(interval_sec)
+            # Skip if rate limited
+            if time.time() < rate_limited_until[0]:
+                continue
             try:
                 all_ckpts = []
                 for pat in _GLOB_PATTERNS:
@@ -246,7 +266,12 @@ def start_watcher(ckpt_dir, repo_id, token, interval_sec=90):
                         if push_checkpoint(ckpt, repo_id, token):
                             pushed.add(ckpt)
             except Exception as e:
-                print(f"[Hub] Watcher error: {e}", flush=True)
+                err_str = str(e)
+                if '429' in err_str or 'rate limit' in err_str.lower():
+                    rate_limited_until[0] = time.time() + 3600
+                    print(f"[Hub] Rate limited — watcher paused for 1 hour", flush=True)
+                else:
+                    print(f"[Hub] Watcher error: {e}", flush=True)
 
     t = threading.Thread(target=watch, daemon=True, name="hub-watcher")
     t.start()
