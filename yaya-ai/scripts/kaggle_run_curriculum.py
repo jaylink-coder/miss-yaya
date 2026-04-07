@@ -291,7 +291,7 @@ def create_training_config(phase, data_file):
         },
         'checkpointing': {
             'save_steps': 500,
-            'save_dir': CKPT_DIR,
+            'save_dir': os.path.join(CKPT_DIR, f'phase{phase["id"]:02d}'),
             'keep_last_n': 3,
         },
         'logging': {
@@ -354,6 +354,9 @@ def run_phase(phase, checkpoint_path, progress):
     config_path = create_training_config(phase, data_file)
 
     # Step 4: Train
+    phase_save_dir = os.path.join(CKPT_DIR, f'phase{phase_id:02d}')
+    os.makedirs(phase_save_dir, exist_ok=True)
+
     cmd = [
         sys.executable, '-u',
         os.path.join(REPO_ROOT, 'scripts/train_sft.py'),
@@ -366,14 +369,17 @@ def run_phase(phase, checkpoint_path, progress):
 
     print(f'\n  Training: {STEPS_PER_PHASE} steps, batch 32, lr {BASE_LR}')
     print(f'  Checkpoint: {os.path.basename(checkpoint_path) if checkpoint_path else "random init"}')
-    print(f'  Save dir: {CKPT_DIR}')
+    print(f'  Save dir: {phase_save_dir}')
     print()
 
     result = subprocess.run(cmd, cwd=REPO_ROOT)
     success = result.returncode == 0
 
-    # Step 5: Find new checkpoint
-    new_ckpt = find_latest_local_checkpoint(CKPT_DIR)
+    # Step 5: Find new checkpoint from THIS phase's save dir
+    phase_save_dir = os.path.join(CKPT_DIR, f'phase{phase_id:02d}')
+    new_ckpt = find_latest_local_checkpoint(phase_save_dir)
+    if not new_ckpt:
+        new_ckpt = find_latest_local_checkpoint(CKPT_DIR)
 
     # Step 6: Push final checkpoint
     if new_ckpt and hf_token:
@@ -407,13 +413,18 @@ def run_phase(phase, checkpoint_path, progress):
     return success, new_ckpt
 
 # ── Run phase evaluation ──────────────────────────────────────────────────────
-def run_phase_eval(phase_id):
+def run_phase_eval(phase_id, checkpoint_path=None):
     """Run capability evaluation for a phase."""
     print(f'\n  Evaluating phase {phase_id}...')
     try:
+        eval_cmd = [
+            sys.executable, os.path.join(REPO_ROOT, 'scripts/eval_milestone.py'),
+            '--phase', str(phase_id), '--model-only',
+        ]
+        if checkpoint_path:
+            eval_cmd += ['--checkpoint', checkpoint_path]
         result = subprocess.run(
-            [sys.executable, os.path.join(REPO_ROOT, 'scripts/eval_milestone.py'),
-             '--phase', str(phase_id), '--model-only'],
+            eval_cmd,
             cwd=REPO_ROOT, capture_output=True, text=True, timeout=300
         )
         output = result.stdout
@@ -546,7 +557,7 @@ while True:
         phases_trained += 1
 
         # Run eval (quick, ~2 min)
-        run_phase_eval(phase['id'])
+        run_phase_eval(phase['id'], checkpoint_path=current_ckpt)
     else:
         print(f'\nPhase {phase["id"]} failed — stopping session')
         break

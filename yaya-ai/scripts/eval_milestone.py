@@ -135,7 +135,7 @@ def build_prompt(question):
     )
 
 
-def load_model(model_only=False):
+def load_model(model_only=False, checkpoint_path=None):
     import torch
     from src.utils.config import load_model_config
     from src.model.yaya_model import YayaForCausalLM
@@ -144,16 +144,17 @@ def load_model(model_only=False):
 
     cfg = load_model_config(os.path.join(ROOT, "configs", "model", "yaya_125m.yaml"))
 
-    ckpt = None
-    for sub in ["yaya-125m-curriculum", "yaya-125m-sft", "yaya-125m-dpo", "yaya-125m"]:
-        lf = os.path.join(ROOT, "checkpoints", sub, "latest")
-        if os.path.isfile(lf):
-            with open(lf) as f:
-                name = f.read().strip()
-            p = os.path.join(ROOT, "checkpoints", sub, name)
-            if os.path.isfile(p):
-                ckpt = p
-                break
+    ckpt = checkpoint_path
+    if not ckpt:
+        for sub in ["yaya-125m-curriculum", "yaya-125m-sft", "yaya-125m-dpo", "yaya-125m"]:
+            lf = os.path.join(ROOT, "checkpoints", sub, "latest")
+            if os.path.isfile(lf):
+                with open(lf) as f:
+                    name = f.read().strip()
+                p = os.path.join(ROOT, "checkpoints", sub, name)
+                if os.path.isfile(p):
+                    ckpt = p
+                    break
     if not ckpt:
         pts = glob.glob(os.path.join(ROOT, "checkpoints", "**", "*.pt"), recursive=True)
         if pts:
@@ -234,6 +235,7 @@ def main():
     parser.add_argument("--all", action="store_true", help="Eval all phases")
     parser.add_argument("--model-only", action="store_true", help="Disable runtime guards")
     parser.add_argument("--save", type=str, default=None, help="Save results to JSON file")
+    parser.add_argument("--checkpoint", type=str, default=None, help="Checkpoint path to evaluate")
     args = parser.parse_args()
 
     if args.all:
@@ -253,7 +255,7 @@ def main():
     print(f"{'='*60}")
 
     print("\n  Loading model...")
-    gen, gc, tok = load_model(model_only=args.model_only)
+    gen, gc, tok = load_model(model_only=args.model_only, checkpoint_path=args.checkpoint)
 
     all_results = []
     total_correct = 0
