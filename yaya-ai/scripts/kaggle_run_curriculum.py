@@ -108,8 +108,9 @@ PHASES         = ms_cfg['phases']
 STEPS_PER_PHASE = ms_cfg.get('steps_per_phase', 2000)
 REPLAY_RATIO   = ms_cfg.get('replay_ratio', 0.20)
 BASE_LR        = ms_cfg.get('base_lr', 1.5e-5)
-WARMUP_STEPS   = ms_cfg.get('warmup_steps', 200)
+WARMUP_STEPS   = ms_cfg.get('warmup_steps', 100)
 MAX_SEQ_LEN    = ms_cfg.get('max_seq_length', 512)
+BASE_PRETRAIN_CKPT = 'patch-checkpoint-00000300'  # Original pretrained model
 
 # ── Progress tracking ────────────────────────────────────────────────────────
 def load_progress():
@@ -448,47 +449,23 @@ def time_remaining():
     return SESSION_LIMIT_SEC - elapsed
 
 def has_time_for_phase():
-    """Check if we have enough time for another ~40min phase."""
-    return time_remaining() > 50 * 60  # 50 min buffer
+    """Check if we have enough time for another ~20min phase."""
+    return time_remaining() > 30 * 60  # 30 min buffer
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MAIN
 # ══════════════════════════════════════════════════════════════════════════════
 print('\n' + '=' * 60)
-print(' YAYA TRUE AI — CURRICULUM TRAINING')
-print(' 16 phases x 2000 steps = 32,000 total steps')
+print(f' YAYA TRUE AI — CURRICULUM TRAINING')
+print(f' 16 phases x {STEPS_PER_PHASE} steps = {16 * STEPS_PER_PHASE:,} total steps')
 print('=' * 60)
 
 # Step 1: Ensure directories
 os.makedirs(CKPT_DIR, exist_ok=True)
 os.makedirs(CURRICULUM_DIR, exist_ok=True)
 
-# Step 2: Restore checkpoint from HF Hub
-local_ckpt = find_latest_local_checkpoint(CKPT_DIR)
-
-if not local_ckpt and hf_token:
-    print('\n[1] Pulling latest checkpoint from HF Hub...')
-    from scripts.hub_utils import pull_latest_checkpoint, ensure_repo
-    ensure_repo(HUB_REPO, hf_token)
-    local_ckpt = pull_latest_checkpoint(HUB_REPO, CKPT_DIR, hf_token)
-    if local_ckpt:
-        print(f'  Restored: {os.path.basename(local_ckpt)}')
-    else:
-        # Also check the main SFT checkpoint dir
-        sft_ckpt_dir = '/kaggle/working/yaya-sft-checkpoints'
-        os.makedirs(sft_ckpt_dir, exist_ok=True)
-        local_ckpt = pull_latest_checkpoint(HUB_REPO, sft_ckpt_dir, hf_token)
-        if local_ckpt:
-            print(f'  Restored from SFT: {os.path.basename(local_ckpt)}')
-elif local_ckpt:
-    print(f'\n[1] Local checkpoint: {os.path.basename(local_ckpt)}')
-else:
-    print('\n[1] No checkpoint found — starting from scratch')
-
-# Step 3: Load progress and detect next phase
+# Step 2: Load progress (from Hub if needed)
 progress = load_progress()
-
-# Also try to pull progress from HF Hub
 if hf_token and not progress.get('completed_phases'):
     try:
         from huggingface_hub import hf_hub_download
@@ -502,6 +479,38 @@ if hf_token and not progress.get('completed_phases'):
         print(f'  Progress restored from Hub: phases {progress.get("completed_phases", [])} done')
     except Exception:
         pass
+
+# Step 3: Determine the RIGHT starting checkpoint based on progress
+completed = progress.get('completed_phases', [])
+local_ckpt = None
+
+if hf_token:
+    from scripts.hub_utils import pull_specific_checkpoint, ensure_repo
+    ensure_repo(HUB_REPO, hf_token)
+
+    if not completed:
+        # Fresh start — use the original pretrained model, NOT a stale curriculum checkpoint
+        print(f'\n[1] Fresh start — pulling base pretrained model ({BASE_PRETRAIN_CKPT})...')
+        local_ckpt = pull_specific_checkpoint(HUB_REPO, BASE_PRETRAIN_CKPT, CKPT_DIR, hf_token)
+    else:
+        # Resuming — try to find the checkpoint from the last completed phase
+        last_phase = max(completed)
+        phase_ckpt_name = f'phase{last_phase:02d}/checkpoint-{STEPS_PER_PHASE:08d}'
+        print(f'\n[1] Resuming — pulling Phase {last_phase} checkpoint ({phase_ckpt_name})...')
+        local_ckpt = pull_specific_checkpoint(HUB_REPO, phase_ckpt_name, CKPT_DIR, hf_token)
+        if not local_ckpt:
+            # Fallback: try any checkpoint in phase dir
+            local_ckpt = find_latest_local_checkpoint(os.path.join(CKPT_DIR, f'phase{last_phase:02d}'))
+        if not local_ckpt:
+            # Last resort: pull whatever latest.json says
+            print('  Fallback: pulling latest checkpoint from Hub...')
+            from scripts.hub_utils import pull_latest_checkpoint
+            local_ckpt = pull_latest_checkpoint(HUB_REPO, CKPT_DIR, hf_token)
+
+if local_ckpt:
+    print(f'  Starting checkpoint: {os.path.basename(local_ckpt)}')
+else:
+    print('\n[1] No checkpoint found — starting from scratch')
 
 next_phase = get_next_phase(progress)
 if next_phase is None:

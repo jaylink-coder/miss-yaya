@@ -165,6 +165,47 @@ def pull_latest_checkpoint(repo_id, local_dir, token, verbose=True):
         return None
 
 
+def pull_specific_checkpoint(repo_id, ckpt_name, local_dir, token, verbose=True):
+    """Download a specific named checkpoint from HF Hub.
+
+    Returns the path to the downloaded checkpoint, or None if unavailable.
+    """
+    if not token:
+        return None
+    local_ckpt = os.path.join(local_dir, ckpt_name)
+    if os.path.isdir(local_ckpt):
+        if verbose:
+            print(f"[Hub] Already have {ckpt_name} locally.", flush=True)
+        return local_ckpt
+    try:
+        from huggingface_hub import snapshot_download, list_repo_files
+        # Check if the checkpoint exists on Hub
+        files = list(list_repo_files(repo_id=repo_id, repo_type="model", token=token))
+        ckpt_files = [f for f in files if f.startswith(ckpt_name + "/")]
+        if not ckpt_files:
+            if verbose:
+                print(f"[Hub] Checkpoint {ckpt_name} not found on {repo_id}.", flush=True)
+            return None
+        if verbose:
+            print(f"[Hub] Downloading {ckpt_name} from {repo_id}...", flush=True)
+        os.makedirs(local_dir, exist_ok=True)
+        snapshot_download(
+            repo_id=repo_id,
+            allow_patterns=f"{ckpt_name}/*",
+            local_dir=local_dir,
+            repo_type="model",
+            token=token,
+        )
+        if os.path.isdir(local_ckpt):
+            if verbose:
+                print(f"[Hub] Restored: {local_ckpt}", flush=True)
+            return local_ckpt
+        return None
+    except Exception as e:
+        print(f"[Hub] Pull specific failed: {e}", flush=True)
+        return None
+
+
 def start_watcher(ckpt_dir, repo_id, token, interval_sec=90):
     """Start a background thread that pushes new checkpoints to HF Hub.
 
