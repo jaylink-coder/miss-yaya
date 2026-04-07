@@ -52,9 +52,10 @@ os.environ['PYTHONIOENCODING']        = 'utf-8'
 random.seed(42)
 
 # How many phases to attempt per Kaggle session
-MAX_PHASES_PER_SESSION = 5
+MAX_PHASES_PER_SESSION = 8
 SESSION_START = time.time()
 SESSION_LIMIT_SEC = 3.25 * 3600  # 3h15m — leave 15 min buffer
+PHASE_TIMEOUT_SEC = 45 * 60  # 45 min max per phase — kill if stuck
 
 # ── Secrets ───────────────────────────────────────────────────────────────────
 def load_secret(name):
@@ -274,8 +275,8 @@ def create_training_config(phase, data_file):
     config = {
         'seed': 42 + phase['id'],
         'training': {
-            'per_device_batch_size': 4,
-            'gradient_accumulation_steps': 8,
+            'per_device_batch_size': 8,
+            'gradient_accumulation_steps': 4,
             'learning_rate': BASE_LR,
             'weight_decay': 0.01,
             'adam_beta1': 0.9,
@@ -290,18 +291,18 @@ def create_training_config(phase, data_file):
             'dtype': DTYPE,
         },
         'checkpointing': {
-            'save_steps': 500,
+            'save_steps': STEPS_PER_PHASE,
             'save_dir': os.path.join(CKPT_DIR, f'phase{phase["id"]:02d}'),
-            'keep_last_n': 3,
+            'keep_last_n': 2,
         },
         'logging': {
             'log_steps': 50,
-            'wandb_project': 'yaya-ai',
-            'wandb_run_name': f'curriculum-phase{phase["id"]:02d}-{phase["name"].lower().replace(" ", "-")}',
+            'wandb_project': None,
+            'wandb_run_name': None,
         },
         'eval': {
-            'eval_steps': 500,
-            'eval_samples': 100,
+            'eval_steps': STEPS_PER_PHASE,
+            'eval_samples': 50,
         },
         'data': {
             'train_data': data_file,
@@ -311,7 +312,7 @@ def create_training_config(phase, data_file):
         },
         'distributed': {
             'strategy': 'none',
-            'gradient_checkpointing': True,
+            'gradient_checkpointing': False,
             'cpu_offload': False,
         },
     }
@@ -372,8 +373,16 @@ def run_phase(phase, checkpoint_path, progress):
     print(f'  Save dir: {phase_save_dir}')
     print()
 
-    result = subprocess.run(cmd, cwd=REPO_ROOT)
-    success = result.returncode == 0
+    try:
+        result = subprocess.run(cmd, cwd=REPO_ROOT, timeout=PHASE_TIMEOUT_SEC)
+        success = result.returncode == 0
+    except subprocess.TimeoutExpired:
+        print(f'  TIMEOUT: Phase {phase_id} exceeded {PHASE_TIMEOUT_SEC//60} min — killed')
+        success = False
+
+    # Clear CUDA cache between phases to prevent OOM buildup
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
     # Step 5: Find new checkpoint from THIS phase's save dir
     phase_save_dir = os.path.join(CKPT_DIR, f'phase{phase_id:02d}')

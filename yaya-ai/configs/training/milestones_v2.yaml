@@ -21,12 +21,12 @@
 model: yaya-125m
 hub_repo: Jaylink-coder/yaya-125m
 total_phases: 16
-steps_per_phase: 2000
-effective_batch_size: 32      # batch 4 × grad_accum 8
+steps_per_phase: 1000
+effective_batch_size: 32      # batch 8 × grad_accum 4
 max_seq_length: 512
 base_lr: 1.5e-5
-warmup_steps: 200
-save_steps: 500
+warmup_steps: 100
+save_steps: 1000
 
 # Each phase mixes ~80% focused data + ~20% replay from prior phases.
 # This prevents catastrophic forgetting while building new capabilities.
