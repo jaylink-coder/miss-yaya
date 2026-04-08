@@ -391,10 +391,10 @@ def run_phase(phase, checkpoint_path, progress):
     if not new_ckpt:
         new_ckpt = find_latest_local_checkpoint(CKPT_DIR)
 
-    # Step 6: Push final checkpoint
+    # Step 6: Push final checkpoint (non-blocking — don't let network stall training)
     if new_ckpt and hf_token:
-        from scripts.hub_utils import push_checkpoint
-        push_checkpoint(new_ckpt, HUB_REPO, hf_token)
+        from scripts.hub_utils import push_checkpoint_async
+        push_checkpoint_async(new_ckpt, HUB_REPO, hf_token)
 
     # Step 7: Record progress
     if success:
@@ -596,9 +596,10 @@ if hf_token:
     except Exception as e:
         print(f'\n[Hub] Progress push failed: {e}')
 
-# ── Final push of latest checkpoint ──────────────────────────────────────────
+# ── Final push of latest checkpoint (blocking — last action, worth waiting) ──
 if current_ckpt and hf_token:
     from scripts.hub_utils import push_checkpoint
+    print('[Hub] Final checkpoint push (blocking, up to 5 min)...')
     push_checkpoint(current_ckpt, HUB_REPO, hf_token)
 
 # ── Session summary ───────────────────────────────────────────────────────────

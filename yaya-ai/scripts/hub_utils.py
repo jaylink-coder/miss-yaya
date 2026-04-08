@@ -20,10 +20,12 @@ import json
 import time
 import shutil
 import threading
+import concurrent.futures
 from pathlib import Path
 
 
 _hub_rate_limited_until = 0  # module-level rate limit tracker
+_push_executor = concurrent.futures.ThreadPoolExecutor(max_workers=1, thread_name_prefix="hub-push")
 
 
 def _get_api(token):
@@ -100,6 +102,24 @@ def push_checkpoint(ckpt_path, repo_id, token, verbose=True):
         else:
             print(f"[Hub] Push failed for {ckpt_path}: {e}", flush=True)
         return False
+
+
+PUSH_TIMEOUT_SEC = 5 * 60  # 5 min max for any push
+
+
+def push_checkpoint_async(ckpt_path, repo_id, token, timeout=PUSH_TIMEOUT_SEC):
+    """Non-blocking push: runs in background thread with timeout.
+    Training never waits for network — if push hangs, it's killed."""
+    future = _push_executor.submit(push_checkpoint, ckpt_path, repo_id, token)
+    def _check(f=future, path=ckpt_path, t=timeout):
+        try:
+            f.result(timeout=t)
+        except concurrent.futures.TimeoutError:
+            print(f"[Hub] Push timed out after {t//60}m — skipping {os.path.basename(path)}", flush=True)
+            f.cancel()
+        except Exception as e:
+            print(f"[Hub] Async push error: {e}", flush=True)
+    threading.Thread(target=_check, daemon=True).start()
 
 
 def pull_latest_checkpoint(repo_id, local_dir, token, verbose=True):
