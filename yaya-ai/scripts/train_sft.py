@@ -43,10 +43,48 @@ def main():
     parser.add_argument("--compute_ewc_fisher",  action="store_true",
                         help="After loading checkpoint, compute EWC Fisher before training "
                              "(use for continual learning Phase 2)")
+    # ── CLI overrides (take priority over YAML config) ───────────────────────
+    parser.add_argument("--data_file",                  type=str,   default=None,
+                        help="Override train_config.train_data (and eval_data)")
+    parser.add_argument("--output_dir",                 type=str,   default=None,
+                        help="Override train_config.save_dir")
+    parser.add_argument("--max_steps",                  type=int,   default=None)
+    parser.add_argument("--learning_rate",              type=float, default=None)
+    parser.add_argument("--per_device_batch_size",      type=int,   default=None)
+    parser.add_argument("--gradient_accumulation_steps",type=int,   default=None)
+    parser.add_argument("--max_seq_length",             type=int,   default=None)
+    parser.add_argument("--save_steps",                 type=int,   default=None)
+    parser.add_argument("--warmup_steps",               type=int,   default=None)
+    parser.add_argument("--lr_scheduler",               type=str,   default=None)
+    parser.add_argument("--weight_decay",               type=float, default=None)
+    parser.add_argument("--max_grad_norm",              type=float, default=None)
+    parser.add_argument("--dataloader_num_workers",     type=int,   default=None)
+    parser.add_argument("--fp16",  action="store_true", help="Use float16 mixed precision")
+    parser.add_argument("--bf16",  action="store_true", help="Use bfloat16 mixed precision")
     args = parser.parse_args()
 
     model_config = load_model_config(args.model_config)
     train_config = load_training_config(args.train_config)
+
+    # Apply CLI overrides
+    if args.data_file:
+        train_config.train_data = args.data_file
+        train_config.eval_data  = args.data_file
+    if args.output_dir:
+        train_config.save_dir = args.output_dir
+    if args.max_steps                  is not None: train_config.max_steps                   = args.max_steps
+    if args.learning_rate              is not None: train_config.learning_rate               = args.learning_rate
+    if args.per_device_batch_size      is not None: train_config.per_device_batch_size       = args.per_device_batch_size
+    if args.gradient_accumulation_steps is not None: train_config.gradient_accumulation_steps = args.gradient_accumulation_steps
+    if args.max_seq_length             is not None: train_config.max_seq_length              = args.max_seq_length
+    if args.save_steps                 is not None: train_config.save_steps                  = args.save_steps
+    if args.warmup_steps               is not None: train_config.warmup_steps                = args.warmup_steps
+    if args.lr_scheduler               is not None: train_config.lr_scheduler                = args.lr_scheduler
+    if args.weight_decay               is not None: train_config.weight_decay                = args.weight_decay
+    if args.max_grad_norm              is not None: train_config.max_grad_norm               = args.max_grad_norm
+    if args.dataloader_num_workers     is not None: train_config.num_workers                 = args.dataloader_num_workers
+    if args.bf16:  train_config.dtype = "bfloat16"
+    if args.fp16:  train_config.dtype = "float16"
 
     torch.manual_seed(train_config.seed)
 
