@@ -314,6 +314,81 @@ def next_phase():
     return None
 
 
+# ── GPU detection & speed config ──────────────────────────────────────────────
+def detect_gpu():
+    """Return (gpu_name, vram_gb, batch_size, grad_accum, precision_flag)."""
+    try:
+        import torch
+        if not torch.cuda.is_available():
+            return ("cpu", 0, 2, 16, "")
+        name = torch.cuda.get_device_name(0).upper()
+        vram = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+        # A100 / H100 (40-80 GB) — large batch + bf16
+        if vram >= 35:
+            return (name, vram, 16, 2, "--bf16")
+        # L4 / A10G (24 GB) — medium batch + fp16
+        if vram >= 20:
+            return (name, vram, 8, 4, "--fp16")
+        # T4 (16 GB) — standard config + fp16
+        if vram >= 14:
+            return (name, vram, 4, 8, "--fp16")
+        # Smaller GPU — tiny batch, no precision flag
+        return (name, vram, 2, 16, "")
+    except Exception:
+        return ("unknown", 0, 4, 8, "")
+
+
+def clear_memory():
+    """Free GPU memory between phases."""
+    gc.collect()
+    try:
+        import torch
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+    except Exception:
+        pass
+
+
+# ── Hang-safe subprocess ───────────────────────────────────────────────────────
+class _Heartbeat(threading.Thread):
+    """Print a dot every 60 s so Colab doesn't think the kernel is idle."""
+    def __init__(self):
+        super().__init__(daemon=True)
+        self._stop = threading.Event()
+
+    def run(self):
+        while not self._stop.wait(60):
+            print(".", end="", flush=True)
+
+    def stop(self):
+        self._stop.set()
+
+
+def run_subprocess(cmd, cwd, timeout_sec):
+    """
+    Run cmd with timeout. Kill cleanly on hang or timeout.
+    Returns subprocess.CompletedProcess-like namedtuple (returncode).
+    """
+    hb = _Heartbeat()
+    hb.start()
+    proc = None
+    try:
+        proc = subprocess.Popen(cmd, cwd=cwd)
+        try:
+            proc.wait(timeout=timeout_sec)
+        except subprocess.TimeoutExpired:
+            print(f"\n  TIMEOUT after {timeout_sec//60} min — killing process")
+            proc.kill()
+            try:
+                proc.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                pass
+    finally:
+        hb.stop()
+    return proc
+
+
 # ── Training ───────────────────────────────────────────────────────────────────
 def prepare_data(phase_id, data_file, replay_ratio=0.15):
     """Mix phase data with replay from prior phases."""
