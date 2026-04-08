@@ -525,19 +525,15 @@ def run_training(checkpoint_path, train_file, phase_id, steps, lr):
 
 def run_dpo(checkpoint_path, train_file, output_dir, steps, lr):
     """Run DPO alignment for phase 16 with timeout."""
-    _, vram, _, _, precision_flag = detect_gpu()
     cmd = [
         sys.executable, os.path.join(ROOT, "scripts/train_dpo.py"),
-        "--model_config", os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
-        "--data_file",    train_file,
-        "--output_dir",   output_dir,
+        "--model_config",   os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
+        "--dpo_data",       train_file,
+        "--save_dir",       output_dir,
         "--sft_checkpoint", checkpoint_path,
-        "--max_steps",    str(steps),
-        "--learning_rate", str(lr),
-        "--beta",         "0.1",
+        "--max_steps",      str(steps),
+        "--lr",             str(lr),
     ]
-    if precision_flag:
-        cmd.append(precision_flag)
     print(f"\n  Running DPO phase 16 ({steps} steps, lr={lr})")
     timeout_sec = min(_STEP_TIMEOUT_SEC, max(3600, steps * 15))
     proc = run_subprocess(cmd, ROOT, timeout_sec)
