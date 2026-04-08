@@ -133,6 +133,132 @@ class ToxicityDetector:
         )
 
 
+class MLToxicityClassifier:
+    """ML-based toxicity classifier using a lightweight transformer model.
+
+    Wraps detoxify (or any HuggingFace text-classification model) to provide
+    ML-based content scoring.  Falls back gracefully to pattern-only detection
+    if the model is unavailable.
+
+    Install:  pip install detoxify          (for default backend)
+           or pip install transformers torch (for custom model)
+
+    Usage:
+        clf = MLToxicityClassifier()           # auto-detects detoxify
+        clf = MLToxicityClassifier(backend="transformers", model_name="...")
+        result = clf.classify("some text")
+    """
+
+    def __init__(
+        self,
+        backend: str = "detoxify",
+        model_name: str = "original",
+        threshold: float = 0.7,
+        device: str = "cpu",
+    ):
+        """Initialize the ML classifier.
+
+        Args:
+            backend: "detoxify" or "transformers".
+            model_name: Model name/path.  For detoxify: "original", "unbiased",
+                        or "multilingual".  For transformers: any HF model id.
+            threshold: Score above which content is flagged as toxic.
+            device: torch device string.
+        """
+        self.backend = backend
+        self.model_name = model_name
+        self.threshold = threshold
+        self.device = device
+        self._model = None
+        self._available = False
+        self._load_model()
+
+    def _load_model(self) -> None:
+        """Attempt to load the ML model.  Sets _available = False on failure."""
+        try:
+            if self.backend == "detoxify":
+                from detoxify import Detoxify  # type: ignore[import-untyped]
+                self._model = Detoxify(self.model_name, device=self.device)
+                self._available = True
+            elif self.backend == "transformers":
+                from transformers import pipeline  # type: ignore[import-untyped]
+                self._model = pipeline(
+                    "text-classification",
+                    model=self.model_name,
+                    device=self.device,
+                    top_k=None,
+                )
+                self._available = True
+        except Exception:
+            self._available = False
+
+    @property
+    def available(self) -> bool:
+        """Whether the ML model loaded successfully."""
+        return self._available
+
+    def classify(self, text: str) -> FilterResult:
+        """Score text using the ML model.
+
+        Returns:
+            FilterResult with ML-derived scores and categories.
+            If the model is unavailable, returns a safe result with no scores.
+        """
+        if not self._available or self._model is None:
+            return FilterResult(is_safe=True, explanation="ML classifier unavailable")
+
+        categories: List[ContentCategory] = []
+        scores: Dict[str, float] = {}
+
+        try:
+            if self.backend == "detoxify":
+                preds = self._model.predict(text)
+                # preds is dict: {"toxicity": 0.01, "severe_toxicity": 0.0, ...}
+                for label, score in preds.items():
+                    scores[f"ml_{label}"] = float(score)
+
+                if preds.get("toxicity", 0) >= self.threshold:
+                    categories.append(ContentCategory.TOXIC)
+                if preds.get("identity_attack", 0) >= self.threshold:
+                    categories.append(ContentCategory.HATE_SPEECH)
+                if preds.get("threat", 0) >= self.threshold:
+                    categories.append(ContentCategory.VIOLENCE)
+                if preds.get("sexual_explicit", 0) >= self.threshold:
+                    categories.append(ContentCategory.SEXUAL)
+
+            elif self.backend == "transformers":
+                results = self._model(text[:512])
+                if isinstance(results, list) and len(results) > 0:
+                    if isinstance(results[0], list):
+                        results = results[0]
+                    for item in results:
+                        label = item["label"].lower()
+                        score = float(item["score"])
+                        scores[f"ml_{label}"] = score
+                        if score >= self.threshold and label in ("toxic", "hate", "violence"):
+                            categories.append(ContentCategory.TOXIC)
+        except Exception as e:
+            scores["ml_error"] = 1.0
+            return FilterResult(
+                is_safe=True,
+                scores=scores,
+                explanation=f"ML classifier error: {e}",
+            )
+
+        is_safe = len(categories) == 0
+        explanation = ""
+        if not is_safe:
+            cat_names = [c.value for c in categories]
+            explanation = f"ML classifier flagged: {', '.join(cat_names)}"
+
+        return FilterResult(
+            is_safe=is_safe,
+            categories=categories,
+            scores=scores,
+            explanation=explanation,
+        )
+
+
 class PromptInjectionDetector:
     """Detect prompt injection attempts in user input.
 
@@ -332,12 +458,25 @@ class GuardrailsEngine:
         enable_toxicity: bool = True,
         enable_injection: bool = True,
         enable_output_validation: bool = True,
+        enable_ml_classifier: bool = False,
+        ml_backend: str = "detoxify",
+        ml_model_name: str = "original",
+        ml_threshold: float = 0.7,
         custom_blocked_patterns: Optional[List[str]] = None,
     ):
         self.toxicity = ToxicityDetector() if enable_toxicity else None
         self.injection = PromptInjectionDetector() if enable_injection else None
         self.output_validator = OutputValidator() if enable_output_validation else None
         self.refusal_gen = SafetyRefusalGenerator()
+
+        # ML-based classifier (optional — requires detoxify or transformers)
+        self.ml_classifier: Optional[MLToxicityClassifier] = None
+        if enable_ml_classifier:
+            self.ml_classifier = MLToxicityClassifier(
+                backend=ml_backend,
+                model_name=ml_model_name,
+                threshold=ml_threshold,
+            )
 
         self._custom_patterns = []
         if custom_blocked_patterns:
@@ -376,6 +515,12 @@ class GuardrailsEngine:
             all_categories.extend(result.categories)
             all_flagged.extend(result.flagged_spans)
             all_scores.update(result.scores)
+
+        # ML classifier (if available)
+        if self.ml_classifier and self.ml_classifier.available:
+            ml_result = self.ml_classifier.classify(text)
+            all_categories.extend(ml_result.categories)
+            all_scores.update(ml_result.scores)
 
         # Custom patterns
         for pattern in self._custom_patterns:

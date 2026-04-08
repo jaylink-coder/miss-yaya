@@ -3,6 +3,8 @@
 Usage:
     python scripts/benchmark.py --checkpoint checkpoints/yaya-125m-sft/checkpoint-00030000
     python scripts/benchmark.py --token hf_xxx  # auto-downloads latest from HF Hub
+    python scripts/benchmark.py --checkpoint ... --model-only   # disable all runtime guards
+    python scripts/benchmark.py --checkpoint ... --dual          # run BOTH modes and compare
 
 Outputs a summary table and saves to docs/benchmark_results.jsonl
 """
@@ -134,6 +136,43 @@ SUITE = {
         ("what do",     "What can you do?",                                ["help", "answer", "assist", "question"]),
         ("good",        "That is a great answer!",                         ["thank", "glad", "happy", "welcome"]),
     ],
+    # ── Guard-resistant questions (no runtime guard covers these) ──────────
+    "Hard Reasoning": [
+        ("analogy1",    "Hot is to cold as tall is to what?",              ["short"]),
+        ("analogy2",    "Bird is to sky as fish is to what?",              ["water", "sea", "ocean"]),
+        ("syllogism1",  "All roses are flowers. All flowers need water. Do roses need water?", ["yes"]),
+        ("counterfact", "If the sun rose in the west, which direction would your shadow point in the morning?", ["east"]),
+        ("cause",       "Ice melts when heated. What happens to an ice cube left in the sun?", ["melt"]),
+        ("order",       "Sort these from smallest to largest: elephant, ant, dog.", ["ant", "dog", "elephant"]),
+        ("next num",    "What comes next: 1, 1, 2, 3, 5, 8, ...?",        ["13"]),
+        ("category",    "What do a piano, guitar, and drum have in common?", ["instrument", "music"]),
+        ("temporal",    "If yesterday was Monday, what day is tomorrow?",   ["wednesday"]),
+        ("negation",    "A cat is not a dog. True or false?",              ["true"]),
+    ],
+    "Open Knowledge": [
+        ("ocean",       "What is the largest ocean on Earth?",             ["pacific"]),
+        ("bones",       "How many bones does an adult human have?",        ["206"]),
+        ("photosyn",    "What process do plants use to make food from sunlight?", ["photosynthesis"]),
+        ("blood",       "What organ pumps blood through the body?",        ["heart"]),
+        ("frozen",      "What do we call water in its solid form?",        ["ice"]),
+        ("moon",        "How long does it take the Moon to orbit the Earth?", ["27", "28", "29", "month"]),
+        ("dna",         "What does DNA stand for?",                        ["deoxyribonucleic"]),
+        ("light",       "What travels faster: light or sound?",            ["light"]),
+        ("element",     "What is the chemical symbol for gold?",           ["au"]),
+        ("inventor",    "Who invented the telephone?",                     ["bell", "alexander"]),
+    ],
+    "Instruction Following": [
+        ("one word",    "Answer in one word: What color are ripe bananas?", ["yellow"]),
+        ("yes no",      "Answer yes or no: Is the Earth flat?",            ["no"]),
+        ("count",       "How many vowels are in the word 'education'?",    ["5"]),
+        ("first letter","What is the first letter of the English alphabet?", ["a"]),
+        ("last letter", "What is the last letter of the English alphabet?", ["z"]),
+        ("reverse",     "What is the word 'cat' spelled backwards?",       ["tac"]),
+        ("acronym",     "What does AI stand for?",                         ["artificial intelligence"]),
+        ("complete",    "Complete the phrase: 'The early bird catches the ___'.", ["worm"]),
+        ("translate",   "What is 'good morning' in French?",               ["bonjour"]),
+        ("summarize",   "In one sentence, what is gravity?",               ["force", "pull", "attract"]),
+    ],
 }
 
 
@@ -146,11 +185,16 @@ def load_model(checkpoint_path):
     return model
 
 
-def run_benchmark(model, tokenizer, step=None, loss=None):
+def run_benchmark(model, tokenizer, step=None, loss=None, model_only=False):
     gen = TextGenerator(model, tokenizer, device="cpu")
     cfg = GenerationConfig(
         max_new_tokens=60, temperature=0.7, top_p=0.9,
         do_sample=True, repetition_penalty=1.5,
+        use_calculator=not model_only,
+        use_identity_guard=not model_only,
+        use_fact_guard=not model_only,
+        use_datetime=not model_only,
+        use_conversational_guard=not model_only,
     )
 
     all_results = {}
@@ -181,14 +225,15 @@ def run_benchmark(model, tokenizer, step=None, loss=None):
     return all_results, total_pass, total, overall_pct
 
 
-def print_report(all_results, total_pass, total, overall_pct, step=None, loss=None):
+def print_report(all_results, total_pass, total, overall_pct, step=None, loss=None, mode="guarded"):
+    mode_label = "MODEL-ONLY" if mode == "model_only" else "GUARDED"
     print()
-    print("=" * 55)
+    print("=" * 60)
+    header = f"  Yaya Benchmark [{mode_label}]"
     if step:
-        print(f"  Yaya Benchmark  (step {step:,}  loss {loss:.4f})" if loss else f"  Yaya Benchmark  (step {step:,})")
-    else:
-        print("  Yaya Benchmark")
-    print("=" * 55)
+        header += f"  (step {step:,}  loss {loss:.4f})" if loss else f"  (step {step:,})"
+    print(header)
+    print("=" * 60)
     print(f"  {'Category':<22} {'Score':>8}  {'Bar'}")
     print(f"  {'-'*22}  {'-'*8}  {'-'*20}")
     for cat, r in all_results.items():
@@ -196,7 +241,7 @@ def print_report(all_results, total_pass, total, overall_pct, step=None, loss=No
         print(f"  {cat:<22} {r['pass']}/{r['total']} ({r['pct']:4.0f}%)  [{bar}]")
     print(f"  {'-'*22}  {'-'*8}")
     print(f"  {'OVERALL':<22} {total_pass}/{total} ({overall_pct:4.0f}%)")
-    print("=" * 55)
+    print("=" * 60)
 
     # Show failures for context
     print("\n  Failures:")
@@ -212,12 +257,47 @@ def print_report(all_results, total_pass, total, overall_pct, step=None, loss=No
     print()
 
 
-def save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, loss):
+def print_dual_summary(guarded, model_only, total_g, total_m, total):
+    """Print a side-by-side comparison of guarded vs model-only scores."""
+    print()
+    print("=" * 70)
+    print("  DUAL BENCHMARK COMPARISON: Guarded vs Model-Only")
+    print("=" * 70)
+    print(f"  {'Category':<22} {'Guarded':>10} {'Model-Only':>12} {'Delta':>8}")
+    print(f"  {'-'*22}  {'-'*10}  {'-'*12}  {'-'*8}")
+    for cat in guarded:
+        gp = guarded[cat]["pct"]
+        mp = model_only[cat]["pct"]
+        delta = gp - mp
+        g_str = f"{guarded[cat]['pass']}/{guarded[cat]['total']} ({gp:.0f}%)"
+        m_str = f"{model_only[cat]['pass']}/{model_only[cat]['total']} ({mp:.0f}%)"
+        d_str = f"+{delta:.0f}%" if delta > 0 else f"{delta:.0f}%"
+        print(f"  {cat:<22} {g_str:>10} {m_str:>12} {d_str:>8}")
+    pct_g = total_g / total * 100
+    pct_m = total_m / total * 100
+    delta_o = pct_g - pct_m
+    d_str = f"+{delta_o:.0f}%" if delta_o > 0 else f"{delta_o:.0f}%"
+    print(f"  {'-'*22}  {'-'*10}  {'-'*12}  {'-'*8}")
+    print(f"  {'OVERALL':<22} {total_g}/{total} ({pct_g:.0f}%) {total_m}/{total} ({pct_m:.0f}%) {d_str:>8}")
+    print("=" * 70)
+    guard_lift = pct_g - pct_m
+    print(f"\n  Guard lift: {guard_lift:+.1f} percentage points")
+    if guard_lift > 20:
+        print("  ⚠  Guards contribute >20pp — model has significant capability gaps.")
+    elif guard_lift > 5:
+        print("  ℹ  Guards provide moderate assistance.")
+    else:
+        print("  ✓  Model is strong; guards provide minimal lift.")
+    print()
+
+
+def save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, loss, mode="guarded"):
     os.makedirs("docs", exist_ok=True)
     record = {
         "checkpoint": ckpt_name,
         "step": step,
         "loss": loss,
+        "mode": mode,
         "overall": f"{total_pass}/{total}",
         "overall_pct": round(overall_pct, 1),
         "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
@@ -226,13 +306,17 @@ def save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, l
     }
     with open(RESULTS_FILE, "a", encoding="utf-8") as f:
         f.write(json.dumps(record) + "\n")
-    print(f"  Results saved → {RESULTS_FILE}")
+    print(f"  Results saved → {RESULTS_FILE} (mode={mode})")
 
 
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", type=str, default=None)
     parser.add_argument("--token",      type=str, default=os.environ.get("HF_TOKEN", ""))
+    parser.add_argument("--model-only", action="store_true",
+                        help="Disable all runtime guards to measure raw model capability")
+    parser.add_argument("--dual",       action="store_true",
+                        help="Run both guarded and model-only, then print comparison")
     args = parser.parse_args()
 
     tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
@@ -277,10 +361,29 @@ def main():
 
     print(f"Loading model from {ckpt_path}...")
     model = load_model(ckpt_path)
-    print("Running benchmark...")
-    all_results, total_pass, total, overall_pct = run_benchmark(model, tokenizer, step, loss)
-    print_report(all_results, total_pass, total, overall_pct, step, loss)
-    save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, loss)
+
+    if args.dual:
+        # Run BOTH modes and compare
+        print("Running benchmark [GUARDED]...")
+        g_results, g_pass, g_total, g_pct = run_benchmark(model, tokenizer, step, loss, model_only=False)
+        print_report(g_results, g_pass, g_total, g_pct, step, loss, mode="guarded")
+        save_results(g_results, g_pass, g_total, g_pct, ckpt_name, step, loss, mode="guarded")
+
+        print("Running benchmark [MODEL-ONLY]...")
+        m_results, m_pass, m_total, m_pct = run_benchmark(model, tokenizer, step, loss, model_only=True)
+        print_report(m_results, m_pass, m_total, m_pct, step, loss, mode="model_only")
+        save_results(m_results, m_pass, m_total, m_pct, ckpt_name, step, loss, mode="model_only")
+
+        print_dual_summary(g_results, m_results, g_pass, m_pass, g_total)
+    else:
+        model_only = args.model_only
+        mode = "model_only" if model_only else "guarded"
+        print(f"Running benchmark [{mode.upper()}]...")
+        all_results, total_pass, total, overall_pct = run_benchmark(
+            model, tokenizer, step, loss, model_only=model_only
+        )
+        print_report(all_results, total_pass, total, overall_pct, step, loss, mode=mode)
+        save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, loss, mode=mode)
 
     # Update dashboard HTML with new results
     dash_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "update_dashboard.py")

@@ -219,13 +219,21 @@ def load_model_config(path: str) -> ModelConfig:
             f"num_key_value_heads ({num_kv_heads}) for GQA"
         )
 
+    vocab_size = arch.get("vocab_size", 64000)
+    if vocab_size % 8 != 0:
+        import warnings
+        warnings.warn(
+            f"vocab_size ({vocab_size}) is not a multiple of 8. "
+            f"This may hurt GPU efficiency. Consider padding to {((vocab_size + 7) // 8) * 8}."
+        )
+
     dtype = raw.get("dtype", "bfloat16")
     if dtype not in ("float32", "float16", "bfloat16"):
         raise ValueError(f"Unsupported dtype: {dtype!r}. Use float32, float16, or bfloat16.")
 
     return ModelConfig(
         model_name=raw.get("model_name", "yaya"),
-        vocab_size=arch.get("vocab_size", 64000),
+        vocab_size=vocab_size,
         hidden_size=hidden_size,
         intermediate_size=arch.get("intermediate_size", 5632),
         num_hidden_layers=arch.get("num_hidden_layers", 24),

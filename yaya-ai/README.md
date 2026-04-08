@@ -38,11 +38,20 @@ A 129M parameter causal language model trained from scratch in PyTorch — no Hu
 
 ## Benchmark Results
 
-| Checkpoint | Overall | Arithmetic | Word Problems | Facts | Identity | Reasoning | Language |
-|---|---|---|---|---|---|---|---|
-| Step 15k | 29% | 50% | 33% | 25% | 25% | 20% | 0% |
-| Step 30k | 23% | 25% | 17% | 13% | 50% | 0% | 50% |
-| DPO final | 26% | 38% | 50% | 13% | 50% | 0% | 0% |
+The benchmark suite contains **135 questions** across 12 categories. It can be run in two modes:
+- **Guarded**: runtime guards (calculator, identity, fact overrides) active — measures system-level performance
+- **Model-only**: all guards disabled — measures raw model capability
+
+```bash
+python scripts/benchmark.py --checkpoint ... --dual    # side-by-side comparison
+python scripts/benchmark.py --checkpoint ... --model-only  # raw model score
+```
+
+| Checkpoint | Guarded | Model-Only (est.) | Notes |
+|---|---|---|---|
+| Step 15k | 29% | ~29% | Early SFT, no guards yet |
+| DPO final | 26% | ~26% | Before guards |
+| Patch SFT + guards | ~95%+ | ~40-50% | Guards cover most questions |
 
 ## Usage
 
@@ -72,27 +81,45 @@ print(response)  # "4"
 ```
 yaya-ai/
 ├── src/
-│   ├── model/          # Transformer architecture
-│   ├── tokenizer/      # SentencePiece wrapper
-│   ├── training/       # Trainer, DPO trainer
-│   ├── inference/      # TextGenerator
-│   └── data/           # Dataset classes
+│   ├── model/          # Transformer architecture (GQA, RoPE, SwiGLU, MoE, LoRA, Vision)
+│   ├── tokenizer/      # SentencePiece wrapper with special tokens
+│   ├── training/       # Trainer, DPO, EWC, curriculum, reward model, online learning
+│   ├── inference/      # TextGenerator with runtime guards
+│   ├── agent/          # Tool-calling agent loop with persistent memory
+│   ├── rag/            # Retrieval-augmented generation pipeline
+│   ├── safety/         # Content filtering and toxicity detection
+│   ├── serving/        # Production server with rate limiting, auth, metrics
+│   └── data/           # Dataset classes and data processing
 ├── scripts/
-│   ├── kaggle_run_sft.py       # Main Kaggle SFT runner (40k steps, DONE)
-│   ├── kaggle_run_recovery.py  # Recovery fine-tune (anti-list-format)
-│   ├── train_dpo.py            # DPO alignment (DONE)
-│   ├── benchmark.py            # 35-question eval suite
-│   ├── chat.py                 # CLI chat
-│   ├── web_ui.py               # Gradio web UI
-│   ├── quantize.py             # int8 quantization (492MB → 219MB)
-│   └── update_dashboard.py     # Regenerate dashboard from benchmark data
+│   ├── train_sft.py            # SFT training
+│   ├── train_dpo.py            # DPO alignment
+│   ├── benchmark.py            # 135-question eval suite (--model-only / --dual)
+│   ├── chat.py / web_ui.py     # CLI and Gradio chat interfaces
+│   └── quantize.py             # INT8 quantization
 ├── configs/
-│   ├── model/yaya_125m.yaml
-│   └── training/milestones.yaml
+│   ├── model/                  # yaya_125m, yaya_350m, yaya_1b, yaya_1_5b, yaya_7b
+│   └── training/               # SFT, DPO, LoRA configs per model scale
 └── docs/
-    ├── dashboard.html           # Training progress dashboard
+    ├── PRETRAINING_GUIDE.md    # How to pre-train before SFT
+    ├── dashboard.html          # Training progress dashboard
     └── benchmark_results.jsonl
 ```
+
+## Known Limitations
+
+- **No pre-training**: The model was SFT-trained from random initialization (no pre-training on text corpus). Factual knowledge is limited to what appears in the ~205K SFT examples.
+- **Short context window**: 1,024 tokens max — limits multi-turn chat, RAG, and long-form generation.
+- **Runtime guard dependence**: Many benchmark answers are provided by regex-based runtime guards in the generator, not the model itself. Use `--model-only` to see true model capability.
+- **Small scale**: At 129M parameters, the model is well below the ~1B threshold for general-purpose competence.
+- **Vision not active**: Multimodal (vision encoder + projector) code exists but has never been trained.
+
+## Scaling Roadmap
+
+1. **Pre-train** yaya-125m on 2.5–5B tokens (Wikipedia + web text) — see `docs/PRETRAINING_GUIDE.md`
+2. **Scale to yaya-350m** (config ready: `configs/model/yaya_350m.yaml`) with 2048 context
+3. **Reduce guard lift** to <15 percentage points via better pre-training + SFT data
+4. **Activate vision** pipeline for multimodal capabilities
+5. **Scale to 1B+** with MoE and distributed training
 
 ## Notes
 

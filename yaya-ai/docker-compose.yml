@@ -1,6 +1,7 @@
 version: "3.8"
 
 services:
+  # Train yaya-125m (primary model, ~129M params, runs on T4/consumer GPU)
   train:
     build: .
     runtime: nvidia
@@ -10,11 +11,13 @@ services:
       - ./data:/app/data
       - ./checkpoints:/app/checkpoints
       - ./configs:/app/configs
+      - ./logs:/app/logs
     command: >
-      python scripts/train.py
-        --model_config configs/model/yaya_1_5b.yaml
-        --train_config configs/training/train_1_5b.yaml
+      python scripts/train_sft.py
+        --model_config configs/model/yaya_125m.yaml
+        --train_config configs/training/sft_125m.yaml
 
+  # Serve yaya-125m REST API
   serve:
     build: .
     runtime: nvidia
@@ -26,7 +29,20 @@ services:
       - ./checkpoints:/app/checkpoints
       - ./data/tokenizer:/app/data/tokenizer
     command: >
-      python scripts/serve.py
-        --checkpoint checkpoints/yaya-1.5b/latest
+      python scripts/serve.py --port 8000
+
+  # Train yaya-1.5b (scaled model, requires multi-GPU)
+  train-1.5b:
+    build: .
+    runtime: nvidia
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    volumes:
+      - ./data:/app/data
+      - ./checkpoints:/app/checkpoints
+      - ./configs:/app/configs
+      - ./logs:/app/logs
+    command: >
+      python scripts/train.py
         --model_config configs/model/yaya_1_5b.yaml
-        --port 8000
+        --train_config configs/training/train_1_5b.yaml
