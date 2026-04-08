@@ -435,14 +435,21 @@ def prepare_data(phase_id, data_file, replay_ratio=0.15):
     return train_file
 
 
-def run_training(checkpoint_path, train_file, phase_id, steps, lr):
-    """Run SFT training for one phase."""
-    output_dir = f"{CKPT_BASE}/yaya-125m-curriculum/phase{phase_id:02d}"
-    os.makedirs(output_dir, exist_ok=True)
+def _find_output_ckpt(output_dir, fallback):
+    """Find the most recent model.pt in output_dir."""
+    model_files = glob.glob(f"{output_dir}/**/model.pt", recursive=True)
+    if model_files:
+        return sorted(model_files, key=os.path.getmtime, reverse=True)[0]
+    ckpt_dirs = sorted(glob.glob(f"{output_dir}/checkpoint-*"), key=os.path.getmtime, reverse=True)
+    if ckpt_dirs:
+        mp = os.path.join(ckpt_dirs[0], "model.pt")
+        if os.path.exists(mp):
+            return mp
+    return fallback
 
-    if phase_id == 16:
-        return run_dpo(checkpoint_path, train_file, output_dir, steps, lr)
 
+def _build_sft_cmd(checkpoint_path, train_file, output_dir, steps, lr,
+                   batch_size, grad_accum, precision_flag):
     cmd = [
         sys.executable, os.path.join(ROOT, "scripts/train_sft.py"),
         "--model_config",  os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
@@ -451,39 +458,74 @@ def run_training(checkpoint_path, train_file, phase_id, steps, lr):
         "--pretrain_checkpoint", checkpoint_path,
         "--max_steps",     str(steps),
         "--learning_rate", str(lr),
-        "--per_device_batch_size", "4",
-        "--gradient_accumulation_steps", "8",
+        "--per_device_batch_size", str(batch_size),
+        "--gradient_accumulation_steps", str(grad_accum),
         "--max_seq_length", "512",
         "--save_steps",    str(steps),
         "--warmup_steps",  "100",
         "--lr_scheduler",  "cosine",
         "--weight_decay",  "0.01",
         "--max_grad_norm", "1.0",
+        "--dataloader_num_workers", "2",
     ]
+    if precision_flag:
+        cmd.append(precision_flag)
+    return cmd
 
-    print(f"\n  Running phase {phase_id} training ({steps} steps, lr={lr})")
-    start = time.time()
-    result = subprocess.run(cmd, cwd=ROOT)
-    elapsed = time.time() - start
-    print(f"  Training complete in {elapsed/60:.1f} min (exit {result.returncode})")
 
-    model_files = glob.glob(f"{output_dir}/**/model.pt", recursive=True)
-    if model_files:
-        model_files.sort(key=os.path.getmtime, reverse=True)
-        return model_files[0]
+# Per-phase timeout: 2000 steps × ~8s/step on T4 = ~3hr, add 30 min buffer
+_STEP_TIMEOUT_SEC = 12 * 3600  # 12 hours hard max
 
-    ckpt_dirs = sorted(glob.glob(f"{output_dir}/checkpoint-*"), key=os.path.getmtime, reverse=True)
-    if ckpt_dirs:
-        mp = os.path.join(ckpt_dirs[0], "model.pt")
-        if os.path.exists(mp):
-            return mp
+
+def run_training(checkpoint_path, train_file, phase_id, steps, lr):
+    """Run SFT training for one phase with OOM retry and hang timeout."""
+    output_dir = f"{CKPT_BASE}/yaya-125m-curriculum/phase{phase_id:02d}"
+    os.makedirs(output_dir, exist_ok=True)
+
+    if phase_id == 16:
+        return run_dpo(checkpoint_path, train_file, output_dir, steps, lr)
+
+    gpu_name, vram, batch_size, grad_accum, precision_flag = detect_gpu()
+    print(f"  GPU: {gpu_name} ({vram:.1f} GB) — batch={batch_size} accum={grad_accum} {precision_flag or 'fp32'}")
+
+    timeout_sec = min(_STEP_TIMEOUT_SEC, max(3600, steps * 12))
+
+    for attempt, (bs, ga) in enumerate([(batch_size, grad_accum),
+                                         (batch_size // 2, grad_accum * 2),
+                                         (1, grad_accum * batch_size)]):
+        if bs < 1:
+            bs = 1
+        if attempt > 0:
+            print(f"\n  OOM retry {attempt}: batch={bs} accum={ga}")
+            clear_memory()
+
+        cmd = _build_sft_cmd(checkpoint_path, train_file, output_dir,
+                              steps, lr, bs, ga, precision_flag)
+        print(f"\n  Running phase {phase_id} training ({steps} steps, lr={lr})")
+        start = time.time()
+        proc = run_subprocess(cmd, ROOT, timeout_sec)
+        elapsed = time.time() - start
+        rc = proc.returncode if proc else -1
+        print(f"\n  Training finished in {elapsed/60:.1f} min (exit {rc})")
+
+        clear_memory()
+
+        out = _find_output_ckpt(output_dir, None)
+        if out:
+            return out
+
+        if rc == 0:
+            # Exited clean but no checkpoint — unusual, skip retry
+            break
+        # Non-zero exit: may be OOM — retry with smaller batch
 
     print(f"  WARNING: No output checkpoint found in {output_dir}")
     return checkpoint_path
 
 
 def run_dpo(checkpoint_path, train_file, output_dir, steps, lr):
-    """Run DPO alignment for phase 16."""
+    """Run DPO alignment for phase 16 with timeout."""
+    _, vram, _, _, precision_flag = detect_gpu()
     cmd = [
         sys.executable, os.path.join(ROOT, "scripts/train_dpo.py"),
         "--model_config", os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
@@ -494,12 +536,14 @@ def run_dpo(checkpoint_path, train_file, output_dir, steps, lr):
         "--learning_rate", str(lr),
         "--beta",         "0.1",
     ]
+    if precision_flag:
+        cmd.append(precision_flag)
     print(f"\n  Running DPO phase 16 ({steps} steps, lr={lr})")
-    subprocess.run(cmd, cwd=ROOT)
-    model_files = glob.glob(f"{output_dir}/**/model.pt", recursive=True)
-    if model_files:
-        return sorted(model_files, key=os.path.getmtime, reverse=True)[0]
-    return checkpoint_path
+    timeout_sec = min(_STEP_TIMEOUT_SEC, max(3600, steps * 15))
+    proc = run_subprocess(cmd, ROOT, timeout_sec)
+    clear_memory()
+    out = _find_output_ckpt(output_dir, None)
+    return out if out else checkpoint_path
 
 
 # ── Benchmark ──────────────────────────────────────────────────────────────────
