@@ -401,23 +401,23 @@ def run_dpo(checkpoint_path, train_file, output_dir, steps, lr):
 def run_benchmark(checkpoint_path, phase_id):
     """Run guarded + model-only benchmark."""
     print(f"\n  Running benchmark for phase {phase_id}...")
-    for mode in ["--dual"]:
-        cmd = [
-            sys.executable, os.path.join(ROOT, "scripts/benchmark.py"),
-            "--checkpoint", checkpoint_path, mode,
-        ]
-        result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
-                                encoding="utf-8", errors="replace")
-        # Print just the summary table
-        lines = result.stdout.split("\n")
-        in_table = False
-        for line in lines:
-            if "Yaya Benchmark" in line or "OVERALL" in line or "====" in line:
-                in_table = True
-            if in_table:
-                print("   ", line)
-            if line.startswith("  Results saved") or "Failures:" in line:
-                break
+    ckpt_dir = os.path.dirname(checkpoint_path) if checkpoint_path.endswith(".pt") else checkpoint_path
+    cmd = [
+        sys.executable, os.path.join(ROOT, "scripts/benchmark.py"),
+        "--checkpoint", ckpt_dir, "--dual",
+    ]
+    result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
+                            encoding="utf-8", errors="replace")
+    in_table = False
+    for line in result.stdout.split("\n"):
+        if any(k in line for k in ["Yaya Benchmark", "OVERALL", "====", "Guard lift", "DUAL"]):
+            in_table = True
+        if in_table:
+            print("   ", line)
+        if "Results saved" in line:
+            break
+    if result.returncode != 0 and result.stderr:
+        print("  BENCHMARK ERROR:", result.stderr[-300:])
 
 
 # ── Main ───────────────────────────────────────────────────────────────────────
