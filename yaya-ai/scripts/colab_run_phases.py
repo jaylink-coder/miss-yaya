@@ -29,7 +29,7 @@ To resume after session expiry, just run the same command — it reads
 the phase_done.json from Drive and picks up where it left off.
 """
 
-import argparse, json, os, sys, time, shutil, glob, subprocess
+import argparse, gc, json, os, signal, sys, time, shutil, glob, subprocess, threading
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
