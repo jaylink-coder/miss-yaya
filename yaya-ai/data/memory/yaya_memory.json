@@ -1426,5 +1426,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-04-03T00:02:55.205008"
+  },
+  {
+    "id": 204,
+    "content": "Q496 Sleep: NREM/REM architecture; memory consolidation, glymphatic clearance, immune function; 24h awake = drunk; circadian rhythm via SCN and melatonin; REM theories unclear",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T01:36:52.459878"
+  },
+  {
+    "id": 205,
+    "content": "Q497 Philosophy of science: positivism -> Popper falsification -> Kuhn paradigms -> Lakatos research programmes; demarcation problem; Feyerabend 'anything goes'; science = method",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T01:36:52.475970"
+  },
+  {
+    "id": 206,
+    "content": "Q498 Industrial Revolution 1760-1840: steam engine, textiles, iron; Britain first (coal/iron/property rights); urbanisation, initial suffering then rising wages; GDP hockey stick",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T01:36:52.491941"
+  },
+  {
+    "id": 207,
+    "content": "Q499 Placebo: real dopamine/opioid release; sham surgery as good as real; nocebo; open-label placebos work; psychiatric drugs 30-50% placebo response; expectation + relationship",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T01:36:52.508055"
+  },
+  {
+    "id": 208,
+    "content": "Q500 Camus Absurd: human need for meaning vs silent universe; Sisyphus happy; 3 responses (suicide/leap/revolt); revolt = defy and create meaning; Camus vs Sartre on freedom",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T01:36:52.539820"
   }
 ]

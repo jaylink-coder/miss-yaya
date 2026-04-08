@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 204
+Total entries: 209
 
 ---
 
@@ -411,3 +411,13 @@ Total entries: 204
 **[202]** Q494 Internet: IP addresses + packets + routing (BGP); TCP (reliable) vs UDP (fast); DNS (name->IP); HTTPS = TLS encryption; browser-to-page in ~100ms
 
 **[203]** Q495 Calculus: derivatives (rates) + integrals (accumulation) linked by FTC; Newton vs Leibniz; revolutionary for physics (F=ma), engineering, Maxwell's equations, ML backprop
+
+**[204]** Q496 Sleep: NREM/REM architecture; memory consolidation, glymphatic clearance, immune function; 24h awake = drunk; circadian rhythm via SCN and melatonin; REM theories unclear
+
+**[205]** Q497 Philosophy of science: positivism -> Popper falsification -> Kuhn paradigms -> Lakatos research programmes; demarcation problem; Feyerabend 'anything goes'; science = method
+
+**[206]** Q498 Industrial Revolution 1760-1840: steam engine, textiles, iron; Britain first (coal/iron/property rights); urbanisation, initial suffering then rising wages; GDP hockey stick
+
+**[207]** Q499 Placebo: real dopamine/opioid release; sham surgery as good as real; nocebo; open-label placebos work; psychiatric drugs 30-50% placebo response; expectation + relationship
+
+**[208]** Q500 Camus Absurd: human need for meaning vs silent universe; Sisyphus happy; 3 responses (suicide/leap/revolt); revolt = defy and create meaning; Camus vs Sartre on freedom
