@@ -1,0 +1,52 @@
+# Yaya-350M SFT — intermediate scaling milestone
+# ~350M params, 24 layers, hidden 1024, GQA 16Q/4KV, context 2048
+#
+# T4  (15GB): batch=2, grad_accum=16 → eff=32, gradient checkpointing required
+# A100(40GB): batch=8, grad_accum=4  → eff=32, ~2500 tok/s
+# L4  (24GB): batch=4, grad_accum=8  → eff=32, ~1500 tok/s
+#
+# Pre-training recommended before SFT at this scale.
+# Loss target: <2.0 by step 30k (from scratch SFT), <1.5 (with pre-training)
+
+seed: 42
+
+training:
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 16
+  learning_rate: 1.5e-5
+  weight_decay: 0.01
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 1000
+  min_lr_ratio: 0.05
+  max_steps: 60000
+  max_seq_length: 1024
+  dtype: float16          # T4 default — override to bfloat16 on A100
+
+checkpointing:
+  save_steps: 2000
+  save_dir: checkpoints/yaya-350m-sft
+  keep_last_n: 3
+
+logging:
+  log_steps: 50
+  wandb_project: yaya-ai
+  wandb_run_name: yaya-350m-sft
+
+eval:
+  eval_steps: 2000
+  eval_samples: 300
+
+data:
+  train_data: data/sft/yaya_reasoning_large.jsonl
+  eval_data: data/sft/yaya_reasoning_large.jsonl
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 0
+
+distributed:
+  strategy: none
+  gradient_checkpointing: true
+  cpu_offload: false
