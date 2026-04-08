@@ -15,7 +15,7 @@ Usage (in Kaggle notebook cell):
     !python scripts/kaggle_run_phases.py --eval-only
 """
 
-import argparse, json, os, sys, time, shutil, glob, subprocess
+import argparse, gc, json, os, sys, time, shutil, glob, subprocess, threading
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
