@@ -177,6 +177,109 @@ def next_phase():
     return None
 
 
+# ── GPU detection & speed config ──────────────────────────────────────────────
+def detect_gpu():
+    """Return (gpu_name, vram_gb, batch_size, grad_accum, precision_flag)."""
+    try:
+        if not torch.cuda.is_available():
+            return ("cpu", 0, 2, 16, "")
+        name = torch.cuda.get_device_name(0).upper()
+        vram = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+        if vram >= 35:
+            return (name, vram, 16, 2, "--bf16")
+        if vram >= 20:
+            return (name, vram, 8, 4, "--fp16")
+        if vram >= 14:
+            return (name, vram, 4, 8, "--fp16")
+        return (name, vram, 2, 16, "")
+    except Exception:
+        return ("unknown", 0, 4, 8, "")
+
+
+def clear_memory():
+    gc.collect()
+    try:
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
+            torch.cuda.synchronize()
+    except Exception:
+        pass
+
+
+# ── Hang-safe subprocess ───────────────────────────────────────────────────────
+class _Heartbeat(threading.Thread):
+    def __init__(self):
+        super().__init__(daemon=True)
+        self._stop = threading.Event()
+
+    def run(self):
+        while not self._stop.wait(60):
+            print(".", end="", flush=True)
+
+    def stop(self):
+        self._stop.set()
+
+
+def run_subprocess(cmd, cwd, timeout_sec):
+    hb = _Heartbeat()
+    hb.start()
+    proc = None
+    try:
+        proc = subprocess.Popen(cmd, cwd=cwd)
+        try:
+            proc.wait(timeout=timeout_sec)
+        except subprocess.TimeoutExpired:
+            print(f"\n  TIMEOUT after {timeout_sec//60} min — killing process")
+            proc.kill()
+            try:
+                proc.wait(timeout=30)
+            except subprocess.TimeoutExpired:
+                pass
+    finally:
+        hb.stop()
+    return proc
+
+
+_STEP_TIMEOUT_SEC = 12 * 3600
+
+
+def _find_output_ckpt(output_dir, fallback):
+    model_files = glob.glob(f"{output_dir}/**/model.pt", recursive=True)
+    if model_files:
+        return sorted(model_files, key=os.path.getmtime, reverse=True)[0]
+    ckpt_dirs = sorted(glob.glob(f"{output_dir}/checkpoint-*"), key=os.path.getmtime, reverse=True)
+    if ckpt_dirs:
+        mp = os.path.join(ckpt_dirs[0], "model.pt")
+        if os.path.exists(mp):
+            return mp
+    return fallback
+
+
+def _build_sft_cmd(checkpoint_path, train_file, output_dir, steps, lr,
+                   batch_size, grad_accum, precision_flag):
+    cmd = [
+        sys.executable, os.path.join(ROOT, "scripts/train_sft.py"),
+        "--model_config",  os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
+        "--data_file",     train_file,
+        "--output_dir",    output_dir,
+        "--pretrain_checkpoint", checkpoint_path,
+        "--max_steps",     str(steps),
+        "--learning_rate", str(lr),
+        "--per_device_batch_size", str(batch_size),
+        "--gradient_accumulation_steps", str(grad_accum),
+        "--max_seq_length", "512",
+        "--save_steps",    str(steps),
+        "--warmup_steps",  "100",
+        "--lr_scheduler",  "cosine",
+        "--weight_decay",  "0.01",
+        "--max_grad_norm", "1.0",
+        "--dataloader_num_workers", "2",
+    ]
+    if precision_flag:
+        cmd.append(precision_flag)
+    return cmd
+
+
 # ── Training ───────────────────────────────────────────────────────────────────
 def prepare_data(phase_id, data_file, replay_ratio=0.15):
     """Mix phase data with replay from prior phases."""
