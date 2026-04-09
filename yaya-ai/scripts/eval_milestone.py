@@ -135,7 +135,7 @@ def build_prompt(question):
     )
 
 
-def load_model(model_only=False, checkpoint_path=None):
+def load_model(checkpoint_path=None):
     import torch
     from src.utils.config import load_model_config
     from src.model.yaya_model import YayaForCausalLM
