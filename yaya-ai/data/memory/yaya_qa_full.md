@@ -7122,3 +7122,139 @@ The Absurd is not in humans or the world alone, but in the confrontation between
 **Rating: 10.0/10**
 
 ---
+
+### Q501 — Economics
+**What is inflation, and why is it so hard to control?**
+
+Inflation: sustained rise in the general price level — or equivalently, fall in purchasing power of money. If prices rise 7%, your salary buys 7% less.
+
+**What causes it**:
+1. **Demand-pull**: too much money chasing too few goods. Wartime economies; massive stimulus.
+2. **Cost-push**: supply costs rise (oil shock 1973; COVID supply chains). Costs passed to prices.
+3. **Built-in (wage-price spiral)**: workers expect inflation → demand higher wages → firms raise prices to compensate → repeat.
+4. **Monetary**: Milton Friedman: 'Inflation is always and everywhere a monetary phenomenon.' Print more money than output grows → prices rise. Weimar Germany 1923; Zimbabwe 2008 (100 trillion dollar note).
+
+**The Fisher Equation**: MV = PQ. Money supply × velocity = price level × real output. Hold V and Q constant: doubling M doubles P.
+
+**Why hard to control**:
+- Central banks use interest rates (raise rates → borrowing costly → demand falls → prices stabilise). But:
+- Rate rises hurt debtors, raise unemployment, can trigger recessions.
+- Supply-side inflation (energy, food) doesn't respond to rate hikes — you're crushing demand to fight a supply problem.
+- Expectations are self-fulfilling: if people believe 10% inflation is coming, they demand 10% wage rises, making it happen.
+- Political pressure: governments don't want high rates near elections.
+
+**The 2% target**: most central banks target 2% — low enough to preserve purchasing power; high enough to avoid deflation (falling prices → consumers defer spending → recession death spiral; Japan's 'lost decades').
+
+**2021-2023 inflation**: COVID stimulus + supply chain disruption + energy shock (Ukraine war) combined all three causes simultaneously. Fed raised rates 500bps in 18 months — fastest since Volcker 1980.
+
+**Rating: 9.0/10**
+
+---
+
+### Q502 — Genetics
+**What is CRISPR-Cas9 and how does gene editing work?**
+
+CRISPR-Cas9: a molecular tool that lets scientists edit DNA with unprecedented precision. Nobel Prize 2020 (Doudna and Charpentier). Derived from a bacterial immune system.
+
+**How bacteria use CRISPR**: when a virus infects a bacterium, the bacterium can store fragments of viral DNA in its genome (CRISPR arrays). If the same virus attacks again, the bacterium transcribes these into guide RNA, which directs the Cas9 protein to cut the viral DNA. It is a biological immune memory.
+
+**How scientists repurposed it**:
+1. Design a guide RNA (gRNA) that matches any target DNA sequence (20 bases)
+2. Load it into Cas9 protein
+3. Deliver to cells (virus vector, lipid nanoparticle, electroporation)
+4. Cas9 scans DNA, finds the matching sequence + PAM motif (NGG), cuts both strands
+5. Cell's repair machinery kicks in:
+   - **NHEJ** (non-homologous end joining): error-prone repair → insertions/deletions → gene knockout
+   - **HDR** (homology-directed repair): provide a template → precise edit or gene insertion
+
+**Applications**:
+- **Medicine**: sickle cell disease and beta-thalassemia cured in trials (2023) — edit stem cells to reactivate fetal haemoglobin. Cancer immunotherapy (edit T cells). Inherited blindness.
+- **Agriculture**: disease-resistant crops; hornless cattle; non-browning mushrooms.
+- **Research**: knock out any gene to study its function.
+
+**Ethical concerns**:
+- **Germline editing**: He Jiankui (2018) edited human embryos to resist HIV — twins born, scientist jailed. Heritable changes affect all descendants — irreversible.
+- **Off-target cuts**: Cas9 occasionally cuts wrong sites.
+- **Enhancement vs therapy**: where is the line?
+
+**Next generation**: base editors (change one nucleotide without cutting); prime editors ('find and replace' for DNA). More precise, fewer off-targets.
+
+**Rating: 9.5/10**
+
+---
+
+### Q503 — Philosophy
+**Does the self exist — or is personal identity an illusion?**
+
+The self: the sense of being a continuous, unified 'I' persisting through time. One of philosophy's hardest questions — and neuroscience is making it harder.
+
+**The bundle theory (Hume 1739)**: look inward for a 'self' — you find only a stream of perceptions: thoughts, feelings, sensations, memories. No observer behind them. The self is a bundle of experiences, not a separate thing. Like a nation: many components, no single 'nationhood' beyond them.
+
+**The narrative self (Dennett, Ricoeur)**: the self is a story the brain tells — a coherent narrative constructed from experience. Not a fixed entity but an ongoing fiction. Useful fiction, but fiction nonetheless. The brain's 'press secretary' rationalising decisions already made.
+
+**Personal identity over time (Locke vs Parfit)**:
+- Locke: identity = psychological continuity — memory connects your past self to present self.
+- Problem: if teleporter destroys you and recreates an identical person on Mars, is that you?
+- Parfit (1984): personal identity is not what matters. What matters is psychological continuity and connectedness. If the Mars copy has all your memories and character, the question 'is it really you?' may be empty. Identity is not a deep fact.
+
+**The neuroscience view**: no single 'self centre' in the brain. Default mode network generates self-referential processing but is distributed. Split-brain patients (corpus callosum severed) show two semi-independent streams of consciousness — one 'self' or two?
+
+**Buddhist philosophy**: anatta (no-self) — the sense of a permanent, unified self is a cognitive illusion that causes suffering. Meditation reveals the constructed nature of self.
+
+**The paradox**: whatever asks 'does the self exist?' is itself the self. The question may be self-refuting — or self-illuminating.
+
+**Rating: 9.0/10**
+
+---
+
+### Q504 — Astrophysics
+**What is a black hole — and what actually happens inside one?**
+
+Black hole: a region of spacetime where gravity is so extreme that nothing — not even light — can escape past the event horizon. Not a hole; a massive, collapsed object.
+
+**Formation**: when a massive star (>20 solar masses) exhausts its nuclear fuel, radiation pressure fails, core collapses under gravity, rebounds in supernova, leaving behind a singularity. Supermassive black holes (millions-billions of solar masses) at galactic centres: formation unclear — primordial? Grown by accretion and mergers?
+
+**Key features**:
+- **Event horizon**: the point of no return. Radius = Schwarzschild radius: r = 2GM/c². For Sun: ~3km. For Earth: ~9mm.
+- **Singularity**: at the centre, density infinite, spacetime curvature infinite. GR breaks down here — quantum gravity needed.
+- **Hawking radiation** (1974): quantum effects near event horizon cause black holes to slowly emit thermal radiation and eventually evaporate. Temperature inversely proportional to mass. Stellar-mass BH: evaporation time >> age of universe.
+
+**What happens if you fall in** (from your perspective):
+- For a large BH: cross event horizon without drama — tidal forces modest at r_s.
+- No local 'wall' — you feel nothing special at the horizon.
+- Tidal forces (spaghettification) kill you as you approach singularity.
+- Light from outside universe appears increasingly blueshifted.
+
+**From outside observer's perspective**:
+- You appear to slow down, freeze, redshift to invisibility at horizon.
+- You never appear to cross — time dilation becomes infinite at event horizon.
+
+**The information paradox**: Hawking radiation is thermal (random) — so when a BH evaporates, all information about what fell in is destroyed. But quantum mechanics says information cannot be destroyed. Unresolved. Possible resolution: holographic principle — information encoded on event horizon surface.
+
+**Confirmed observations**: EHT imaged M87* (2019) and SgrA* (2022) — first direct images. Gravitational waves from BH mergers detected by LIGO (2015).
+
+**Rating: 9.5/10**
+
+---
+
+### Q505 — Linguistics
+**How does language shape thought — does your language change how you think?**
+
+Linguistic relativity (Sapir-Whorf hypothesis): the language you speak influences how you perceive and think about the world. Two versions: strong (language determines thought — now rejected) and weak (language influences thought — supported by evidence).
+
+**The strong hypothesis (Whorf 1940s)**: argued Hopi Indians had no tense — therefore thought about time differently. Later debunked: Hopi does have temporal concepts; Whorf's analysis was flawed.
+
+**Modern evidence for weak version** (Boroditsky et al.):
+- **Colour perception**: Russian has distinct words for light blue (goluboy) and dark blue (siniy). Russian speakers discriminate shades of blue faster than English speakers in the blue-boundary range. Language primes categorical perception.
+- **Spatial orientation**: Guugu Yimithirr (Australia) uses cardinal directions (north/south/east/west) not relative (left/right/behind). Speakers maintain perfect orientation at all times, even indoors. Language shapes navigation.
+- **Number**: Piraha (Amazon) has no exact number words above 2. Speakers cannot reliably perform exact numerical tasks.
+- **Gender**: Spanish/French nouns have gender. Speakers describe gendered objects using attributes matching grammatical gender (bridge = masculine in German, feminine in Spanish → described differently).
+- **Time direction**: Mandarin speakers more naturally think of time vertically (earlier above, later below). English speakers think horizontally.
+
+**What language doesn't determine**: pre-linguistic infants and great apes have numerical, spatial, and causal concepts without language. Thought precedes language developmentally; language is not the sole medium of thought.
+
+**Practical implication**: multilingual people report feeling 'different' in different languages — different emotional tone, different social identity, different association networks. Language is not a cage but a lens.
+
+**Rating: 9.0/10**
+
+---

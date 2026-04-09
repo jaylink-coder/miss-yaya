@@ -1,0 +1,50 @@
+# SFT overfit config — Yaya-tiny, CPU, Q&A-only dataset
+# Goal: memorise the ~236 hand-crafted Q&A pairs so Yaya can at least
+#       answer questions it has seen.  Not a generalisation run.
+#
+# Runtime estimate (CPU, ~500 tok/s, batch=4, seq=128):
+#   1 epoch ≈ ceil(236/4) = 59 steps ≈ 15 s
+#   50 000 steps ≈ 847 epochs ≈ ~27 hours overnight
+
+seed: 42
+
+training:
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 2     # same effective batch=4, halves activation memory
+  learning_rate: 1.0e-4              # 5× higher than default; needed for tiny model
+  weight_decay: 0.01                 # light regularisation
+  adam_beta1: 0.9
+  adam_beta2: 0.95
+  adam_epsilon: 1.0e-8
+  max_grad_norm: 1.0
+  lr_scheduler: cosine
+  warmup_steps: 200
+  min_lr_ratio: 0.05                 # don't decay to zero — keep plasticity
+  max_steps: 50000
+  max_seq_length: 384                # full answers fit (p95=357 tokens, only 2/236 truncated)
+  dtype: float32
+
+checkpointing:
+  save_steps: 2000
+  save_dir: checkpoints/yaya-tiny-sft-overfit
+  keep_last_n: 3
+
+logging:
+  log_steps: 200
+  wandb_project: null
+  wandb_run_name: null
+
+eval:
+  eval_steps: 5000
+  eval_samples: 20
+
+data:
+  train_data: data/sft/yaya_qa_focused.jsonl
+  eval_data: data/sft/yaya_qa_focused.jsonl   # same file — we WANT to overfit
+  tokenizer_path: data/tokenizer/yaya_tokenizer.model
+  num_workers: 0
+
+distributed:
+  strategy: none
+  gradient_checkpointing: true
+  cpu_offload: false

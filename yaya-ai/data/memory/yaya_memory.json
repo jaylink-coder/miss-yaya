@@ -1461,5 +1461,40 @@
     "category": "knowledge",
     "source": "qa_session_2026_03_23",
     "timestamp": "2026-04-09T01:36:52.539820"
+  },
+  {
+    "id": 209,
+    "content": "Q501 Inflation: demand-pull/cost-push/monetary causes; MV=PQ; 2% target avoids deflation; rate hikes blunt instrument; 2021 inflation = stimulus+supply+energy combined",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T14:27:59.659849"
+  },
+  {
+    "id": 210,
+    "content": "Q502 CRISPR-Cas9: bacterial immune system repurposed; guide RNA directs Cas9 to cut DNA; NHEJ=knockout, HDR=precise edit; sickle cell cured 2023; He Jiankui germline scandal; base editors next",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T14:27:59.696019"
+  },
+  {
+    "id": 211,
+    "content": "Q503 Self/personal identity: Hume bundle theory; Dennett narrative self; Parfit psychological continuity; personal identity not what matters; neuroscience no self-centre; Buddhist anatta",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T14:27:59.726895"
+  },
+  {
+    "id": 212,
+    "content": "Q504 Black holes: formation from stellar collapse; event horizon r=2GM/c²; singularity; Hawking radiation; spaghettification; outside observer sees freeze; information paradox; EHT imaged M87* 2019",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T14:27:59.761775"
+  },
+  {
+    "id": 213,
+    "content": "Q505 Linguistic relativity: Sapir-Whorf; strong version rejected; weak version supported; Russian blue discrimination; Guugu spatial orientation; Piraha numbers; Mandarin vertical time; language as lens not cage",
+    "category": "knowledge",
+    "source": "qa_session_2026_03_23",
+    "timestamp": "2026-04-09T14:27:59.801714"
   }
 ]
