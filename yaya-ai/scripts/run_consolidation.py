@@ -263,15 +263,13 @@ def run_training(start_ckpt, data_file, steps, lr, output_dir, batch, grad_accum
     else:
         base_cmd += ["--pretrain_checkpoint", start_ckpt]
 
-    cmd = base_cmd + [
+    tail_args = [
         "--data_file",      data_file,
         "--output_dir",     output_dir,
         "--max_steps",      str(steps),
         "--learning_rate",  str(lr),
-        "--per_device_batch_size",       str(batch),
-        "--gradient_accumulation_steps", str(grad_accum),
         "--max_seq_length", "512",
-        "--save_steps",     "500",             # save every 500 steps for resumability
+        "--save_steps",     "500",
         "--warmup_steps",   "200",
         "--lr_scheduler",   "cosine",
         "--weight_decay",   "0.01",
@@ -279,10 +277,10 @@ def run_training(start_ckpt, data_file, steps, lr, output_dir, batch, grad_accum
         "--dataloader_num_workers", "2",
     ]
     if precision_flag:
-        cmd.append(precision_flag)
+        tail_args.append(precision_flag)
 
     eff = batch * grad_accum
-    print(f"\n  Consolidation training")
+    print(f"\n  Consolidation training {'(RESUME)' if use_resume else '(FRESH)'}")
     print(f"  Steps: {steps}  LR: {lr}  Batch: {batch}×{grad_accum}={eff}  {precision_flag or 'fp32'}")
     print(f"  Data:  {data_file}")
     print(f"  Output: {output_dir}")
@@ -292,11 +290,12 @@ def run_training(start_ckpt, data_file, steps, lr, output_dir, batch, grad_accum
                                          (1, grad_accum * batch)]):
         if attempt > 0:
             print(f"\n  OOM retry {attempt}: batch={bs} accum={ga}")
-            cmd_r = [c if c != str(batch) else str(bs) for c in cmd]
-            cmd_r = [c if c != str(grad_accum) else str(ga) for c in cmd_r]
             clear_memory()
-        else:
-            cmd_r = cmd
+        batch_args = [
+            "--per_device_batch_size",       str(bs),
+            "--gradient_accumulation_steps", str(ga),
+        ]
+        cmd_r = base_cmd + batch_args + tail_args
 
         start = time.time()
         proc  = run_subprocess(cmd_r, ROOT, timeout_sec=8*3600)
