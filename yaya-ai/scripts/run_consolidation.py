@@ -212,9 +212,20 @@ def pull_best_checkpoint(token, local_dir):
                 hf_hub_download(repo_id=HUB_REPO, filename=hub_path,
                                 local_dir=dest, local_dir_use_symlinks=False, token=token)
 
+        # hf_hub_download may nest files: dest/best/model.pt instead of dest/model.pt
         model_pt = os.path.join(dest, "model.pt")
         if not os.path.exists(model_pt):
-            continue
+            nested = os.path.join(dest, best, "model.pt")
+            if os.path.exists(nested):
+                model_pt = nested
+            else:
+                # Walk to find it anywhere under dest
+                for root, _, fnames in os.walk(dest):
+                    if "model.pt" in fnames:
+                        model_pt = os.path.join(root, "model.pt")
+                        break
+                else:
+                    continue  # still not found
 
         loss = checkpoint_loss(model_pt)
         loss_str = f"loss={loss:.4f}" if loss is not None else "loss=unknown"
