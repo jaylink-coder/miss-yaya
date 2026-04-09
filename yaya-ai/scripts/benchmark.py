@@ -190,11 +190,6 @@ def run_benchmark(model, tokenizer, step=None, loss=None, model_only=False):
     cfg = GenerationConfig(
         max_new_tokens=60, temperature=0.7, top_p=0.9,
         do_sample=True, repetition_penalty=1.5,
-        use_calculator=not model_only,
-        use_identity_guard=not model_only,
-        use_fact_guard=not model_only,
-        use_datetime=not model_only,
-        use_conversational_guard=not model_only,
     )
 
     all_results = {}
