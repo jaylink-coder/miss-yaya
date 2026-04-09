@@ -235,13 +235,35 @@ def find_output_ckpt(output_dir, fallback):
 
 
 # ── Training ───────────────────────────────────────────────────────────────────
+def find_resume_checkpoint(output_dir):
+    """Return the latest checkpoint dir inside output_dir for resuming, or None."""
+    ckpt_dirs = sorted(
+        [d for d in glob.glob(f"{output_dir}/checkpoint-*") if os.path.isdir(d)],
+        key=os.path.getmtime, reverse=True
+    )
+    return ckpt_dirs[0] if ckpt_dirs else None
+
+
 def run_training(start_ckpt, data_file, steps, lr, output_dir, batch, grad_accum, precision_flag):
     os.makedirs(output_dir, exist_ok=True)
-    cmd = [
+
+    # Resume from partial run if one exists (avoids restarting from scratch)
+    resume_ckpt = find_resume_checkpoint(output_dir)
+    use_resume  = resume_ckpt is not None
+    if use_resume:
+        print(f"  Resuming from: {resume_ckpt}")
+
+    base_cmd = [
         sys.executable, os.path.join(ROOT, "scripts/train_sft.py"),
         "--model_config",   os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
         "--train_config",   os.path.join(ROOT, "configs/training/sft_125m.yaml"),
-        "--pretrain_checkpoint", start_ckpt,
+    ]
+    if use_resume:
+        base_cmd += ["--resume", resume_ckpt]
+    else:
+        base_cmd += ["--pretrain_checkpoint", start_ckpt]
+
+    cmd = base_cmd + [
         "--data_file",      data_file,
         "--output_dir",     output_dir,
         "--max_steps",      str(steps),
