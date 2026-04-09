@@ -249,7 +249,7 @@ def run_training(start_ckpt, data_file, steps, lr, output_dir, batch, grad_accum
         "--per_device_batch_size",       str(batch),
         "--gradient_accumulation_steps", str(grad_accum),
         "--max_seq_length", "512",
-        "--save_steps",     str(steps // 3),   # save at 33%, 66%, 100%
+        "--save_steps",     "500",             # save every 500 steps for resumability
         "--warmup_steps",   "200",
         "--lr_scheduler",   "cosine",
         "--weight_decay",   "0.01",
