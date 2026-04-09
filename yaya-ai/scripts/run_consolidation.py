@@ -176,7 +176,9 @@ def pull_best_checkpoint(token, local_dir):
         print("  No checkpoints on Hub.")
         return None
 
-    # Priority order — consolidation is LAST now (because it may be broken)
+    # Priority order — consolidation is EXCLUDED entirely.
+    # Consolidation checkpoints are OUTPUT, never INPUT for a new run.
+    # An old consolidation run may have been trained from random init (loss 8+).
     priority = [
         "curriculum-phase16",
         "curriculum-phase",
@@ -184,7 +186,6 @@ def pull_best_checkpoint(token, local_dir):
         "dpo2-checkpoint",
         "dpo-checkpoint",
         "checkpoint",
-        "consolidation",     # last — only use if nothing better exists
     ]
 
     def step_num(n):
