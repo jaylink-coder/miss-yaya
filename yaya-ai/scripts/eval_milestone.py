@@ -241,13 +241,12 @@ def main():
         parser.error("Specify --phase, --all, or a range")
         return
 
-    mode = "model-only" if args.model_only else "guarded"
     print(f"\n{'='*60}")
-    print(f"  YAYA MILESTONE EVAL  |  Phases: {phases}  |  Mode: {mode}")
+    print(f"  YAYA MILESTONE EVAL  |  Phases: {phases}")
     print(f"{'='*60}")
 
     print("\n  Loading model...")
-    gen, gc, tok = load_model(model_only=args.model_only, checkpoint_path=args.checkpoint)
+    gen, gc, tok = load_model(checkpoint_path=args.checkpoint)
 
     all_results = []
     total_correct = 0
