@@ -12,10 +12,9 @@ import torch.nn.functional as F
 from typing import Optional, List, Dict, Any, TYPE_CHECKING
 from dataclasses import dataclass
 
-# ── Calculator tool ───────────────────────────────────────────────────────────
-# Two modes:
-# 1. Pre-generation: extract arithmetic from the question and compute directly.
-# 2. Token-level: intercept <|calc|>EXPR<|/calc|> if the model emits it.
+# ── Calculator tool ──────────────────────────────────────────────────────────
+# Token-level: evaluates <|calc|>EXPR<|/calc|> when the MODEL emits it.
+# No pre-generation intercept — the model must generate the tag itself.
 
 _CALC_OPEN  = "<|calc|>"
 _CALC_CLOSE = "<|/calc|>"
