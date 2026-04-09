@@ -3,8 +3,6 @@
 Usage:
     python scripts/benchmark.py --checkpoint checkpoints/yaya-125m-sft/checkpoint-00030000
     python scripts/benchmark.py --token hf_xxx  # auto-downloads latest from HF Hub
-    python scripts/benchmark.py --checkpoint ... --model-only   # disable all runtime guards
-    python scripts/benchmark.py --checkpoint ... --dual          # run BOTH modes and compare
 
 Outputs a summary table and saves to docs/benchmark_results.jsonl
 """
