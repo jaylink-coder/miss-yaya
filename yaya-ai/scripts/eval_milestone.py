@@ -226,7 +226,6 @@ def main():
     parser = argparse.ArgumentParser(description="Eval Yaya curriculum milestones")
     parser.add_argument("--phase", type=str, help="Phase number or range (e.g. 1 or 1-8)")
     parser.add_argument("--all", action="store_true", help="Eval all phases")
-    parser.add_argument("--model-only", action="store_true", help="Disable runtime guards")
     parser.add_argument("--save", type=str, default=None, help="Save results to JSON file")
     parser.add_argument("--checkpoint", type=str, default=None, help="Checkpoint path to evaluate")
     args = parser.parse_args()
