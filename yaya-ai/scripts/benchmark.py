@@ -250,39 +250,6 @@ def print_report(all_results, total_pass, total, overall_pct, step=None, loss=No
     print()
 
 
-def print_dual_summary(guarded, model_only, total_g, total_m, total):
-    """Print a side-by-side comparison of guarded vs model-only scores."""
-    print()
-    print("=" * 70)
-    print("  DUAL BENCHMARK COMPARISON: Guarded vs Model-Only")
-    print("=" * 70)
-    print(f"  {'Category':<22} {'Guarded':>10} {'Model-Only':>12} {'Delta':>8}")
-    print(f"  {'-'*22}  {'-'*10}  {'-'*12}  {'-'*8}")
-    for cat in guarded:
-        gp = guarded[cat]["pct"]
-        mp = model_only[cat]["pct"]
-        delta = gp - mp
-        g_str = f"{guarded[cat]['pass']}/{guarded[cat]['total']} ({gp:.0f}%)"
-        m_str = f"{model_only[cat]['pass']}/{model_only[cat]['total']} ({mp:.0f}%)"
-        d_str = f"+{delta:.0f}%" if delta > 0 else f"{delta:.0f}%"
-        print(f"  {cat:<22} {g_str:>10} {m_str:>12} {d_str:>8}")
-    pct_g = total_g / total * 100
-    pct_m = total_m / total * 100
-    delta_o = pct_g - pct_m
-    d_str = f"+{delta_o:.0f}%" if delta_o > 0 else f"{delta_o:.0f}%"
-    print(f"  {'-'*22}  {'-'*10}  {'-'*12}  {'-'*8}")
-    print(f"  {'OVERALL':<22} {total_g}/{total} ({pct_g:.0f}%) {total_m}/{total} ({pct_m:.0f}%) {d_str:>8}")
-    print("=" * 70)
-    guard_lift = pct_g - pct_m
-    print(f"\n  Guard lift: {guard_lift:+.1f} percentage points")
-    if guard_lift > 20:
-        print("  ⚠  Guards contribute >20pp — model has significant capability gaps.")
-    elif guard_lift > 5:
-        print("  ℹ  Guards provide moderate assistance.")
-    else:
-        print("  ✓  Model is strong; guards provide minimal lift.")
-    print()
-
 
 def save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, loss, mode="guarded"):
     os.makedirs("docs", exist_ok=True)
