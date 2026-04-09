@@ -434,7 +434,7 @@ def run_benchmark(ckpt_path):
     ckpt_dir = os.path.dirname(ckpt_path) if ckpt_path.endswith(".pt") else ckpt_path
     print("\n  Running benchmark (guarded + model-only)...")
     cmd = [sys.executable, os.path.join(ROOT, "scripts/benchmark.py"),
-           "--checkpoint", ckpt_dir, "--dual"]
+           "--checkpoint", ckpt_dir]
     result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
                             encoding="utf-8", errors="replace")
     in_table = False
