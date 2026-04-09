@@ -549,7 +549,7 @@ def run_benchmark(checkpoint_path, phase_id):
     ckpt_dir = os.path.dirname(checkpoint_path)
     cmd = [
         sys.executable, os.path.join(ROOT, "scripts/benchmark.py"),
-        "--checkpoint", ckpt_dir, "--dual",
+        "--checkpoint", ckpt_dir,
     ]
     result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
                             encoding="utf-8", errors="replace")
