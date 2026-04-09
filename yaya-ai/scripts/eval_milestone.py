@@ -177,13 +177,6 @@ def load_model(checkpoint_path=None):
         max_new_tokens=150, temperature=0.3, top_k=40,
         top_p=0.9, repetition_penalty=1.3, do_sample=True,
     )
-    if model_only:
-        gc.use_calculator = False
-        gc.use_identity_guard = False
-        gc.use_fact_guard = False
-        gc.use_datetime = False
-        gc.use_conversational_guard = False
-
     return gen, gc, tok
 
 
