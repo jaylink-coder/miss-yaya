@@ -93,10 +93,21 @@ def main():
 
     # Load pretrained weights if provided
     if args.pretrain_checkpoint and not args.resume:
+        ckpt = args.pretrain_checkpoint
         if is_main_process():
-            print(f"Loading pretrained weights from: {args.pretrain_checkpoint}")
-        ckpt_mgr = CheckpointManager(save_dir=os.path.dirname(args.pretrain_checkpoint))
-        ckpt_mgr.load(model, checkpoint_path=args.pretrain_checkpoint)
+            print(f"Loading pretrained weights from: {ckpt}")
+        if os.path.isfile(ckpt):
+            # Direct file path (model.pt) — load state dict straight from file
+            state = torch.load(ckpt, map_location="cpu", weights_only=True)
+            missing, unexpected = model.load_state_dict(state, strict=False)
+            if is_main_process():
+                print(f"  Weights loaded OK. Missing keys: {len(missing)}, Unexpected: {len(unexpected)}")
+        elif os.path.isdir(ckpt):
+            # Directory path — use CheckpointManager
+            ckpt_mgr = CheckpointManager(save_dir=os.path.dirname(ckpt))
+            ckpt_mgr.load(model, checkpoint_path=ckpt)
+        else:
+            print(f"  ERROR: pretrain_checkpoint not found: {ckpt!r} — training from random init!")
 
     if is_main_process():
         print(model.generate_summary())
