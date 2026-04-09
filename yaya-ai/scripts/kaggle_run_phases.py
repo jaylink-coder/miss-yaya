@@ -395,12 +395,12 @@ def run_dpo(checkpoint_path, train_file, output_dir, steps, lr):
 
 # ── Benchmark ──────────────────────────────────────────────────────────────────
 def run_benchmark(checkpoint_path, phase_id):
-    """Run guarded + model-only benchmark."""
+    """Run benchmark on the model."""
     print(f"\n  Running benchmark for phase {phase_id}...")
     ckpt_dir = os.path.dirname(checkpoint_path) if checkpoint_path.endswith(".pt") else checkpoint_path
     cmd = [
         sys.executable, os.path.join(ROOT, "scripts/benchmark.py"),
-        "--checkpoint", ckpt_dir, "--dual",
+        "--checkpoint", ckpt_dir,
     ]
     result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
                             encoding="utf-8", errors="replace")
