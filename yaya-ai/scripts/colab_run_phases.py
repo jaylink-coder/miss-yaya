@@ -1,345 +1,178 @@
-"""Google Colab runner for the Yaya True AI 16-phase curriculum.
+"""Yaya — Stage-Based Training Runner (Colab / Kaggle)
 
-This script runs on Google Colab (T4 / L4 / A100 GPU). It:
-1. Installs dependencies and clones the repo (first run)
-2. Mounts Google Drive for checkpoint persistence across sessions
-3. Pulls the latest checkpoint from HuggingFace Hub
-4. Auto-detects which phase to run next (or uses --phase N)
-5. Trains for ≤2000 steps on curriculum data for that phase
-6. Pushes checkpoint to HF Hub + backs up to Drive
-7. Runs the benchmark (guarded + model-only)
-8. Marks the phase as complete and continues
+One stage at a time. Each stage is a complete, self-contained training block.
+Run it once per Colab session. When it finishes — move to the next stage.
 
-Usage (in a Colab cell):
-    # First cell — setup (run once per session):
-    !pip install -q huggingface_hub sentencepiece torch
-    from google.colab import drive
-    drive.mount('/content/drive')
+Usage:
+    # Run a full stage (recommended — one session = one stage)
+    !python scripts/colab_run_phases.py --stage 1
 
-    # Second cell — run training:
-    !python /content/miss-yaya/yaya-ai/scripts/colab_run_phases.py
-    !python /content/miss-yaya/yaya-ai/scripts/colab_run_phases.py --phase 3
-    !python /content/miss-yaya/yaya-ai/scripts/colab_run_phases.py --phase 1-4
-    !python /content/miss-yaya/yaya-ai/scripts/colab_run_phases.py --eval-only
+    # Resume within a stage if the session was interrupted
+    !python scripts/colab_run_phases.py --stage 1 --resume
 
-Tip — Run phases 1-4 first (replace guards with real knowledge):
-    !python /content/miss-yaya/yaya-ai/scripts/colab_run_phases.py --phase 1-4
+    # Run a specific phase within a stage
+    !python scripts/colab_run_phases.py --stage 1 --phase 2
 
-To resume after session expiry, just run the same command — it reads
-the phase_done.json from Drive and picks up where it left off.
+    # Run a specific sub-phase
+    !python scripts/colab_run_phases.py --stage 1 --phase 2 --subphase b
+
+    # Check what's done
+    !python scripts/colab_run_phases.py --status
+
+    # Benchmark current best checkpoint
+    !python scripts/colab_run_phases.py --benchmark
+
+Stages:
+    1  Language & Knowledge Foundation   (Phases 1-2)
+    2  Identity, Personality & Comms     (Phases 3-4)
+    3  Instruction Following             (Phase  5)
+    4  Reasoning Engine                  (Phases 6-8)
+    5  Kenyan & Swahili Identity         (Phases 9-10)
+    6  Technical Skills                  (Phases 11-13)
+    7  Alignment & Values                (Phases 14-15)
 """
 
-import argparse, gc, json, os, signal, sys, time, shutil, glob, subprocess, threading
+import argparse, gc, glob, json, os, random, shutil, subprocess, sys, threading, time
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-# ── Detect environment ────────────────────────────────────────────────────────
-IN_COLAB = os.path.exists("/content")
-DRIVE_MOUNT = "/content/drive/MyDrive"
-DRIVE_CKPT  = os.path.join(DRIVE_MOUNT, "yaya-checkpoints")
+# ── Environment detection ──────────────────────────────────────────────────────
+IN_COLAB  = os.path.exists("/content")
+IN_KAGGLE = os.path.exists("/kaggle")
 
-# ── Paths ─────────────────────────────────────────────────────────────────────
-ROOT      = "/content/miss-yaya/yaya-ai"
-CKPT_BASE = "/content/checkpoints"         # fast local NVMe
-CURR_DIR  = os.path.join(ROOT, "data/sft/curriculum")
-HUB_REPO  = "Jaylink-coder/yaya-125m"
-PHASE_DONE_LOCAL = os.path.join(CKPT_BASE, "yaya-125m-curriculum", "phase_done.json")
-PHASE_DONE_DRIVE = os.path.join(DRIVE_CKPT, "phase_done.json")
+if IN_COLAB:
+    ROOT      = "/content/miss-yaya/yaya-ai"
+    CKPT_BASE = "/content/checkpoints"
+    DRIVE_DIR = "/content/drive/MyDrive/yaya-checkpoints"
+elif IN_KAGGLE:
+    ROOT      = "/kaggle/working/miss-yaya/yaya-ai"
+    CKPT_BASE = "/kaggle/working/checkpoints"
+    DRIVE_DIR = None
+else:
+    ROOT      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    CKPT_BASE = os.path.join(ROOT, "checkpoints")
+    DRIVE_DIR = None
+
+HUB_REPO           = "Jaylink-coder/yaya-125m"
+PROGRESS_FILE_LOCAL = os.path.join(CKPT_BASE, "yaya-125m-curriculum", "progress.json")
+PROGRESS_FILE_DRIVE = os.path.join(DRIVE_DIR, "progress.json") if DRIVE_DIR else None
 
 sys.path.insert(0, ROOT)
 
-# ── Hub checkpoint priority (highest → lowest) ────────────────────────────────
-_HUB_PREFIXES = [
-    "curriculum-phase",
-    "p8-checkpoint",
-    "patch-checkpoint",
-    "dpo2-checkpoint",
-    "recovery-checkpoint",
-    "dpo-checkpoint",
-    "checkpoint",
+
+# ══════════════════════════════════════════════════════════════════════════════
+# STAGE & CURRICULUM DEFINITIONS
+# ══════════════════════════════════════════════════════════════════════════════
+
+STAGE_NAMES = {
+    1: "Language & Knowledge Foundation",
+    2: "Identity, Personality & Communication",
+    3: "Instruction Following & Task Execution",
+    4: "Reasoning Engine",
+    5: "Kenyan & Swahili Identity",
+    6: "Technical Skills",
+    7: "Alignment & Values",
+}
+
+# Each entry: (stage, phase, sub, name, data_file_relative, steps, lr, is_dpo)
+# data_file_relative is relative to ROOT/data/sft/curriculum/
+CURRICULUM = [
+    # ── Stage 1: Language & Knowledge Foundation ──────────────────────────────
+    (1, 1, "a", "Direct Q&A Warmup",         "phase01/1a_direct_qa.jsonl",           800, 1.5e-5, False),
+    (1, 1, "b", "Reading Comprehension",      "phase01/1b_reading.jsonl",              800, 1.4e-5, False),
+    (1, 1, "c", "Paraphrase & Equivalence",   "phase01/1c_paraphrase.jsonl",           800, 1.3e-5, False),
+    (1, 1, "d", "Output Format Control",      "phase01/1d_format_control.jsonl",       800, 1.2e-5, False),
+    (1, 2, "a", "Science & Nature",           "phase02/2a_science.jsonl",              800, 1.4e-5, False),
+    (1, 2, "b", "History & Geography",        "phase02/2b_history_geo.jsonl",          800, 1.3e-5, False),
+    (1, 2, "c", "Culture, Arts & Society",    "phase02/2c_culture.jsonl",              800, 1.2e-5, False),
+    (1, 2, "d", "Practical & Daily Life",     "phase02/2d_practical.jsonl",            800, 1.1e-5, False),
+
+    # ── Stage 2: Identity, Personality & Communication ────────────────────────
+    (2, 3, "a", "Core Identity",              "phase03/3a_core_identity.jsonl",        600, 1.2e-5, False),
+    (2, 3, "b", "Personality & Values",       "phase03/3b_personality.jsonl",          800, 1.1e-5, False),
+    (2, 3, "c", "Empathy & Emotion",          "phase03/3c_empathy.jsonl",              800, 1.0e-5, False),
+    (2, 3, "d", "Consistency Under Pressure", "phase03/3d_consistency.jsonl",          800, 9.0e-6, False),
+    (2, 4, "a", "Greetings & Social Phrases", "phase04/4a_greetings.jsonl",            600, 1.1e-5, False),
+    (2, 4, "b", "Multi-Turn Coherence",       "phase04/4b_multi_turn.jsonl",           900, 1.0e-5, False),
+    (2, 4, "c", "Topic Transitions",          "phase04/4c_transitions.jsonl",          900, 9.0e-6, False),
+    (2, 4, "d", "Ambiguity Handling",         "phase04/4d_ambiguity.jsonl",            800, 8.0e-6, False),
+
+    # ── Stage 3: Instruction Following ────────────────────────────────────────
+    (3, 5, "a", "Format Constraints",         "phase05/5a_format.jsonl",               900, 1.2e-5, False),
+    (3, 5, "b", "Task Execution",             "phase05/5b_tasks.jsonl",                900, 1.1e-5, False),
+    (3, 5, "c", "Compound Instructions",      "phase05/5c_compound.jsonl",             900, 1.0e-5, False),
+    (3, 5, "d", "Role & Persona",             "phase05/5d_roles.jsonl",                700, 9.0e-6, False),
+
+    # ── Stage 4: Reasoning Engine ─────────────────────────────────────────────
+    (4, 6, "a", "Arithmetic Foundations",     "phase06/6a_arithmetic.jsonl",           900, 1.2e-5, False),
+    (4, 6, "b", "Word Problems",              "phase06/6b_word_problems.jsonl",        900, 1.1e-5, False),
+    (4, 6, "c", "Percentages & Fractions",    "phase06/6c_percentages.jsonl",          900, 1.0e-5, False),
+    (4, 6, "d", "Estimation & Mental Math",   "phase06/6d_estimation.jsonl",           700, 9.0e-6, False),
+    (4, 7, "a", "Deductive Reasoning",        "phase07/7a_deduction.jsonl",            800, 1.1e-5, False),
+    (4, 7, "b", "Analogies & Patterns",       "phase07/7b_analogies.jsonl",            800, 1.0e-5, False),
+    (4, 7, "c", "Counterfactuals",            "phase07/7c_counterfactuals.jsonl",      800, 9.0e-6, False),
+    (4, 7, "d", "Spatial & Temporal",         "phase07/7d_spatial_temporal.jsonl",     800, 8.0e-6, False),
+    (4, 8, "a", "Step-by-Step Reasoning",     "phase08/8a_step_by_step.jsonl",         900, 1.0e-5, False),
+    (4, 8, "b", "Problem Decomposition",      "phase08/8b_decomposition.jsonl",        900, 9.0e-6, False),
+    (4, 8, "c", "Self-Verification",          "phase08/8c_verification.jsonl",         900, 8.0e-6, False),
+    (4, 8, "d", "Honest Uncertainty",         "phase08/8d_uncertainty.jsonl",          700, 7.0e-6, False),
+
+    # ── Stage 5: Kenyan & Swahili Identity ────────────────────────────────────
+    (5, 9,  "a", "Kenya Geography & Nature",  "phase09/9a_geography.jsonl",            800, 1.1e-5, False),
+    (5, 9,  "b", "Kenya History & Politics",  "phase09/9b_history.jsonl",              800, 1.0e-5, False),
+    (5, 9,  "c", "Kenya Culture & Society",   "phase09/9c_culture.jsonl",              800, 9.0e-6, False),
+    (5, 9,  "d", "Kenya Economy & Tech",      "phase09/9d_economy.jsonl",              800, 8.0e-6, False),
+    (5, 10, "a", "Swahili Vocabulary",        "phase10/10a_vocabulary.jsonl",         1000, 1.2e-5, False),
+    (5, 10, "b", "Swahili Grammar",           "phase10/10b_grammar.jsonl",            1000, 1.1e-5, False),
+    (5, 10, "c", "Bidirectional Translation", "phase10/10c_translation.jsonl",        1000, 1.0e-5, False),
+    (5, 10, "d", "Code-Switching & Sheng",    "phase10/10d_code_switching.jsonl",     1000, 9.0e-6, False),
+
+    # ── Stage 6: Technical Skills ─────────────────────────────────────────────
+    (6, 11, "a", "Code Reading",              "phase11/11a_reading.jsonl",             900, 1.1e-5, False),
+    (6, 11, "b", "Code Writing",              "phase11/11b_writing.jsonl",             900, 1.0e-5, False),
+    (6, 11, "c", "Debugging",                 "phase11/11c_debugging.jsonl",           900, 9.0e-6, False),
+    (6, 11, "d", "Algorithms",                "phase11/11d_algorithms.jsonl",          900, 8.0e-6, False),
+    (6, 12, "a", "Tool Call Format",          "phase12/12a_tool_format.jsonl",         900, 1.1e-5, False),
+    (6, 12, "b", "Single Tool Use",           "phase12/12b_single_tool.jsonl",         900, 1.0e-5, False),
+    (6, 12, "c", "ReAct Pattern",             "phase12/12c_react.jsonl",               900, 9.0e-6, False),
+    (6, 12, "d", "Tool Failure Handling",     "phase12/12d_failure_handling.jsonl",    900, 8.0e-6, False),
+    (6, 13, "a", "JSON Output",               "phase13/13a_json.jsonl",                800, 1.0e-5, False),
+    (6, 13, "b", "Markdown & Tables",         "phase13/13b_markdown.jsonl",            800, 9.0e-6, False),
+    (6, 13, "c", "RAG Context Grounding",     "phase13/13c_rag.jsonl",                 800, 8.0e-6, False),
+    (6, 13, "d", "Unanswerable Context",      "phase13/13d_unanswerable.jsonl",        800, 7.0e-6, False),
+
+    # ── Stage 7: Alignment & Values ───────────────────────────────────────────
+    (7, 14, "a", "Harmful Refusals",          "phase14/14a_refusals.jsonl",            800, 9.0e-6, False),
+    (7, 14, "b", "Honesty & Anti-Confab",     "phase14/14b_honesty.jsonl",             800, 8.0e-6, False),
+    (7, 14, "c", "Prompt Injection Resist",   "phase14/14c_injection.jsonl",           800, 7.0e-6, False),
+    (7, 14, "d", "Ethical Reasoning",         "phase14/14d_ethics.jsonl",              800, 6.0e-6, False),
+    (7, 15, "a", "Quality Preferences",       "phase15/15a_quality.jsonl",            1000, 5.0e-7, True),
+    (7, 15, "b", "Style Preferences",         "phase15/15b_style.jsonl",              1000, 5.0e-7, True),
+    (7, 15, "c", "Safety Preferences",        "phase15/15c_safety.jsonl",             1000, 5.0e-7, True),
+    (7, 15, "d", "Yaya Persona Preferences",  "phase15/15d_persona.jsonl",            1000, 5.0e-7, True),
 ]
 
-# ── Phase definitions (mirrors milestones_v2.yaml) ────────────────────────────
-PHASES = [
-    # id, name, data_file, steps, lr, description
-    (1,  "World Knowledge",        "phase01_world_knowledge.jsonl",    2000, 1.5e-5, "Factual recall — replace guards with learned knowledge"),
-    (2,  "Conversational Fluency", "phase02_conversational.jsonl",     2000, 1.2e-5, "Identity, greetings, personality, empathy"),
-    (3,  "Instruction Following",  "phase03_instruction_follow.jsonl", 2000, 1.2e-5, "Format constraints, one-word answers, yes/no, lists"),
-    (4,  "Direct Q&A + Kenya",     "phase04_direct_qa.jsonl",          2000, 1.0e-5, "Kenya knowledge, Swahili vocab, concise answers"),
-    (5,  "Chain of Thought",       "phase05_chain_of_thought.jsonl",   2000, 9.0e-6, "Think-before-answer using <|think|> tags"),
-    (6,  "Math Reasoning",         "phase06_math_reasoning.jsonl",     2000, 8.0e-6, "Arithmetic and word problems with working shown"),
-    (7,  "Logical Reasoning",      "phase07_logical_reasoning.jsonl",  2000, 7.0e-6, "Deduction, analogies, puzzles"),
-    (8,  "Self-Reflection",        "phase08_self_reflection.jsonl",    1500, 6.0e-6, "Check own answers, admit uncertainty"),
-    (9,  "Tool Calling",           "phase09_tool_basics.jsonl",        1500, 6.0e-6, "Calculator, datetime tool calls"),
-    (10, "Multi-Step Tools",       "phase10_multi_tool.jsonl",         1500, 5.0e-6, "ReAct: think→act→observe→answer"),
-    (11, "RAG Grounding",          "phase11_rag_grounding.jsonl",      1500, 5.0e-6, "Answer from provided context, cite evidence"),
-    (12, "Code",                   "phase12_code.jsonl",               1500, 5.0e-6, "Python, debugging, code explanation"),
-    (13, "Structured Output",      "phase13_structured_output.jsonl",  1000, 4.0e-6, "JSON, markdown, formatted responses"),
-    (14, "Swahili Fluency",        "phase14_kenya_swahili.jsonl",      2000, 5.0e-6, "Full Swahili conversations, code-switching"),
-    (15, "Safety + Alignment",     "phase15_safety.jsonl",             1000, 3.0e-6, "Safe refusals, honesty, no hallucination"),
-    (16, "DPO Alignment",          "phase16_dpo_pairs.jsonl",          1500, 8.0e-7, "Preference training: concise > verbose, honest > hallucinated"),
-]
-PHASES_BY_ID = {p[0]: p for p in PHASES}
 
+# ══════════════════════════════════════════════════════════════════════════════
+# GPU DETECTION
+# ══════════════════════════════════════════════════════════════════════════════
 
-# ── Setup ─────────────────────────────────────────────────────────────────────
-def setup_repo():
-    """Clone or update the repo from GitHub."""
-    parent = "/content/miss-yaya"
-    if os.path.exists(ROOT):
-        print("Repo already cloned — pulling latest...")
-        result = subprocess.run(["git", "pull"], cwd=ROOT, capture_output=True, text=True)
-        print(result.stdout.strip() or "Already up-to-date.")
-    else:
-        print("Cloning yaya repo from GitHub...")
-        os.makedirs(parent, exist_ok=True)
-        subprocess.run(
-            ["git", "clone", "https://github.com/jaylink-coder/miss-yaya.git", parent],
-            check=True,
-        )
-        print("Clone complete.")
-
-    # Install dependencies
-    req_file = os.path.join(ROOT, "requirements.txt")
-    if os.path.exists(req_file):
-        print("Installing requirements...")
-        subprocess.run(
-            [sys.executable, "-m", "pip", "install", "-q", "-r", req_file],
-            check=False,
-        )
-
-
-def setup_drive():
-    """Mount Google Drive if available and sync phase_done.json."""
-    drive_mounted = os.path.exists(DRIVE_MOUNT)
-    if not drive_mounted:
-        print("Google Drive not mounted. Checkpoints will NOT persist across sessions.")
-        print("To enable persistence, run in a cell before this script:")
-        print("  from google.colab import drive; drive.mount('/content/drive')")
-        return False
-
-    os.makedirs(DRIVE_CKPT, exist_ok=True)
-    # Sync phase_done from Drive → local (so we resume correctly)
-    os.makedirs(os.path.dirname(PHASE_DONE_LOCAL), exist_ok=True)
-    if os.path.exists(PHASE_DONE_DRIVE) and not os.path.exists(PHASE_DONE_LOCAL):
-        shutil.copy(PHASE_DONE_DRIVE, PHASE_DONE_LOCAL)
-        print(f"  Synced phase_done.json from Drive")
-    return True
-
-
-def setup_hf(token):
-    from huggingface_hub import login
-    login(token=token, add_to_git_credential=False)
-
-
-def get_hf_token():
-    """Get HF token from Colab secrets, env, or prompt."""
-    # 1. Try Colab userdata
-    try:
-        from google.colab import userdata
-        tok = userdata.get("HF_TOKEN")
-        if tok:
-            return tok
-    except Exception:
-        pass
-
-    # 2. Try environment
-    tok = os.environ.get("HF_TOKEN", "")
-    if tok:
-        return tok
-
-    # 3. Check .env file in repo
-    env_file = os.path.join(ROOT, ".env")
-    if os.path.exists(env_file):
-        with open(env_file) as f:
-            for line in f:
-                if line.startswith("HF_TOKEN="):
-                    tok = line.split("=", 1)[1].strip()
-                    if tok:
-                        return tok
-
-    return ""
-
-
-# ── Drive persistence ──────────────────────────────────────────────────────────
-def backup_to_drive(local_ckpt_dir, phase_id, step):
-    """Copy checkpoint to Google Drive for persistence."""
-    if not os.path.exists(DRIVE_MOUNT):
-        return
-    tag = f"curriculum-phase{phase_id:02d}-step{step:05d}"
-    dest = os.path.join(DRIVE_CKPT, tag)
-    os.makedirs(dest, exist_ok=True)
-    for fname in os.listdir(local_ckpt_dir):
-        src = os.path.join(local_ckpt_dir, fname)
-        if os.path.isfile(src):
-            shutil.copy2(src, os.path.join(dest, fname))
-    print(f"  Backed up to Drive: {dest}")
-
-    # Sync phase_done to Drive
-    if os.path.exists(PHASE_DONE_LOCAL):
-        shutil.copy(PHASE_DONE_LOCAL, PHASE_DONE_DRIVE)
-        print(f"  Synced phase_done.json to Drive")
-
-
-def restore_from_drive():
-    """If no local checkpoint, try to restore latest from Drive."""
-    if not os.path.exists(DRIVE_CKPT):
-        return None
-
-    # Find best checkpoint in Drive
-    for prefix in _HUB_PREFIXES:
-        matches = sorted(
-            [d for d in os.listdir(DRIVE_CKPT) if d.startswith(prefix)],
-            reverse=True,
-        )
-        if matches:
-            drive_ckpt = os.path.join(DRIVE_CKPT, matches[0])
-            model_pt = os.path.join(drive_ckpt, "model.pt")
-            if os.path.exists(model_pt):
-                # Copy to local fast storage
-                local_dest = os.path.join(CKPT_BASE, "yaya-125m-curriculum", matches[0])
-                if not os.path.exists(local_dest):
-                    print(f"  Restoring from Drive: {matches[0]}")
-                    shutil.copytree(drive_ckpt, local_dest)
-                return os.path.join(local_dest, "model.pt")
-    return None
-
-
-# ── Hub utilities ──────────────────────────────────────────────────────────────
-def pull_best_checkpoint(token, local_dir):
-    """Pull best available checkpoint from HF Hub."""
-    from huggingface_hub import list_repo_files, hf_hub_download
-    os.makedirs(local_dir, exist_ok=True)
-
-    print("Scanning HF Hub for checkpoints...")
-    try:
-        files = list(list_repo_files(HUB_REPO, token=token))
-    except Exception as e:
-        print(f"  Hub scan failed: {e}")
-        return None
-
-    ckpt_dirs = set()
-    for f in files:
-        parts = f.split("/")
-        if len(parts) >= 2 and "model.pt" in f:
-            ckpt_dirs.add(parts[0])
-
-    if not ckpt_dirs:
-        print("  No checkpoints found on Hub")
-        return None
-
-    best = None
-    for prefix in _HUB_PREFIXES:
-        matches = [d for d in ckpt_dirs if d.startswith(prefix)]
-        if matches:
-            def step_num(name):
-                for p in reversed(name.split("-")):
-                    if p.isdigit():
-                        return int(p)
-                return 0
-            best = sorted(matches, key=step_num, reverse=True)[0]
-            break
-
-    if not best:
-        best = sorted(ckpt_dirs)[-1]
-
-    print(f"  Using checkpoint: {best}")
-    ckpt_local = os.path.join(local_dir, best)
-    os.makedirs(ckpt_local, exist_ok=True)
-
-    for fname in ["model.pt", "metadata.json"]:
-        hub_path = f"{best}/{fname}"
-        if hub_path in files:
-            local_path = os.path.join(ckpt_local, fname)
-            if not os.path.exists(local_path):
-                print(f"  Downloading {hub_path}...")
-                hf_hub_download(repo_id=HUB_REPO, filename=hub_path,
-                                local_dir=ckpt_local,
-                                local_dir_use_symlinks=False, token=token)
-
-    model_pt = os.path.join(ckpt_local, "model.pt")
-    if os.path.exists(model_pt):
-        print(f"  Checkpoint ready: {model_pt}")
-        return model_pt
-    return None
-
-
-def push_checkpoint(token, local_ckpt_dir, phase_id, step):
-    """Push phase checkpoint to HF Hub."""
-    from huggingface_hub import HfApi
-    tag = f"curriculum-phase{phase_id:02d}-step{step:05d}"
-    print(f"  Pushing {tag} to HF Hub...")
-    api = HfApi(token=token)
-    for fname in os.listdir(local_ckpt_dir):
-        fpath = os.path.join(local_ckpt_dir, fname)
-        if os.path.isfile(fpath):
-            try:
-                api.upload_file(
-                    path_or_fileobj=fpath,
-                    path_in_repo=f"{tag}/{fname}",
-                    repo_id=HUB_REPO,
-                    token=token,
-                )
-            except Exception as e:
-                print(f"    WARNING: upload failed for {fname}: {e}")
-    print(f"  Pushed: {tag}")
-    return tag
-
-
-# ── Phase management ───────────────────────────────────────────────────────────
-def load_done():
-    if os.path.exists(PHASE_DONE_LOCAL):
-        with open(PHASE_DONE_LOCAL) as f:
-            return set(json.load(f).get("completed", []))
-    return set()
-
-
-def mark_done(phase_id):
-    os.makedirs(os.path.dirname(PHASE_DONE_LOCAL), exist_ok=True)
-    done = load_done()
-    done.add(phase_id)
-    with open(PHASE_DONE_LOCAL, "w") as f:
-        json.dump({"completed": sorted(done)}, f)
-    # Sync to Drive immediately
-    if os.path.exists(DRIVE_MOUNT):
-        os.makedirs(DRIVE_CKPT, exist_ok=True)
-        shutil.copy(PHASE_DONE_LOCAL, PHASE_DONE_DRIVE)
-
-
-def next_phase():
-    done = load_done()
-    for ph_id, *_ in PHASES:
-        if ph_id not in done:
-            return ph_id
-    return None
-
-
-# ── GPU detection & speed config ──────────────────────────────────────────────
 def detect_gpu():
-    """Return (gpu_name, vram_gb, batch_size, grad_accum, precision_flag)."""
     try:
         import torch
         if not torch.cuda.is_available():
-            return ("cpu", 0, 2, 16, "")
+            return "CPU", 0, 2, 16, ""
         name = torch.cuda.get_device_name(0).upper()
         vram = torch.cuda.get_device_properties(0).total_memory / (1024**3)
-        # A100 / H100 (40-80 GB) — large batch + bf16
-        if vram >= 35:
-            return (name, vram, 16, 2, "--bf16")
-        # L4 / A10G (24 GB) — medium batch + fp16
-        if vram >= 20:
-            return (name, vram, 8, 4, "--fp16")
-        # T4 (16 GB) — standard config + fp16
-        if vram >= 14:
-            return (name, vram, 4, 8, "--fp16")
-        # Smaller GPU — tiny batch, no precision flag
-        return (name, vram, 2, 16, "")
+        if vram >= 35: return name, vram, 16, 2,  "--bf16"
+        if vram >= 20: return name, vram,  8, 4,  "--fp16"
+        if vram >= 14: return name, vram,  4, 8,  "--fp16"
+        return name, vram, 2, 16, ""
     except Exception:
-        return ("unknown", 0, 4, 8, "")
+        return "UNKNOWN", 0, 4, 8, ""
 
 
 def clear_memory():
-    """Free GPU memory between phases."""
     gc.collect()
     try:
         import torch
@@ -350,26 +183,78 @@ def clear_memory():
         pass
 
 
-# ── Hang-safe subprocess ───────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+# PROGRESS TRACKING
+# ══════════════════════════════════════════════════════════════════════════════
+
+def load_progress():
+    """Returns set of completed 'phase.sub' keys (persists across sessions via Drive)."""
+    for path in [PROGRESS_FILE_DRIVE, PROGRESS_FILE_LOCAL]:
+        if path and os.path.exists(path):
+            try:
+                return set(json.load(open(path)).get("completed", []))
+            except Exception:
+                pass
+    return set()
+
+
+def save_progress(completed: set):
+    data = {"completed": sorted(completed), "updated": time.strftime("%Y-%m-%d %H:%M:%S")}
+    for path in [PROGRESS_FILE_LOCAL, PROGRESS_FILE_DRIVE]:
+        if not path:
+            continue
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        try:
+            with open(path, "w") as f:
+                json.dump(data, f, indent=2)
+        except Exception:
+            pass
+
+
+def sp_key(phase, sub):
+    return f"{phase}.{sub}"
+
+
+def print_status(completed):
+    print("\n" + "=" * 60)
+    print("  Yaya Training Progress")
+    print("=" * 60)
+    cur_stage = cur_phase = None
+    for s, p, sub, name, _, steps, _, _ in CURRICULUM:
+        key = sp_key(p, sub)
+        done = "✓" if key in completed else "·"
+        if s != cur_stage:
+            cur_stage = s
+            total_s = [e for e in CURRICULUM if e[0] == s]
+            done_s  = [e for e in total_s if sp_key(e[1], e[2]) in completed]
+            pct = 100 * len(done_s) // len(total_s)
+            print(f"\n  Stage {s}: {STAGE_NAMES[s]}  [{len(done_s)}/{len(total_s)} — {pct}%]")
+        if p != cur_phase:
+            cur_phase = p
+            print(f"    Phase {p}:")
+        print(f"      [{done}] {p}{sub}. {name}  ({steps} steps)")
+    total = len(CURRICULUM)
+    done_n = len(completed)
+    print(f"\n  Total: {done_n}/{total} sub-phases  ({100*done_n//total}%)")
+    print("=" * 60 + "\n")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# SUBPROCESS WITH HEARTBEAT
+# ══════════════════════════════════════════════════════════════════════════════
+
 class _Heartbeat(threading.Thread):
-    """Print a dot every 60 s so Colab doesn't think the kernel is idle."""
     def __init__(self):
         super().__init__(daemon=True)
         self._stop = threading.Event()
-
     def run(self):
         while not self._stop.wait(60):
             print(".", end="", flush=True)
-
     def stop(self):
         self._stop.set()
 
 
-def run_subprocess(cmd, cwd, timeout_sec):
-    """
-    Run cmd with timeout. Kill cleanly on hang or timeout.
-    Returns subprocess.CompletedProcess-like namedtuple (returncode).
-    """
+def run_subprocess(cmd, cwd, timeout_sec=8*3600):
     hb = _Heartbeat()
     hb.start()
     proc = None
@@ -378,185 +263,407 @@ def run_subprocess(cmd, cwd, timeout_sec):
         try:
             proc.wait(timeout=timeout_sec)
         except subprocess.TimeoutExpired:
-            print(f"\n  TIMEOUT after {timeout_sec//60} min — killing process")
+            print(f"\n  TIMEOUT after {timeout_sec//3600}h — killing")
             proc.kill()
-            try:
-                proc.wait(timeout=30)
-            except subprocess.TimeoutExpired:
-                pass
+            proc.wait(timeout=30)
     finally:
         hb.stop()
     return proc
 
 
-# ── Training ───────────────────────────────────────────────────────────────────
-def prepare_data(phase_id, data_file, replay_ratio=0.15):
-    """Mix phase data with replay from prior phases."""
-    import random
-    random.seed(42 + phase_id)
+# ══════════════════════════════════════════════════════════════════════════════
+# HF TOKEN + HUB OPERATIONS
+# ══════════════════════════════════════════════════════════════════════════════
 
-    phase_path = os.path.join(CURR_DIR, data_file)
-    if not os.path.exists(phase_path):
-        print(f"  Phase data not found: {phase_path}")
-        gen_script = os.path.join(ROOT, "scripts/generate_curriculum_data.py")
-        if os.path.exists(gen_script):
-            subprocess.run([sys.executable, gen_script, "--phase", str(phase_id)], cwd=ROOT)
-        if not os.path.exists(phase_path):
-            print(f"  ERROR: Could not generate phase data")
-            return None
+def get_hf_token(cli_token=""):
+    if cli_token:
+        return cli_token
+    for getter in [
+        lambda: __import__("google.colab", fromlist=["userdata"]).userdata.get("HF_TOKEN"),
+        lambda: __import__("kaggle_secrets", fromlist=["UserSecretsClient"]).UserSecretsClient().get_secret("HF_TOKEN"),
+    ]:
+        try:
+            tok = getter()
+            if tok:
+                return tok
+        except Exception:
+            pass
+    tok = os.environ.get("HF_TOKEN", "")
+    if tok:
+        return tok
+    env = os.path.join(ROOT, ".env")
+    if os.path.exists(env):
+        for line in open(env):
+            if line.startswith("HF_TOKEN="):
+                tok = line.split("=", 1)[1].strip()
+                if tok:
+                    return tok
+    return ""
 
-    with open(phase_path, encoding="utf-8") as f:
-        phase_data = [l.strip() for l in f if l.strip()]
 
-    replay_data = []
-    if replay_ratio > 0 and phase_id > 1:
-        n_replay = max(1, int(len(phase_data) * replay_ratio))
-        prior_files = [
-            os.path.join(CURR_DIR, PHASES_BY_ID[i][2])
-            for i in range(max(1, phase_id - 3), phase_id)
-            if i in PHASES_BY_ID and os.path.exists(os.path.join(CURR_DIR, PHASES_BY_ID[i][2]))
-        ]
-        replay_pool = []
-        for pf in prior_files:
-            with open(pf, encoding="utf-8") as f:
-                replay_pool.extend([l.strip() for l in f if l.strip()])
-        if replay_pool:
-            replay_data = random.sample(replay_pool, min(n_replay, len(replay_pool)))
+def _checkpoint_loss(model_pt):
+    """Read loss from metadata.json next to model.pt."""
+    meta = os.path.join(os.path.dirname(model_pt), "metadata.json")
+    if os.path.exists(meta):
+        try:
+            return json.load(open(meta)).get("loss")
+        except Exception:
+            pass
+    return None
 
-    all_data = phase_data + replay_data
-    random.shuffle(all_data)
 
-    train_file = f"/content/phase{phase_id:02d}_train.jsonl"
-    with open(train_file, "w", encoding="utf-8") as f:
-        for line in all_data:
+def pull_best_checkpoint(token, stage_id):
+    """
+    Pull the best valid starting checkpoint for the given stage from Hub.
+    Tries the highest completed sub-phase of (stage_id - 1) first.
+    Falls back through earlier stages, then legacy checkpoint names.
+    """
+    from huggingface_hub import list_repo_files, hf_hub_download
+    local_dir = os.path.join(CKPT_BASE, "yaya-125m-curriculum")
+    os.makedirs(local_dir, exist_ok=True)
+
+    print("  Scanning HF Hub...")
+    try:
+        files = list(list_repo_files(HUB_REPO, token=token))
+    except Exception as e:
+        print(f"  Hub scan failed: {e}")
+        return None
+
+    hub_ckpt_dirs = set(f.split("/")[0] for f in files if "model.pt" in f)
+
+    def step_num(name):
+        for p in reversed(name.split("-")):
+            if p.isdigit():
+                return int(p)
+        return 0
+
+    # Build priority list: latest from stage N-1 down to stage 1, then legacy names
+    prefixes = []
+    for st in range(stage_id - 1, 0, -1):
+        stage_phases = sorted(set(e[1] for e in CURRICULUM if e[0] == st), reverse=True)
+        for ph in stage_phases:
+            for sub in ["d", "c", "b", "a"]:
+                prefixes.append(f"curriculum-s{st}-p{ph}{sub}")
+        prefixes.append(f"curriculum-s{st}-p")  # any from this stage
+    prefixes += ["curriculum-phase", "patch-checkpoint", "dpo2-checkpoint",
+                 "dpo-checkpoint", "checkpoint"]
+
+    for prefix in prefixes:
+        matches = sorted([d for d in hub_ckpt_dirs if d.startswith(prefix)],
+                         key=step_num, reverse=True)
+        if not matches:
+            continue
+        best = matches[0]
+        dest = os.path.join(local_dir, best)
+        os.makedirs(dest, exist_ok=True)
+
+        for fname in ["model.pt", "metadata.json"]:
+            hub_path = f"{best}/{fname}"
+            local_path = os.path.join(dest, fname)
+            if hub_path in files and not os.path.exists(local_path):
+                print(f"  Downloading {hub_path}...")
+                try:
+                    hf_hub_download(repo_id=HUB_REPO, filename=hub_path,
+                                    local_dir=dest, local_dir_use_symlinks=False,
+                                    token=token)
+                except Exception as e:
+                    print(f"  Warning: {e}")
+
+        # Walk to find model.pt (hf_hub_download may nest subdirs)
+        model_pt = None
+        for root, _, fnames in os.walk(dest):
+            if "model.pt" in fnames:
+                model_pt = os.path.join(root, "model.pt")
+                break
+
+        if not model_pt:
+            continue
+
+        loss = _checkpoint_loss(model_pt)
+        if loss is not None and loss > 4.0:
+            print(f"  Skipping {best} — loss={loss:.2f} (bad checkpoint)")
+            continue
+
+        loss_str = f"loss={loss:.4f}" if loss else "loss=unknown"
+        print(f"  Using: {best}  ({loss_str})")
+        return model_pt
+
+    print("  No valid checkpoint on Hub.")
+    return None
+
+
+def push_checkpoint(token, ckpt_dir, stage_id, phase_id, sub_id, step):
+    from huggingface_hub import HfApi
+    tag = f"curriculum-s{stage_id}-p{phase_id}{sub_id}-step{step:05d}"
+    print(f"  Pushing {tag} to Hub...")
+    api = HfApi(token=token)
+    pushed = 0
+    for fname in os.listdir(ckpt_dir):
+        fpath = os.path.join(ckpt_dir, fname)
+        if os.path.isfile(fpath):
+            try:
+                api.upload_file(path_or_fileobj=fpath,
+                                path_in_repo=f"{tag}/{fname}",
+                                repo_id=HUB_REPO, token=token)
+                pushed += 1
+            except Exception as e:
+                print(f"    Warning: {fname}: {e}")
+    print(f"  Pushed {pushed} files as: {tag}")
+    return tag
+
+
+def backup_to_drive(ckpt_dir, tag):
+    if not DRIVE_DIR or not os.path.exists(os.path.dirname(DRIVE_DIR)):
+        return
+    os.makedirs(DRIVE_DIR, exist_ok=True)
+    dest = os.path.join(DRIVE_DIR, tag)
+    if os.path.exists(dest):
+        shutil.rmtree(dest)
+    try:
+        shutil.copytree(ckpt_dir, dest)
+        print(f"  Drive backup: {tag}")
+    except Exception as e:
+        print(f"  Drive backup failed: {e}")
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# DATA MANAGEMENT
+# ══════════════════════════════════════════════════════════════════════════════
+
+def ensure_data(phase_id, sub_id, data_file_rel, min_examples=1000):
+    """
+    Ensure data file exists with >= min_examples.
+    Runs the generator if missing or too small.
+    Returns absolute path, or None if cannot be created.
+    """
+    data_path = os.path.join(ROOT, "data/sft/curriculum", data_file_rel)
+    os.makedirs(os.path.dirname(data_path), exist_ok=True)
+
+    if os.path.exists(data_path):
+        count = sum(1 for _ in open(data_path, encoding="utf-8", errors="replace"))
+        if count >= min_examples:
+            print(f"  Data: {data_file_rel}  ({count:,} examples) ✓")
+            return data_path
+        print(f"  Data: {data_file_rel}  only {count} examples < {min_examples} — regenerating...")
+
+    gen_script = os.path.join(ROOT, "scripts/generate_phase_data.py")
+    if not os.path.exists(gen_script):
+        # No generator yet — if file exists with any data, use it
+        if os.path.exists(data_path):
+            print(f"  Warning: generator not found, using existing {data_path}")
+            return data_path
+        print(f"  ERROR: No data and no generator for {phase_id}{sub_id}")
+        return None
+
+    print(f"  Generating data for {phase_id}{sub_id}...")
+    result = subprocess.run(
+        [sys.executable, gen_script,
+         "--phase", str(phase_id), "--sub", sub_id,
+         "--output", data_path, "--min-examples", str(min_examples)],
+        cwd=ROOT, capture_output=True, text=True, encoding="utf-8", errors="replace"
+    )
+    if result.returncode != 0:
+        print(f"  Generator failed:\n{result.stderr[-400:]}")
+        return os.path.join(data_path) if os.path.exists(data_path) else None
+
+    if os.path.exists(data_path):
+        count = sum(1 for _ in open(data_path, encoding="utf-8", errors="replace"))
+        print(f"  Generated {count:,} examples for {phase_id}{sub_id} ✓")
+        return data_path
+    return None
+
+
+def build_replay_mix(current_data_path, prior_data_paths, phase_id, sub_id,
+                     replay_ratio=0.20):
+    """
+    Returns a path to a training file that is:
+      80% current sub-phase data + 20% uniform sample from all prior data.
+    If no prior data yet, returns the current data path unchanged.
+    """
+    if not prior_data_paths:
+        return current_data_path
+
+    # Load current
+    current = []
+    with open(current_data_path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            line = line.strip()
+            if line:
+                current.append(line)
+
+    # Load all prior
+    all_prior = []
+    for path in prior_data_paths:
+        if os.path.exists(path):
+            with open(path, encoding="utf-8", errors="replace") as f:
+                for line in f:
+                    line = line.strip()
+                    if line:
+                        all_prior.append(line)
+
+    if not all_prior:
+        return current_data_path
+
+    n_replay = min(int(len(current) * replay_ratio / (1.0 - replay_ratio)), len(all_prior))
+    sampled = random.sample(all_prior, n_replay)
+    mixed = current + sampled
+    random.shuffle(mixed)
+
+    mixed_path = os.path.join(
+        os.path.dirname(current_data_path),
+        f"_mixed_{phase_id}{sub_id}.jsonl"
+    )
+    with open(mixed_path, "w", encoding="utf-8") as f:
+        for line in mixed:
             f.write(line + "\n")
 
-    print(f"  Training data: {len(phase_data)} phase + {len(replay_data)} replay = {len(all_data)} total")
-    return train_file
+    print(f"  Training mix: {len(current):,} current + {n_replay:,} replay = {len(mixed):,} total")
+    return mixed_path
 
 
-def _find_output_ckpt(output_dir, fallback):
-    """Find the most recent model.pt in output_dir."""
-    model_files = glob.glob(f"{output_dir}/**/model.pt", recursive=True)
-    if model_files:
-        return sorted(model_files, key=os.path.getmtime, reverse=True)[0]
-    ckpt_dirs = sorted(glob.glob(f"{output_dir}/checkpoint-*"), key=os.path.getmtime, reverse=True)
-    if ckpt_dirs:
-        mp = os.path.join(ckpt_dirs[0], "model.pt")
+# ══════════════════════════════════════════════════════════════════════════════
+# CHECKPOINT UTILITIES
+# ══════════════════════════════════════════════════════════════════════════════
+
+def find_latest_checkpoint(output_dir):
+    """Return (model_pt_path, ckpt_dir) for the latest checkpoint in output_dir."""
+    dirs = sorted(
+        [d for d in glob.glob(f"{output_dir}/checkpoint-*") if os.path.isdir(d)],
+        key=os.path.getmtime, reverse=True
+    )
+    for d in dirs:
+        mp = os.path.join(d, "model.pt")
         if os.path.exists(mp):
-            return mp
-    return fallback
+            return mp, d
+    return None, None
 
 
-def _build_sft_cmd(checkpoint_path, train_file, output_dir, steps, lr,
-                   batch_size, grad_accum, precision_flag):
-    cmd = [
-        sys.executable, os.path.join(ROOT, "scripts/train_sft.py"),
-        "--model_config",  os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
-        "--data_file",     train_file,
-        "--output_dir",    output_dir,
-        "--pretrain_checkpoint", checkpoint_path,
-        "--max_steps",     str(steps),
-        "--learning_rate", str(lr),
-        "--per_device_batch_size", str(batch_size),
-        "--gradient_accumulation_steps", str(grad_accum),
-        "--max_seq_length", "512",
-        "--save_steps",    str(steps),
-        "--warmup_steps",  "100",
-        "--lr_scheduler",  "cosine",
-        "--weight_decay",  "0.01",
-        "--max_grad_norm", "1.0",
-        "--dataloader_num_workers", "2",
-    ]
-    if precision_flag:
-        cmd.append(precision_flag)
-    return cmd
+def read_step(ckpt_dir):
+    meta = os.path.join(ckpt_dir, "metadata.json")
+    if os.path.exists(meta):
+        try:
+            return json.load(open(meta)).get("step", 0)
+        except Exception:
+            pass
+    for part in reversed(os.path.basename(ckpt_dir).split("-")):
+        if part.isdigit():
+            return int(part)
+    return 0
 
 
-# Per-phase timeout: 2000 steps × ~8s/step on T4 = ~3hr, add 30 min buffer
-_STEP_TIMEOUT_SEC = 12 * 3600  # 12 hours hard max
+# ══════════════════════════════════════════════════════════════════════════════
+# TRAIN ONE SUB-PHASE
+# ══════════════════════════════════════════════════════════════════════════════
 
+def train_subphase(entry, start_ckpt, batch, grad_accum, precision_flag,
+                   prior_data_paths):
+    """
+    Train a single sub-phase. Returns (model_pt, ckpt_dir) or (None, None).
+    start_ckpt: path to model.pt to start from.
+    prior_data_paths: list of data file paths from all previously completed sub-phases.
+    """
+    stage_id, phase_id, sub_id, name, data_file_rel, steps, lr, is_dpo = entry
+    MIN_EX = 2000 if is_dpo else 1000
 
-def run_training(checkpoint_path, train_file, phase_id, steps, lr):
-    """Run SFT training for one phase with OOM retry and hang timeout."""
-    output_dir = f"{CKPT_BASE}/yaya-125m-curriculum/phase{phase_id:02d}"
+    # ── Header ────────────────────────────────────────────────────────────────
+    print(f"\n{'='*60}")
+    print(f"  Stage {stage_id}  ·  Phase {phase_id}{sub_id}  ·  {name}")
+    print(f"  Steps: {steps}   LR: {lr:.2e}   Batch: {batch}×{grad_accum}={batch*grad_accum}  {precision_flag or 'fp32'}")
+    print(f"{'='*60}")
+
+    # ── Data ──────────────────────────────────────────────────────────────────
+    data_path = ensure_data(phase_id, sub_id, data_file_rel, MIN_EX)
+    if not data_path:
+        print(f"  SKIP: Cannot get training data for {phase_id}{sub_id}")
+        return None, None
+
+    train_file = build_replay_mix(data_path, prior_data_paths, phase_id, sub_id) \
+                 if not is_dpo else data_path
+
+    # ── Output dir ────────────────────────────────────────────────────────────
+    output_dir = os.path.join(CKPT_BASE, "yaya-125m-curriculum",
+                              f"s{stage_id}-p{phase_id}{sub_id}")
     os.makedirs(output_dir, exist_ok=True)
 
-    if phase_id == 16:
-        return run_dpo(checkpoint_path, train_file, output_dir, steps, lr)
+    # ── Command ───────────────────────────────────────────────────────────────
+    if is_dpo:
+        cmd = [
+            sys.executable, os.path.join(ROOT, "scripts/train_dpo.py"),
+            "--model_config",       os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
+            "--pretrain_checkpoint", start_ckpt,
+            "--dpo_data",           train_file,
+            "--save_dir",           output_dir,
+            "--steps",              str(steps),
+            "--lr",                 str(lr),
+        ]
+    else:
+        cmd = [
+            sys.executable, os.path.join(ROOT, "scripts/train_sft.py"),
+            "--model_config",       os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
+            "--train_config",       os.path.join(ROOT, "configs/training/sft_125m.yaml"),
+            "--pretrain_checkpoint", start_ckpt,
+            "--data_file",          train_file,
+            "--output_dir",         output_dir,
+            "--max_steps",          str(steps),
+            "--learning_rate",      str(lr),
+            "--max_seq_length",     "512",
+            "--save_steps",         "500",
+            "--warmup_steps",       str(max(50, steps // 20)),
+            "--lr_scheduler",       "cosine",
+            "--weight_decay",       "0.01",
+            "--max_grad_norm",      "1.0",
+            "--dataloader_num_workers", "2",
+            "--per_device_batch_size",        str(batch),
+            "--gradient_accumulation_steps",  str(grad_accum),
+        ]
+        if precision_flag:
+            cmd.append(precision_flag)
 
-    gpu_name, vram, batch_size, grad_accum, precision_flag = detect_gpu()
-    print(f"  GPU: {gpu_name} ({vram:.1f} GB) — batch={batch_size} accum={grad_accum} {precision_flag or 'fp32'}")
-
-    timeout_sec = min(_STEP_TIMEOUT_SEC, max(3600, steps * 12))
-
-    for attempt, (bs, ga) in enumerate([(batch_size, grad_accum),
-                                         (batch_size // 2, grad_accum * 2),
-                                         (1, grad_accum * batch_size)]):
-        if bs < 1:
-            bs = 1
+    # ── OOM-safe training loop ────────────────────────────────────────────────
+    for attempt, (bs, ga) in enumerate([(batch, grad_accum),
+                                         (max(1, batch // 2), grad_accum * 2),
+                                         (1, batch * grad_accum)]):
         if attempt > 0:
-            print(f"\n  OOM retry {attempt}: batch={bs} accum={ga}")
+            print(f"\n  OOM retry {attempt}: batch={bs}  accum={ga}")
             clear_memory()
+            if not is_dpo:
+                for flag, val in [("--per_device_batch_size", str(bs)),
+                                   ("--gradient_accumulation_steps", str(ga))]:
+                    if flag in cmd:
+                        cmd[cmd.index(flag) + 1] = val
 
-        cmd = _build_sft_cmd(checkpoint_path, train_file, output_dir,
-                              steps, lr, bs, ga, precision_flag)
-        print(f"\n  Running phase {phase_id} training ({steps} steps, lr={lr})")
-        start = time.time()
-        proc = run_subprocess(cmd, ROOT, timeout_sec)
-        elapsed = time.time() - start
+        t0 = time.time()
+        proc = run_subprocess(cmd, ROOT, timeout_sec=6*3600)
+        elapsed = time.time() - t0
         rc = proc.returncode if proc else -1
-        print(f"\n  Training finished in {elapsed/60:.1f} min (exit {rc})")
-
+        print(f"\n  Done in {elapsed/60:.1f} min  (exit {rc})")
         clear_memory()
 
-        out = _find_output_ckpt(output_dir, None)
-        if out:
-            return out
-
+        model_pt, ckpt_dir = find_latest_checkpoint(output_dir)
+        if model_pt:
+            return model_pt, ckpt_dir
         if rc == 0:
-            # Exited clean but no checkpoint — unusual, skip retry
             break
-        # Non-zero exit: may be OOM — retry with smaller batch
 
-    print(f"  WARNING: No output checkpoint found in {output_dir}")
-    return checkpoint_path
-
-
-def run_dpo(checkpoint_path, train_file, output_dir, steps, lr):
-    """Run DPO alignment for phase 16 with timeout."""
-    cmd = [
-        sys.executable, os.path.join(ROOT, "scripts/train_dpo.py"),
-        "--model_config",   os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
-        "--dpo_data",       train_file,
-        "--save_dir",       output_dir,
-        "--sft_checkpoint", checkpoint_path,
-        "--max_steps",      str(steps),
-        "--lr",             str(lr),
-    ]
-    print(f"\n  Running DPO phase 16 ({steps} steps, lr={lr})")
-    timeout_sec = min(_STEP_TIMEOUT_SEC, max(3600, steps * 15))
-    proc = run_subprocess(cmd, ROOT, timeout_sec)
-    clear_memory()
-    out = _find_output_ckpt(output_dir, None)
-    return out if out else checkpoint_path
+    print(f"  ERROR: No checkpoint produced for {phase_id}{sub_id}")
+    return None, None
 
 
-# ── Benchmark ──────────────────────────────────────────────────────────────────
-def run_benchmark(checkpoint_path, phase_id):
-    """Run guarded + model-only benchmark."""
-    print(f"\n  Running benchmark for phase {phase_id}...")
-    ckpt_dir = os.path.dirname(checkpoint_path)
-    cmd = [
-        sys.executable, os.path.join(ROOT, "scripts/benchmark.py"),
-        "--checkpoint", ckpt_dir,
-    ]
+# ══════════════════════════════════════════════════════════════════════════════
+# BENCHMARK
+# ══════════════════════════════════════════════════════════════════════════════
+
+def run_benchmark(ckpt_path, label=""):
+    ckpt_dir = os.path.dirname(ckpt_path) if ckpt_path.endswith(".pt") else ckpt_path
+    print(f"\n  Running benchmark{' — ' + label if label else ''}...")
+    cmd = [sys.executable, os.path.join(ROOT, "scripts/benchmark.py"),
+           "--checkpoint", ckpt_dir, "--dual"]
     result = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True,
                             encoding="utf-8", errors="replace")
-    # Print summary tables only
     in_table = False
     for line in result.stdout.split("\n"):
-        if any(k in line for k in ["Yaya Benchmark", "OVERALL", "====", "Guard lift", "DUAL"]):
+        if any(k in line for k in ["Yaya Benchmark", "OVERALL", "====",
+                                    "Guard lift", "DUAL", "Results saved"]):
             in_table = True
         if in_table:
             print("   ", line)
@@ -566,133 +673,187 @@ def run_benchmark(checkpoint_path, phase_id):
         print("  BENCHMARK ERROR:", result.stderr[-300:])
 
 
-# ── Main ───────────────────────────────────────────────────────────────────────
+# ══════════════════════════════════════════════════════════════════════════════
+# MAIN
+# ══════════════════════════════════════════════════════════════════════════════
+
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--phase",      default="auto",
-                        help="Phase number (1-16), range '1-4', or 'auto'")
-    parser.add_argument("--token",      default="",
-                        help="HuggingFace token (or set HF_TOKEN env / Colab secret)")
-    parser.add_argument("--eval-only",  action="store_true")
-    parser.add_argument("--no-push",    action="store_true",
-                        help="Skip HF Hub push (still backs up to Drive)")
-    parser.add_argument("--no-drive",   action="store_true",
-                        help="Skip Google Drive backup")
-    parser.add_argument("--no-clone",   action="store_true",
-                        help="Skip git clone/pull (repo already present)")
-    parser.add_argument("--steps",      type=int, default=None,
-                        help="Override steps for this phase")
+    parser = argparse.ArgumentParser(
+        description="Yaya stage-based trainer. One stage per Colab session."
+    )
+    parser.add_argument("--stage",     type=int,  default=None,
+                        help="Stage to train (1–7). Runs every phase in the stage.")
+    parser.add_argument("--phase",     type=int,  default=None,
+                        help="Limit to a specific phase number within the stage.")
+    parser.add_argument("--subphase",  type=str,  default=None,
+                        help="Limit to a specific sub-phase letter (a/b/c/d).")
+    parser.add_argument("--resume",    action="store_true",
+                        help="Auto-detect where we left off and continue from there.")
+    parser.add_argument("--status",    action="store_true",
+                        help="Print progress and exit.")
+    parser.add_argument("--benchmark", action="store_true",
+                        help="Benchmark current best checkpoint and exit.")
+    parser.add_argument("--no-push",   action="store_true")
+    parser.add_argument("--no-drive",  action="store_true")
+    parser.add_argument("--token",     type=str, default="")
     args = parser.parse_args()
 
-    # ── Setup ────────────────────────────────────────────────────────────────
-    if not args.no_clone:
-        setup_repo()
-
-    sys.path.insert(0, ROOT)  # re-insert after possible clone
-
-    drive_available = False
-    if not args.no_drive:
-        drive_available = setup_drive()
-
-    hf_token = args.token or get_hf_token()
-    if not hf_token:
-        print("WARNING: No HF_TOKEN — Hub push/pull disabled.")
-        print("  Set via: Colab Secrets → HF_TOKEN, or --token flag")
-    else:
-        setup_hf(hf_token)
-
-    # ── Determine phases ─────────────────────────────────────────────────────
-    if args.phase == "auto":
-        ph = next_phase()
-        if ph is None:
-            print("All 16 phases complete!")
-            return
-        phases_to_run = [ph]
-    elif "-" in args.phase:
-        a, b = args.phase.split("-")
-        phases_to_run = list(range(int(a), int(b) + 1))
-    else:
-        phases_to_run = [int(args.phase)]
-
-    print(f"\n{'='*60}")
-    print(f"  Yaya True AI Curriculum — Phases {phases_to_run}")
-    print(f"  Platform: Google Colab")
-    print(f"  Drive backup: {'enabled' if drive_available else 'disabled'}")
-    print(f"  HF Hub: {'enabled' if hf_token else 'disabled'}")
-    print(f"{'='*60}")
-
-    # ── Pull/restore starting checkpoint ────────────────────────────────────
-    ckpt_local_dir = f"{CKPT_BASE}/yaya-125m-curriculum"
-    os.makedirs(ckpt_local_dir, exist_ok=True)
-    current_ckpt = None
-
+    # ── Auth ──────────────────────────────────────────────────────────────────
+    hf_token = get_hf_token(args.token)
     if hf_token:
-        current_ckpt = pull_best_checkpoint(hf_token, ckpt_local_dir)
+        from huggingface_hub import login
+        login(token=hf_token, add_to_git_credential=False)
+    else:
+        print("  WARNING: No HF_TOKEN — Hub push/pull disabled.")
 
-    if not current_ckpt and drive_available:
-        print("Trying to restore checkpoint from Drive...")
-        current_ckpt = restore_from_drive()
+    completed = load_progress()
 
-    if not current_ckpt:
-        local_files = glob.glob(f"{CKPT_BASE}/**/*.pt", recursive=True)
-        if local_files:
-            current_ckpt = sorted(local_files, key=os.path.getmtime, reverse=True)[0]
+    # ── Status / Benchmark shortcuts ─────────────────────────────────────────
+    if args.status:
+        print_status(completed)
+        return
 
-    if not current_ckpt:
-        print("ERROR: No checkpoint found. Cannot proceed.")
-        print("  Options:")
-        print("  1. Set HF_TOKEN in Colab Secrets (Colab menu → Secrets)")
-        print("  2. Mount Drive with a saved checkpoint")
+    if args.benchmark:
+        ckpt = pull_best_checkpoint(hf_token, 99) if hf_token else None
+        if ckpt:
+            run_benchmark(ckpt, "current best checkpoint")
+        return
+
+    # ── Resolve stage ─────────────────────────────────────────────────────────
+    if args.resume:
+        remaining = [e for e in CURRICULUM if sp_key(e[1], e[2]) not in completed]
+        if not remaining:
+            print("  All stages complete!")
+            print_status(completed)
+            return
+        args.stage = remaining[0][0]
+        print(f"  Resuming at Stage {args.stage}: {STAGE_NAMES[args.stage]}")
+
+    if args.stage is None:
+        parser.print_help()
+        print("\n  Specify --stage N  (1–7), or use --resume / --status\n")
         sys.exit(1)
 
-    print(f"\n  Starting checkpoint: {current_ckpt}")
+    if args.stage not in STAGE_NAMES:
+        print(f"  Invalid stage {args.stage}. Valid: 1–7")
+        sys.exit(1)
 
-    # ── Run phases ────────────────────────────────────────────────────────────
-    for phase_id in phases_to_run:
-        if phase_id not in PHASES_BY_ID:
-            print(f"  Phase {phase_id} not defined, skipping")
-            continue
+    # ── Build work list ───────────────────────────────────────────────────────
+    work = [e for e in CURRICULUM if e[0] == args.stage]
+    if args.phase:
+        work = [e for e in work if e[1] == args.phase]
+    if args.subphase:
+        work = [e for e in work if e[2] == args.subphase.lower()]
+    work = [e for e in work if sp_key(e[1], e[2]) not in completed]
 
-        ph_id, name, data_file, steps, lr, desc = PHASES_BY_ID[phase_id]
-        if args.steps:
-            steps = args.steps
+    if not work:
+        print(f"  Stage {args.stage} is already complete.")
+        print_status(completed)
+        return
 
-        print(f"\n{'─'*60}")
-        print(f"  PHASE {ph_id}: {name}")
-        print(f"  {desc}")
-        print(f"  Steps: {steps}  LR: {lr}")
-        print(f"{'─'*60}")
+    # ── Print plan ────────────────────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print(f"  Yaya — Stage {args.stage}: {STAGE_NAMES[args.stage]}")
+    print("=" * 60)
+    total_steps = sum(e[5] for e in work)
+    print(f"  Sub-phases: {len(work)}   Total steps: {total_steps:,}")
+    for s, p, sub, name, _, steps, lr, _ in work:
+        print(f"    {p}{sub}. {name:<32} {steps:4d} steps  lr={lr:.1e}")
+    print()
 
-        if args.eval_only:
-            run_benchmark(current_ckpt, phase_id)
-            continue
+    # ── GPU ───────────────────────────────────────────────────────────────────
+    gpu_name, vram, batch, grad_accum, precision_flag = detect_gpu()
+    print(f"  GPU: {gpu_name} ({vram:.1f} GB)  batch={batch}×{grad_accum}  {precision_flag or 'fp32'}\n")
 
-        train_file = prepare_data(phase_id, data_file)
-        if not train_file:
-            print(f"  SKIP: No data for phase {phase_id}")
-            continue
+    # ── Starting checkpoint ───────────────────────────────────────────────────
+    start_ckpt = pull_best_checkpoint(hf_token, args.stage) if hf_token else None
 
-        output_ckpt = run_training(current_ckpt, train_file, phase_id, steps, lr)
+    if not start_ckpt:
+        # Fall back to local
+        pts = sorted(glob.glob(f"{CKPT_BASE}/**/*.pt", recursive=True),
+                     key=os.path.getmtime, reverse=True)
+        for pt in pts:
+            loss = _checkpoint_loss(pt)
+            if loss is None or loss < 4.0:
+                start_ckpt = pt
+                print(f"  Using local checkpoint: {pt}")
+                break
 
-        # Push to Hub
+    if not start_ckpt:
+        if args.stage == 1:
+            print("  No checkpoint found — Stage 1 will start from random init.")
+            print("  (This is OK only for Stage 1. For later stages, get a checkpoint.)")
+        else:
+            print(f"  ERROR: No valid checkpoint for Stage {args.stage}.")
+            print(f"  Stages 2–7 must start from the output of the previous stage.")
+            print(f"  Run Stage {args.stage - 1} first, or set HF_TOKEN to pull from Hub.")
+            sys.exit(1)
+
+    # ── Prior data for replay ─────────────────────────────────────────────────
+    # All COMPLETED sub-phases that come before our first work item in curriculum order
+    first_idx = CURRICULUM.index(work[0])
+    prior_data = []
+    for e in CURRICULUM[:first_idx]:
+        if sp_key(e[1], e[2]) in completed and not e[7]:   # exclude DPO from replay
+            dp = os.path.join(ROOT, "data/sft/curriculum", e[4])
+            if os.path.exists(dp):
+                prior_data.append(dp)
+
+    # ── Run sub-phases ────────────────────────────────────────────────────────
+    for entry in work:
+        s, p, sub, name, data_file_rel, steps, lr, is_dpo = entry
+        key = sp_key(p, sub)
+
+        model_pt, ckpt_dir = train_subphase(
+            entry, start_ckpt, batch, grad_accum, precision_flag, prior_data
+        )
+
+        if model_pt is None:
+            print(f"\n  FAILED: {p}{sub} — {name}")
+            print(f"  Fix the issue and re-run:")
+            print(f"    !python scripts/colab_run_phases.py --stage {s} --phase {p} --subphase {sub}")
+            sys.exit(1)
+
+        actual_step = read_step(ckpt_dir)
+
+        # Push + backup
         if hf_token and not args.no_push:
-            output_dir = os.path.dirname(output_ckpt)
-            push_checkpoint(hf_token, output_dir, phase_id, steps)
+            tag = push_checkpoint(hf_token, ckpt_dir, s, p, sub, actual_step)
+            if not args.no_drive:
+                backup_to_drive(ckpt_dir, tag)
 
-        # Backup to Drive
-        if drive_available and not args.no_drive:
-            output_dir = os.path.dirname(output_ckpt)
-            backup_to_drive(output_dir, phase_id, steps)
+        # Record progress
+        completed.add(key)
+        save_progress(completed)
 
-        run_benchmark(output_ckpt, phase_id)
-        mark_done(phase_id)
-        current_ckpt = output_ckpt
+        # This checkpoint is the start for the next sub-phase
+        start_ckpt = model_pt
 
-        print(f"\n  Phase {phase_id} complete. Checkpoint: {current_ckpt}")
+        # Add this data to the replay pool (SFT only)
+        if not is_dpo:
+            dp = os.path.join(ROOT, "data/sft/curriculum", data_file_rel)
+            if os.path.exists(dp):
+                prior_data.append(dp)
 
-    print(f"\n{'='*60}")
-    print(f"  Done. Completed phases: {sorted(load_done())}")
-    print(f"{'='*60}")
+        print(f"\n  ✓ {p}{sub} complete — {name}")
+
+    # ── End of stage: benchmark ───────────────────────────────────────────────
+    if start_ckpt:
+        run_benchmark(start_ckpt, f"after Stage {args.stage}")
+
+    # ── Summary ───────────────────────────────────────────────────────────────
+    print("\n" + "=" * 60)
+    print(f"  Stage {args.stage} complete — {STAGE_NAMES[args.stage]}")
+    print_status(completed)
+
+    next_stage = args.stage + 1
+    if next_stage <= 7:
+        print(f"  Next session:")
+        print(f"    !python scripts/colab_run_phases.py --stage {next_stage}")
+        print(f"  ({STAGE_NAMES[next_stage]})")
+    else:
+        print("  ALL STAGES COMPLETE — Yaya is a true AI.")
+    print("=" * 60 + "\n")
 
 
 if __name__ == "__main__":
