@@ -220,8 +220,8 @@ def run_benchmark(model, tokenizer, step=None, loss=None, model_only=False):
     return all_results, total_pass, total, overall_pct
 
 
-def print_report(all_results, total_pass, total, overall_pct, step=None, loss=None, mode="guarded"):
-    mode_label = "MODEL-ONLY" if mode == "model_only" else "GUARDED"
+def print_report(all_results, total_pass, total, overall_pct, step=None, loss=None, mode="model"):
+    mode_label = "MODEL"
     print()
     print("=" * 60)
     header = f"  Yaya Benchmark [{mode_label}]"
