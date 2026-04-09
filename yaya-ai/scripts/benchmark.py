@@ -353,28 +353,10 @@ def main():
     print(f"Loading model from {ckpt_path}...")
     model = load_model(ckpt_path)
 
-    if args.dual:
-        # Run BOTH modes and compare
-        print("Running benchmark [GUARDED]...")
-        g_results, g_pass, g_total, g_pct = run_benchmark(model, tokenizer, step, loss, model_only=False)
-        print_report(g_results, g_pass, g_total, g_pct, step, loss, mode="guarded")
-        save_results(g_results, g_pass, g_total, g_pct, ckpt_name, step, loss, mode="guarded")
-
-        print("Running benchmark [MODEL-ONLY]...")
-        m_results, m_pass, m_total, m_pct = run_benchmark(model, tokenizer, step, loss, model_only=True)
-        print_report(m_results, m_pass, m_total, m_pct, step, loss, mode="model_only")
-        save_results(m_results, m_pass, m_total, m_pct, ckpt_name, step, loss, mode="model_only")
-
-        print_dual_summary(g_results, m_results, g_pass, m_pass, g_total)
-    else:
-        model_only = args.model_only
-        mode = "model_only" if model_only else "guarded"
-        print(f"Running benchmark [{mode.upper()}]...")
-        all_results, total_pass, total, overall_pct = run_benchmark(
-            model, tokenizer, step, loss, model_only=model_only
-        )
-        print_report(all_results, total_pass, total, overall_pct, step, loss, mode=mode)
-        save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, loss, mode=mode)
+    print("Running benchmark [MODEL]...")
+    all_results, total_pass, total, overall_pct = run_benchmark(model, tokenizer, step, loss)
+    print_report(all_results, total_pass, total, overall_pct, step, loss)
+    save_results(all_results, total_pass, total, overall_pct, ckpt_name, step, loss, mode="model")
 
     # Update dashboard HTML with new results
     dash_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "update_dashboard.py")
