@@ -308,10 +308,6 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--checkpoint", type=str, default=None)
     parser.add_argument("--token",      type=str, default=os.environ.get("HF_TOKEN", ""))
-    parser.add_argument("--model-only", action="store_true",
-                        help="Disable all runtime guards to measure raw model capability")
-    parser.add_argument("--dual",       action="store_true",
-                        help="Run both guarded and model-only, then print comparison")
     args = parser.parse_args()
 
     tokenizer = YayaTokenizer("data/tokenizer/yaya_tokenizer.model")
