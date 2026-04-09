@@ -183,7 +183,7 @@ def load_model(checkpoint_path):
     return model
 
 
-def run_benchmark(model, tokenizer, step=None, loss=None, model_only=False):
+def run_benchmark(model, tokenizer, step=None, loss=None):
     gen = TextGenerator(model, tokenizer, device="cpu")
     cfg = GenerationConfig(
         max_new_tokens=60, temperature=0.7, top_p=0.9,
