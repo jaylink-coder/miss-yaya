@@ -301,12 +301,20 @@ def find_resume_checkpoint(output_dir):
     for d in ckpt_dirs:
         model_pt = os.path.join(d, "model.pt")
         opt_pt   = os.path.join(d, "optimizer.pt")
+        basename = os.path.basename(d)
         if not os.path.exists(model_pt):
             continue
         # Optimizer must exist and be at least 100 MB (8-bit AdamW for 128M model ~1 GB)
         # A tiny optimizer.pt means it was saved before bnb init — skip it
         if os.path.exists(opt_pt) and os.path.getsize(opt_pt) < 100 * 1024 * 1024:
-            print(f"  Skipping {os.path.basename(d)} — optimizer.pt too small ({os.path.getsize(opt_pt)//1024//1024} MB), likely corrupt")
+            print(f"  Auto-removing {basename} — optimizer.pt too small ({os.path.getsize(opt_pt)//1024//1024} MB), corrupt")
+            shutil.rmtree(d)
+            continue
+        # If loss is very high, this run started from random init — remove and restart
+        meta_loss = checkpoint_loss(model_pt)
+        if meta_loss is not None and meta_loss > 6.0:
+            print(f"  Auto-removing {basename} — loss={meta_loss:.2f} (random-init run, clearing automatically)")
+            shutil.rmtree(d)
             continue
         return d
     return None
