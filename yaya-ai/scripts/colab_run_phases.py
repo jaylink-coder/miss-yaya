@@ -212,18 +212,67 @@ def clear_memory():
 # PROGRESS TRACKING
 # ══════════════════════════════════════════════════════════════════════════════
 
-def load_progress():
-    """Returns set of completed 'phase.sub' keys (persists across sessions via Drive)."""
+HUB_PROGRESS_FILE = "progress.json"
+
+
+def load_progress_from_hub(token):
+    """Pull progress.json from HF Hub. Returns set of completed keys, or empty set."""
+    if not token:
+        return set()
+    try:
+        from huggingface_hub import hf_hub_download
+        local = hf_hub_download(
+            repo_id=HUB_REPO, filename=HUB_PROGRESS_FILE,
+            local_dir=os.path.join(CKPT_BASE, "yaya-125m-curriculum"),
+            local_dir_use_symlinks=False, token=token
+        )
+        data = json.load(open(local))
+        completed = set(data.get("completed", []))
+        print(f"  Progress loaded from Hub: {len(completed)} parts done")
+        return completed
+    except Exception:
+        return set()
+
+
+def save_progress_to_hub(token, completed):
+    """Push progress.json to HF Hub so next session can resume correctly."""
+    if not token:
+        return
+    try:
+        from huggingface_hub import HfApi
+        import tempfile
+        data = {"completed": sorted(completed), "updated": time.strftime("%Y-%m-%d %H:%M:%S")}
+        with tempfile.NamedTemporaryFile("w", suffix=".json", delete=False, encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+            tmp = f.name
+        HfApi(token=token).upload_file(
+            path_or_fileobj=tmp,
+            path_in_repo=HUB_PROGRESS_FILE,
+            repo_id=HUB_REPO, token=token
+        )
+        os.unlink(tmp)
+        print(f"  Progress saved to Hub ({len(completed)} parts done)")
+    except Exception as e:
+        print(f"  Warning: could not save progress to Hub: {e}")
+
+
+def load_progress(token=""):
+    """Returns set of completed 'phase.part' keys.
+    Priority: Drive > local disk > HF Hub (hub is authoritative on fresh sessions).
+    """
     for path in [PROGRESS_FILE_DRIVE, PROGRESS_FILE_LOCAL]:
         if path and os.path.exists(path):
             try:
-                return set(json.load(open(path)).get("completed", []))
+                completed = set(json.load(open(path)).get("completed", []))
+                if completed:
+                    return completed
             except Exception:
                 pass
-    return set()
+    # Fresh session — fall back to Hub
+    return load_progress_from_hub(token)
 
 
-def save_progress(completed: set):
+def save_progress(completed: set, token=""):
     data = {"completed": sorted(completed), "updated": time.strftime("%Y-%m-%d %H:%M:%S")}
     for path in [PROGRESS_FILE_LOCAL, PROGRESS_FILE_DRIVE]:
         if not path:
@@ -234,6 +283,7 @@ def save_progress(completed: set):
                 json.dump(data, f, indent=2)
         except Exception:
             pass
+    save_progress_to_hub(token, completed)
 
 
 def sp_key(phase, part):
