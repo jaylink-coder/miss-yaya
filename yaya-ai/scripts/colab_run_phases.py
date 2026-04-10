@@ -861,7 +861,7 @@ def main():
             if os.path.exists(dp):
                 prior_data.append(dp)
 
-        print(f"\n  ✓ {p}{sub} complete — {name}")
+        print(f"\n  ✓ Stage {s}, Phase {p}, Part {part} complete — {name}")
 
     # ── End of stage: benchmark ───────────────────────────────────────────────
     if start_ckpt:
