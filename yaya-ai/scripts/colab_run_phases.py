@@ -671,7 +671,7 @@ def train_subphase(entry, start_ckpt, batch, grad_accum, precision_flag,
         if rc == 0:
             break
 
-    print(f"  ERROR: No checkpoint produced for {phase_id}{sub_id}")
+    print(f"  ERROR: No checkpoint produced for Phase {phase_id} Part {part_id}")
     return None, None
 
 
