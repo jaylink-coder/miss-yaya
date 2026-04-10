@@ -782,9 +782,9 @@ def main():
     print(f"  Yaya — Stage {args.stage}: {STAGE_NAMES[args.stage]}")
     print("=" * 60)
     total_steps = sum(e[5] for e in work)
-    print(f"  Sub-phases: {len(work)}   Total steps: {total_steps:,}")
-    for s, p, sub, name, _, steps, lr, _ in work:
-        print(f"    {p}{sub}. {name:<32} {steps:4d} steps  lr={lr:.1e}")
+    print(f"  Parts: {len(work)}   Total steps: {total_steps:,}")
+    for s, p, part, name, _, steps, lr, _ in work:
+        print(f"    Stage {s}, Phase {p}, Part {part}: {name:<32} {steps:4d} steps  lr={lr:.1e}")
     print()
 
     # ── GPU ───────────────────────────────────────────────────────────────────
