@@ -499,7 +499,7 @@ def ensure_data(phase_id, part_id, data_file_rel, min_examples=1000):
     return None
 
 
-def build_replay_mix(current_data_path, prior_data_paths, phase_id, sub_id,
+def build_replay_mix(current_data_path, prior_data_paths, phase_id, part_id,
                      replay_ratio=0.20):
     """
     Returns a path to a training file that is:
