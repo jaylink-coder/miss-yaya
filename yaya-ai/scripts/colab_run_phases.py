@@ -494,7 +494,7 @@ def ensure_data(phase_id, part_id, data_file_rel, min_examples=1000):
 
     if os.path.exists(data_path):
         count = sum(1 for _ in open(data_path, encoding="utf-8", errors="replace"))
-        print(f"  Generated {count:,} examples for {phase_id}{sub_id} ✓")
+        print(f"  Generated {count:,} examples for Phase {phase_id} Part {part_id} ✓")
         return data_path
     return None
 
