@@ -478,10 +478,10 @@ def ensure_data(phase_id, part_id, data_file_rel, min_examples=1000):
         if os.path.exists(data_path):
             print(f"  Warning: generator not found, using existing {data_path}")
             return data_path
-        print(f"  ERROR: No data and no generator for {phase_id}{sub_id}")
+        print(f"  ERROR: No data and no generator for Phase {phase_id} Part {part_id}")
         return None
 
-    print(f"  Generating data for {phase_id}{sub_id}...")
+    print(f"  Generating data for Phase {phase_id} Part {part_id}...")
     result = subprocess.run(
         [sys.executable, gen_script,
          "--phase", str(phase_id), "--sub", sub_id,
