@@ -1202,23 +1202,86 @@ def generate_15d_ethics(min_examples=3500):
 # ══════════════════════════════════════════════════════════════════════════════
 
 GENERATORS = {
-    (1, "a"): (generate_1a_core_identity,         "phase01/1a_core_identity.jsonl"),
-    (1, "b"): (generate_1b_personality,            "phase01/1b_personality.jsonl"),
-    (1, "c"): (generate_1c_emotional_intelligence, "phase01/1c_emotional_intelligence.jsonl"),
-    (1, "d"): (generate_1d_identity_robustness,    "phase01/1d_identity_robustness.jsonl"),
-    (2, "a"): (generate_2a_direct_qa,              "phase02/2a_direct_qa.jsonl"),
-    (2, "b"): (generate_2b_format,                 "phase02/2b_format.jsonl"),
-    (2, "c"): (generate_2c_reading,                "phase02/2c_reading.jsonl"),
-    (2, "d"): (generate_2d_greetings,              "phase02/2d_greetings.jsonl"),
-    (3, "a"): (generate_3a_physics_chemistry,      "phase03/3a_physics_chemistry.jsonl"),
+    # Stage 1 — Identity & Personality
+    (1, "a"): (generate_1a_core_identity,           "phase01/1a_core_identity.jsonl"),
+    (1, "b"): (generate_1b_personality,             "phase01/1b_personality.jsonl"),
+    (1, "c"): (generate_1c_emotional_intelligence,  "phase01/1c_emotional_intelligence.jsonl"),
+    (1, "d"): (generate_1d_identity_robustness,     "phase01/1d_identity_robustness.jsonl"),
+    # Stage 1 — Response Format & Basic Communication
+    (2, "a"): (generate_2a_direct_qa,               "phase02/2a_direct_qa.jsonl"),
+    (2, "b"): (generate_2b_format,                  "phase02/2b_format.jsonl"),
+    (2, "c"): (generate_2c_reading,                 "phase02/2c_reading.jsonl"),
+    (2, "d"): (generate_2d_greetings,               "phase02/2d_greetings.jsonl"),
+    # Stage 2 — Natural World / Science
+    (3, "a"): (generate_3a_physics_chemistry,       "phase03/3a_physics_chemistry.jsonl"),
+    (3, "b"): (generate_3b_biology_medicine,        "phase03/3b_biology_medicine.jsonl"),
+    (3, "c"): (generate_3c_astronomy_earth,         "phase03/3c_astronomy_earth.jsonl"),
+    (3, "d"): (generate_3d_technology,              "phase03/3d_technology.jsonl"),
+    # Stage 2 — Human World / History & Culture
     (4, "a"): (generate_4a_history_politics,        "phase04/4a_history_politics.jsonl"),
-    (5, "a"): (generate_5a_arithmetic,             "phase05/5a_arithmetic.jsonl"),
-    (7, "a"): (generate_7a_step_by_step,           "phase07/7a_step_by_step.jsonl"),
-    (10, "a"): (generate_10a_kenya_geography,      "phase10/10a_geography.jsonl"),
-    (11, "a"): (generate_11a_swahili_vocabulary,   "phase11/11a_vocabulary.jsonl"),
-    (11, "d"): (generate_11d_swahili_conversation, "phase11/11d_conversation.jsonl"),
-    (15, "a"): (generate_15a_refusals,             "phase15/15a_refusals.jsonl"),
-    (15, "b"): (generate_15b_honesty,              "phase15/15b_honesty.jsonl"),
+    (4, "b"): (generate_4b_geography,               "phase04/4b_geography.jsonl"),
+    (4, "c"): (generate_4c_culture_arts,            "phase04/4c_culture_arts.jsonl"),
+    (4, "d"): (generate_4d_economics_daily,         "phase04/4d_economics_daily.jsonl"),
+    # Stage 3 — Math Reasoning
+    (5, "a"): (generate_5a_arithmetic,              "phase05/5a_arithmetic.jsonl"),
+    (5, "b"): (generate_5b_word_problems,           "phase05/5b_word_problems.jsonl"),
+    (5, "c"): (generate_5c_percentages_ratios,      "phase05/5c_percentages_ratios.jsonl"),
+    (5, "d"): (generate_5d_estimation,              "phase05/5d_estimation.jsonl"),
+    # Stage 3 — Logic & Abstract Reasoning
+    (6, "a"): (generate_6a_deduction,               "phase06/6a_deduction.jsonl"),
+    (6, "b"): (generate_6b_analogies,               "phase06/6b_analogies.jsonl"),
+    (6, "c"): (generate_6c_counterfactuals,         "phase06/6c_counterfactuals.jsonl"),
+    (6, "d"): (generate_6d_spatial_temporal,        "phase06/6d_spatial_temporal.jsonl"),
+    # Stage 3 — Chain-of-Thought & Metacognition
+    (7, "a"): (generate_7a_step_by_step,            "phase07/7a_step_by_step.jsonl"),
+    (7, "b"): (generate_7b_decomposition,           "phase07/7b_decomposition.jsonl"),
+    (7, "c"): (generate_7c_verification,            "phase07/7c_verification.jsonl"),
+    (7, "d"): (generate_7d_uncertainty,             "phase07/7d_uncertainty.jsonl"),
+    # Stage 4 — Instruction Following
+    (8, "a"): (generate_8a_format_length,           "phase08/8a_format_length.jsonl"),
+    (8, "b"): (generate_8b_task_execution,          "phase08/8b_task_execution.jsonl"),
+    (8, "c"): (generate_8c_compound,                "phase08/8c_compound.jsonl"),
+    (8, "d"): (generate_8d_persona_register,        "phase08/8d_persona_register.jsonl"),
+    # Stage 4 — Conversational Intelligence
+    (9, "a"): (generate_9a_multi_turn,              "phase09/9a_multi_turn.jsonl"),
+    (9, "b"): (generate_9b_topic_navigation,        "phase09/9b_topic_navigation.jsonl"),
+    (9, "c"): (generate_9c_ambiguity,               "phase09/9c_ambiguity.jsonl"),
+    (9, "d"): (generate_9d_full_conversation,       "phase09/9d_full_conversation.jsonl"),
+    # Stage 5 — Kenya Deep Knowledge
+    (10, "a"): (generate_10a_kenya_geography,       "phase10/10a_geography.jsonl"),
+    (10, "b"): (generate_10b_kenya_history,         "phase10/10b_history.jsonl"),
+    (10, "c"): (generate_10c_kenya_culture,         "phase10/10c_culture.jsonl"),
+    (10, "d"): (generate_10d_kenya_economy,         "phase10/10d_economy.jsonl"),
+    # Stage 5 — Swahili Fluency
+    (11, "a"): (generate_11a_swahili_vocabulary,    "phase11/11a_vocabulary.jsonl"),
+    (11, "b"): (generate_11b_swahili_grammar,       "phase11/11b_grammar.jsonl"),
+    (11, "c"): (generate_11c_swahili_translation,   "phase11/11c_translation.jsonl"),
+    (11, "d"): (generate_11d_swahili_conversation,  "phase11/11d_conversation.jsonl"),
+    # Stage 6 — Code
+    (12, "a"): (generate_12a_code_reading,          "phase12/12a_code_reading.jsonl"),
+    (12, "b"): (generate_12b_code_writing,          "phase12/12b_code_writing.jsonl"),
+    (12, "c"): (generate_12c_code_debugging,        "phase12/12c_code_debugging.jsonl"),
+    (12, "d"): (generate_12d_code_explanation,      "phase12/12d_code_explanation.jsonl"),
+    # Stage 6 — Tool Use & Agency
+    (13, "a"): (generate_13a_tool_call_format,      "phase13/13a_tool_call_format.jsonl"),
+    (13, "b"): (generate_13b_tool_selection,        "phase13/13b_tool_selection.jsonl"),
+    (13, "c"): (generate_13c_multi_step_agency,     "phase13/13c_multi_step_agency.jsonl"),
+    (13, "d"): (generate_13d_error_recovery,        "phase13/13d_error_recovery.jsonl"),
+    # Stage 6 — Structured Output & RAG
+    (14, "a"): (generate_14a_json_output,           "phase14/14a_json_output.jsonl"),
+    (14, "b"): (generate_14b_markdown_tables,       "phase14/14b_markdown_tables.jsonl"),
+    (14, "c"): (generate_14c_rag_synthesis,         "phase14/14c_rag_synthesis.jsonl"),
+    (14, "d"): (generate_14d_long_form,             "phase14/14d_long_form.jsonl"),
+    # Stage 7 — Safety & Ethics
+    (15, "a"): (generate_15a_refusals,              "phase15/15a_refusals.jsonl"),
+    (15, "b"): (generate_15b_honesty,               "phase15/15b_honesty.jsonl"),
+    (15, "c"): (generate_15c_injection_resistance,  "phase15/15c_injection_resistance.jsonl"),
+    (15, "d"): (generate_15d_ethics,                "phase15/15d_ethics.jsonl"),
+    # Stage 7 — DPO Preference Alignment
+    (16, "a"): (generate_16a_dpo_helpfulness,       "phase16/16a_dpo_helpfulness.jsonl"),
+    (16, "b"): (generate_16b_dpo_safety,            "phase16/16b_dpo_safety.jsonl"),
+    (16, "c"): (generate_16c_dpo_honesty,           "phase16/16c_dpo_honesty.jsonl"),
+    (16, "d"): (generate_16d_dpo_style,             "phase16/16d_dpo_style.jsonl"),
 }
 
 # Stage → phases
