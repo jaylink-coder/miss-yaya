@@ -907,9 +907,9 @@ def main():
             if not args.no_drive:
                 backup_to_drive(ckpt_dir, tag)
 
-        # Record progress
+        # Record progress (also pushes to Hub so next session can resume correctly)
         completed.add(key)
-        save_progress(completed)
+        save_progress(completed, hf_token)
 
         # This checkpoint is the start for the next sub-phase
         start_ckpt = model_pt
