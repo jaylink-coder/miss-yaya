@@ -667,12 +667,14 @@ def train_subphase(entry, start_ckpt, batch, grad_accum, precision_flag,
     if is_dpo:
         cmd = [
             sys.executable, os.path.join(ROOT, "scripts/train_dpo.py"),
-            "--model_config",       os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
-            "--pretrain_checkpoint", start_ckpt,
-            "--dpo_data",           train_file,
-            "--save_dir",           output_dir,
-            "--steps",              str(steps),
-            "--lr",                 str(lr),
+            "--model_config",  os.path.join(ROOT, "configs/model/yaya_125m.yaml"),
+            "--sft_checkpoint", start_ckpt,
+            "--dpo_data",       train_file,
+            "--save_dir",       output_dir,
+            "--max_steps",      str(steps),
+            "--lr",             str(lr),
+            "--save_steps",     str(steps),   # save at end only
+            "--tokenizer",      os.path.join(ROOT, "data/tokenizer/yaya_tokenizer.model"),
         ]
     else:
         cmd = [
