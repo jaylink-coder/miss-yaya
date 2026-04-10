@@ -54,10 +54,18 @@ def write_jsonl(path: str, examples: list):
     return path
 
 
-def pad_to_minimum(examples: list, minimum: int, source_list=None) -> list:
-    """Repeat examples (with variation) until minimum is reached."""
+def pad_to_minimum(examples: list, minimum: int, source_list=None, template_fn=None) -> list:
+    """Repeat examples (with variation) until minimum is reached.
+    template_fn(i): optional callable that generates a new example given an index.
+    """
     if len(examples) >= minimum:
         return examples
+    if template_fn is not None:
+        i = len(examples)
+        while len(examples) < minimum:
+            examples.append(template_fn(i))
+            i += 1
+        return examples[:minimum]
     if source_list is None:
         source_list = examples
     while len(examples) < minimum:
