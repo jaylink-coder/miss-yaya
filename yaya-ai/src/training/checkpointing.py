@@ -145,7 +145,7 @@ class CheckpointManager:
         # Load model weights
         model_path = os.path.join(checkpoint_path, "model.pt")
         if os.path.exists(model_path):
-            state_dict = torch.load(model_path, map_location=map_location, weights_only=True)
+            state_dict = torch.load(model_path, map_location=map_location, weights_only=False)
             model.load_state_dict(state_dict)
             print("  Model weights loaded OK.")
         else:
@@ -155,7 +155,7 @@ class CheckpointManager:
         opt_path = os.path.join(checkpoint_path, "optimizer.pt")
         if optimizer is not None and os.path.exists(opt_path):
             optimizer.load_state_dict(
-                torch.load(opt_path, map_location=map_location, weights_only=True)
+                torch.load(opt_path, map_location=map_location, weights_only=False)
             )
             print("  Optimizer state loaded OK.")
         elif optimizer is not None:
@@ -165,7 +165,7 @@ class CheckpointManager:
         sched_path = os.path.join(checkpoint_path, "scheduler.pt")
         if scheduler is not None and os.path.exists(sched_path):
             scheduler.load_state_dict(
-                torch.load(sched_path, map_location=map_location, weights_only=True)
+                torch.load(sched_path, map_location=map_location, weights_only=False)
             )
             print("  Scheduler state loaded OK.")
         elif scheduler is not None:
