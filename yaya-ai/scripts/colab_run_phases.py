@@ -455,7 +455,8 @@ def backup_to_drive(ckpt_dir, tag):
 # DATA MANAGEMENT
 # ══════════════════════════════════════════════════════════════════════════════
 
-def ensure_data(phase_id, sub_id, data_file_rel, min_examples=1000):
+def ensure_data(phase_id, part_id, data_file_rel, min_examples=1000):
+    sub_id = PART_TO_LETTER.get(part_id, str(part_id))
     """
     Ensure data file exists with >= min_examples.
     Runs the generator if missing or too small.
