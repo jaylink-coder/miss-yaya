@@ -769,7 +769,14 @@ def main():
     if args.phase:
         work = [e for e in work if e[1] == args.phase]
     if args.subphase:
-        work = [e for e in work if e[2] == args.subphase.lower()]
+        # Accept either integer (1-4) or letter (a-d)
+        sp = args.subphase.strip().lower()
+        LETTER_TO_PART = {v: k for k, v in PART_TO_LETTER.items()}
+        sp_int = int(sp) if sp.isdigit() else LETTER_TO_PART.get(sp)
+        if sp_int is None:
+            print(f"  Invalid --subphase '{args.subphase}'. Use 1-4 or a-d.")
+            sys.exit(1)
+        work = [e for e in work if e[2] == sp_int]
     work = [e for e in work if sp_key(e[1], e[2]) not in completed]
 
     if not work:
