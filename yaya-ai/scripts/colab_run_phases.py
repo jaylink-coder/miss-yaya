@@ -777,19 +777,19 @@ def main():
     # ── Auth ──────────────────────────────────────────────────────────────────
     hf_token = get_hf_token(args.token)
 
-    completed = load_progress()
-
-    # ── Status shortcut (no Hub auth needed) ─────────────────────────────────
-    if args.status:
-        print_status(completed)
-        return
-
-    # ── Login to Hub (needed for pull/push/benchmark) ─────────────────────
+    # ── Login to Hub early so load_progress can pull from Hub on fresh sessions ──
     if hf_token:
         from huggingface_hub import login
         login(token=hf_token, add_to_git_credential=False)
     else:
         print("  WARNING: No HF_TOKEN — Hub push/pull disabled.")
+
+    completed = load_progress(hf_token)
+
+    # ── Status shortcut ───────────────────────────────────────────────────────
+    if args.status:
+        print_status(completed)
+        return
 
     if args.benchmark:
         ckpt = pull_best_checkpoint(hf_token, 99) if hf_token else None
