@@ -600,15 +600,15 @@ def train_subphase(entry, start_ckpt, batch, grad_accum, precision_flag,
     # ── Data ──────────────────────────────────────────────────────────────────
     data_path = ensure_data(phase_id, part_id, data_file_rel, MIN_EX)
     if not data_path:
-        print(f"  SKIP: Cannot get training data for {phase_id}{sub_id}")
+        print(f"  SKIP: Cannot get training data for Phase {phase_id} Part {part_id}")
         return None, None
 
-    train_file = build_replay_mix(data_path, prior_data_paths, phase_id, sub_id) \
+    train_file = build_replay_mix(data_path, prior_data_paths, phase_id, part_id) \
                  if not is_dpo else data_path
 
     # ── Output dir ────────────────────────────────────────────────────────────
     output_dir = os.path.join(CKPT_BASE, "yaya-125m-curriculum",
-                              f"s{stage_id}-p{phase_id}{sub_id}")
+                              f"s{stage_id}-p{phase_id}-part{part_id}")
     os.makedirs(output_dir, exist_ok=True)
 
     # ── Command ───────────────────────────────────────────────────────────────
