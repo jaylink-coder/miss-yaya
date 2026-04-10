@@ -825,26 +825,26 @@ def main():
             if os.path.exists(dp):
                 prior_data.append(dp)
 
-    # ── Run sub-phases ────────────────────────────────────────────────────────
+    # ── Run parts ─────────────────────────────────────────────────────────────
     for entry in work:
-        s, p, sub, name, data_file_rel, steps, lr, is_dpo = entry
-        key = sp_key(p, sub)
+        s, p, part, name, data_file_rel, steps, lr, is_dpo = entry
+        key = sp_key(p, part)
 
         model_pt, ckpt_dir = train_subphase(
             entry, start_ckpt, batch, grad_accum, precision_flag, prior_data
         )
 
         if model_pt is None:
-            print(f"\n  FAILED: {p}{sub} — {name}")
+            print(f"\n  FAILED: Stage {s}, Phase {p}, Part {part} — {name}")
             print(f"  Fix the issue and re-run:")
-            print(f"    !python scripts/colab_run_phases.py --stage {s} --phase {p} --subphase {sub}")
+            print(f"    !python scripts/colab_run_phases.py --stage {s} --phase {p} --subphase {part}")
             sys.exit(1)
 
         actual_step = read_step(ckpt_dir)
 
         # Push + backup
         if hf_token and not args.no_push:
-            tag = push_checkpoint(hf_token, ckpt_dir, s, p, sub, actual_step)
+            tag = push_checkpoint(hf_token, ckpt_dir, s, p, part, actual_step)
             if not args.no_drive:
                 backup_to_drive(ckpt_dir, tag)
 
