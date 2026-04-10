@@ -537,7 +537,7 @@ def build_replay_mix(current_data_path, prior_data_paths, phase_id, part_id,
 
     mixed_path = os.path.join(
         os.path.dirname(current_data_path),
-        f"_mixed_{phase_id}{sub_id}.jsonl"
+        f"_mixed_p{phase_id}_part{part_id}.jsonl"
     )
     with open(mixed_path, "w", encoding="utf-8") as f:
         for line in mixed:
