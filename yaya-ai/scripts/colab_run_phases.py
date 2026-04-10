@@ -783,8 +783,13 @@ def main():
 
     # ── Login to Hub early so load_progress can pull from Hub on fresh sessions ──
     if hf_token:
-        from huggingface_hub import login
-        login(token=hf_token, add_to_git_credential=False)
+        try:
+            from huggingface_hub import login
+            login(token=hf_token, add_to_git_credential=False)
+        except Exception as _login_err:
+            print(f"  WARNING: HF login failed ({_login_err})")
+            print("  Hub push/pull may not work. Check your HF_TOKEN in Colab Secrets.")
+            hf_token = ""
     else:
         print("  WARNING: No HF_TOKEN — Hub push/pull disabled.")
 
