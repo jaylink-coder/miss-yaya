@@ -456,12 +456,12 @@ def backup_to_drive(ckpt_dir, tag):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def ensure_data(phase_id, part_id, data_file_rel, min_examples=1000):
-    sub_id = PART_TO_LETTER.get(part_id, str(part_id))
     """
     Ensure data file exists with >= min_examples.
     Runs the generator if missing or too small.
     Returns absolute path, or None if cannot be created.
     """
+    sub_id = PART_TO_LETTER.get(part_id, str(part_id))
     data_path = os.path.join(ROOT, "data/sft/curriculum", data_file_rel)
     os.makedirs(os.path.dirname(data_path), exist_ok=True)
 
