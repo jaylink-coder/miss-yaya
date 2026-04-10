@@ -470,8 +470,12 @@ def push_checkpoint(token, ckpt_dir, stage_id, phase_id, part_id, step):
     tag = f"curriculum-s{stage_id}-p{phase_id}-part{part_id}-step{step:05d}"
     print(f"  Pushing {tag} to Hub...")
     api = HfApi(token=token)
+    # Skip optimizer.pt — it's ~400MB and not needed for resuming inference/training
+    SKIP = {"optimizer.pt"}
     pushed = 0
     for fname in os.listdir(ckpt_dir):
+        if fname in SKIP:
+            continue
         fpath = os.path.join(ckpt_dir, fname)
         if os.path.isfile(fpath):
             try:
