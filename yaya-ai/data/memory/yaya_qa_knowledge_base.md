@@ -1,6 +1,6 @@
 # Yaya Q&A Knowledge Base
 Generated from Q&A session — 2026-03-23
-Total entries: 209
+Total entries: 214
 
 ---
 
@@ -421,3 +421,13 @@ Total entries: 209
 **[207]** Q499 Placebo: real dopamine/opioid release; sham surgery as good as real; nocebo; open-label placebos work; psychiatric drugs 30-50% placebo response; expectation + relationship
 
 **[208]** Q500 Camus Absurd: human need for meaning vs silent universe; Sisyphus happy; 3 responses (suicide/leap/revolt); revolt = defy and create meaning; Camus vs Sartre on freedom
+
+**[209]** Q501 Inflation: demand-pull/cost-push/monetary causes; MV=PQ; 2% target avoids deflation; rate hikes blunt instrument; 2021 inflation = stimulus+supply+energy combined
+
+**[210]** Q502 CRISPR-Cas9: bacterial immune system repurposed; guide RNA directs Cas9 to cut DNA; NHEJ=knockout, HDR=precise edit; sickle cell cured 2023; He Jiankui germline scandal; base editors next
+
+**[211]** Q503 Self/personal identity: Hume bundle theory; Dennett narrative self; Parfit psychological continuity; personal identity not what matters; neuroscience no self-centre; Buddhist anatta
+
+**[212]** Q504 Black holes: formation from stellar collapse; event horizon r=2GM/c²; singularity; Hawking radiation; spaghettification; outside observer sees freeze; information paradox; EHT imaged M87* 2019
+
+**[213]** Q505 Linguistic relativity: Sapir-Whorf; strong version rejected; weak version supported; Russian blue discrimination; Guugu spatial orientation; Piraha numbers; Mandarin vertical time; language as lens not cage
