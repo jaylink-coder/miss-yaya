@@ -417,9 +417,9 @@ def pull_best_checkpoint(token, stage_id):
     return None
 
 
-def push_checkpoint(token, ckpt_dir, stage_id, phase_id, sub_id, step):
+def push_checkpoint(token, ckpt_dir, stage_id, phase_id, part_id, step):
     from huggingface_hub import HfApi
-    tag = f"curriculum-s{stage_id}-p{phase_id}{sub_id}-step{step:05d}"
+    tag = f"curriculum-s{stage_id}-p{phase_id}-part{part_id}-step{step:05d}"
     print(f"  Pushing {tag} to Hub...")
     api = HfApi(token=token)
     pushed = 0
