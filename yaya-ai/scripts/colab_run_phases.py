@@ -367,9 +367,9 @@ def pull_best_checkpoint(token, stage_id):
     for st in range(stage_id - 1, 0, -1):
         stage_phases = sorted(set(e[1] for e in CURRICULUM if e[0] == st), reverse=True)
         for ph in stage_phases:
-            for sub in ["d", "c", "b", "a"]:
-                prefixes.append(f"curriculum-s{st}-p{ph}{sub}")
-        prefixes.append(f"curriculum-s{st}-p")  # any from this stage
+            for part in [4, 3, 2, 1]:
+                prefixes.append(f"curriculum-s{st}-p{ph}-part{part}")
+        prefixes.append(f"curriculum-s{st}-p")  # any from this stage (legacy or partial)
     prefixes += ["curriculum-phase", "patch-checkpoint", "dpo2-checkpoint",
                  "dpo-checkpoint", "checkpoint"]
 
