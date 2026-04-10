@@ -438,18 +438,16 @@ def pull_best_checkpoint(token, stage_id):
             if hub_path in files and not os.path.exists(local_path):
                 print(f"  Downloading {hub_path}...")
                 try:
+                    # Use local_dir=local_dir (NOT dest) so the file lands at
+                    # local_dir/best/fname — not the nested local_dir/best/best/fname
+                    # that happens when local_dir=dest and the hub path starts with best/
                     hf_hub_download(repo_id=HUB_REPO, filename=hub_path,
-                                    local_dir=dest, local_dir_use_symlinks=False,
+                                    local_dir=local_dir,
                                     token=token)
                 except Exception as e:
                     print(f"  Warning: {e}")
 
-        # Walk to find model.pt (hf_hub_download may nest subdirs)
-        model_pt = None
-        for root, _, fnames in os.walk(dest):
-            if "model.pt" in fnames:
-                model_pt = os.path.join(root, "model.pt")
-                break
+        model_pt = os.path.join(dest, "model.pt") if os.path.exists(os.path.join(dest, "model.pt")) else None
 
         if not model_pt:
             continue
