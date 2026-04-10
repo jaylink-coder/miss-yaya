@@ -98,7 +98,10 @@ def main():
             print(f"Loading pretrained weights from: {ckpt}")
         if os.path.isfile(ckpt):
             # Direct file path (model.pt) — load state dict straight from file
-            state = torch.load(ckpt, map_location="cpu", weights_only=True)
+            state = torch.load(ckpt, map_location="cpu", weights_only=False)
+            # Handle both raw state_dict and {"model_state_dict": ...} wrapping
+            if isinstance(state, dict) and "model_state_dict" in state:
+                state = state["model_state_dict"]
             missing, unexpected = model.load_state_dict(state, strict=False)
             if is_main_process():
                 print(f"  Weights loaded OK. Missing keys: {len(missing)}, Unexpected: {len(unexpected)}")
