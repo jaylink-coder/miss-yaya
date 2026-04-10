@@ -236,8 +236,8 @@ def save_progress(completed: set):
             pass
 
 
-def sp_key(phase, sub):
-    return f"{phase}.{sub}"
+def sp_key(phase, part):
+    return f"{phase}.{part}"
 
 
 def print_status(completed):
@@ -245,8 +245,8 @@ def print_status(completed):
     print("  Yaya Training Progress")
     print("=" * 60)
     cur_stage = cur_phase = None
-    for s, p, sub, name, _, steps, _, _ in CURRICULUM:
-        key = sp_key(p, sub)
+    for s, p, part, name, _, steps, _, _ in CURRICULUM:
+        key = sp_key(p, part)
         done = "✓" if key in completed else "·"
         if s != cur_stage:
             cur_stage = s
@@ -257,10 +257,10 @@ def print_status(completed):
         if p != cur_phase:
             cur_phase = p
             print(f"    Phase {p}:")
-        print(f"      [{done}] {p}{sub}. {name}  ({steps} steps)")
+        print(f"      [{done}] Stage {s}, Phase {p}, Part {part}: {name}  ({steps} steps)")
     total = len(CURRICULUM)
     done_n = len(completed)
-    print(f"\n  Total: {done_n}/{total} sub-phases  ({100*done_n//total}%)")
+    print(f"\n  Total: {done_n}/{total} parts  ({100*done_n//total}%)")
     print("=" * 60 + "\n")
 
 
