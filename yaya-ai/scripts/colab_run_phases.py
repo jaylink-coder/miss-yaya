@@ -584,21 +584,21 @@ def read_step(ckpt_dir):
 def train_subphase(entry, start_ckpt, batch, grad_accum, precision_flag,
                    prior_data_paths):
     """
-    Train a single sub-phase. Returns (model_pt, ckpt_dir) or (None, None).
+    Train a single part. Returns (model_pt, ckpt_dir) or (None, None).
     start_ckpt: path to model.pt to start from.
-    prior_data_paths: list of data file paths from all previously completed sub-phases.
+    prior_data_paths: list of data file paths from all previously completed parts.
     """
-    stage_id, phase_id, sub_id, name, data_file_rel, steps, lr, is_dpo = entry
+    stage_id, phase_id, part_id, name, data_file_rel, steps, lr, is_dpo = entry
     MIN_EX = 2000 if is_dpo else 1000
 
     # ── Header ────────────────────────────────────────────────────────────────
     print(f"\n{'='*60}")
-    print(f"  Stage {stage_id}  ·  Phase {phase_id}{sub_id}  ·  {name}")
+    print(f"  Stage {stage_id}  ·  Phase {phase_id}  ·  Part {part_id}  ·  {name}")
     print(f"  Steps: {steps}   LR: {lr:.2e}   Batch: {batch}×{grad_accum}={batch*grad_accum}  {precision_flag or 'fp32'}")
     print(f"{'='*60}")
 
     # ── Data ──────────────────────────────────────────────────────────────────
-    data_path = ensure_data(phase_id, sub_id, data_file_rel, MIN_EX)
+    data_path = ensure_data(phase_id, part_id, data_file_rel, MIN_EX)
     if not data_path:
         print(f"  SKIP: Cannot get training data for {phase_id}{sub_id}")
         return None, None
