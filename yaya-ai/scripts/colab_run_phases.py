@@ -11,10 +11,10 @@ Usage:
     !python scripts/colab_run_phases.py --stage 1 --resume
 
     # Run a specific phase within a stage
-    !python scripts/colab_run_phases.py --stage 1 --phase 2
+    !python scripts/colab_run_phases.py --stage 1 --phase 1
 
     # Run a specific sub-phase
-    !python scripts/colab_run_phases.py --stage 1 --phase 2 --subphase b
+    !python scripts/colab_run_phases.py --stage 1 --phase 1 --subphase b
 
     # Check what's done
     !python scripts/colab_run_phases.py --status
@@ -22,14 +22,14 @@ Usage:
     # Benchmark current best checkpoint
     !python scripts/colab_run_phases.py --benchmark
 
-Stages:
-    1  Language & Knowledge Foundation   (Phases 1-2)
-    2  Identity, Personality & Comms     (Phases 3-4)
-    3  Instruction Following             (Phase  5)
-    4  Reasoning Engine                  (Phases 6-8)
-    5  Kenyan & Swahili Identity         (Phases 9-10)
-    6  Technical Skills                  (Phases 11-13)
-    7  Alignment & Values                (Phases 14-15)
+Stages (milestones_v3.yaml):
+    1  Assistant Foundation              (Phases  1-2  — Identity + Response Format)
+    2  Natural World & Human Knowledge   (Phases  3-4  — Science + History/Culture)
+    3  Reasoning Engine                  (Phases  5-7  — Math + Logic + CoT)
+    4  Instruction Following & Convo     (Phases  8-9  — Instructions + Conversation)
+    5  Kenyan & Swahili Identity         (Phases 10-11 — Kenya + Swahili)
+    6  Technical Skills                  (Phases 12-14 — Code + Tools + Structured Output)
+    7  Alignment & Values                (Phases 15-16 — Safety + DPO)
 """
 
 import argparse, gc, glob, json, os, random, shutil, subprocess, sys, threading, time
