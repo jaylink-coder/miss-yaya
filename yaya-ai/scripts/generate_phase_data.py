@@ -3139,7 +3139,509 @@ def generate_11d_conversation(min_examples=2000):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Phase 2b: Output Format Control
+# Phase 12a: Code Reading
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_12a_code_reading(min_examples=2000):
+    examples = []
+    qa = [
+        ("What does this code do?\n```python\nx = [1, 2, 3, 4, 5]\nprint(sum(x))\n```",
+         "It creates a list of integers from 1 to 5, then prints their sum. Output: 15."),
+        ("What does this code do?\n```python\nfor i in range(5):\n    print(i)\n```",
+         "It prints the numbers 0, 1, 2, 3, 4 — one per line."),
+        ("What does this code do?\n```python\nx = [i**2 for i in range(5)]\nprint(x)\n```",
+         "It creates a list of squares: [0, 1, 4, 9, 16] using a list comprehension."),
+        ("What does this code return?\n```python\ndef double(n):\n    return n * 2\nprint(double(7))\n```",
+         "It prints 14. The function doubles its input."),
+        ("What does this code do?\n```python\nwords = ['hello', 'world']\nprint(' '.join(words))\n```",
+         "It joins the list items with a space and prints: 'hello world'."),
+        ("What does this code print?\n```python\nfor i in range(1, 6):\n    if i % 2 == 0:\n        print(i)\n```",
+         "It prints the even numbers from 1 to 5: 2, 4."),
+        ("What does this code do?\n```python\nd = {'name': 'Yaya', 'type': 'AI'}\nprint(d['name'])\n```",
+         "It accesses the 'name' key of the dictionary and prints: 'Yaya'."),
+        ("What does this code do?\n```python\ntext = 'Hello, World!'\nprint(text.lower())\n```",
+         "It converts the string to lowercase and prints: 'hello, world!'."),
+        ("What does this code do?\n```python\nnumbers = [3, 1, 4, 1, 5, 9]\nnumbers.sort()\nprint(numbers)\n```",
+         "It sorts the list in ascending order and prints: [1, 1, 3, 4, 5, 9]."),
+        ("What does this code output?\n```python\nprint(len('Nairobi'))\n```",
+         "7 — the number of characters in 'Nairobi'."),
+        ("What does this code do?\n```python\nx = 10\nif x > 5:\n    print('big')\nelse:\n    print('small')\n```",
+         "Since x (10) is greater than 5, it prints: 'big'."),
+        ("What does this code do?\n```python\ndef greet(name):\n    return f'Hello, {name}!'\nprint(greet('Amina'))\n```",
+         "It defines a function that builds a greeting string and prints: 'Hello, Amina!'."),
+        ("What does this code compute?\n```python\ntotal = 0\nfor i in range(1, 11):\n    total += i\nprint(total)\n```",
+         "It sums the numbers 1 through 10 and prints: 55."),
+        ("What does this code do?\n```python\nimport math\nprint(math.sqrt(144))\n```",
+         "It prints the square root of 144: 12.0."),
+        ("What does this code do?\n```python\nfruits = ['apple', 'banana', 'mango']\nfruits.append('orange')\nprint(fruits)\n```",
+         "It adds 'orange' to the list and prints: ['apple', 'banana', 'mango', 'orange']."),
+        ("What does this code output?\n```python\nprint(type(42))\nprint(type('hello'))\n```",
+         "It prints: <class 'int'> then <class 'str'>."),
+        ("What does this code do?\n```python\nstacks = []\nfor i in [1, 2, 3]:\n    stacks.append(i * 2)\nprint(stacks)\n```",
+         "It builds a list by doubling each element: [2, 4, 6]."),
+        ("What does this code return?\n```python\ndef is_even(n):\n    return n % 2 == 0\nprint(is_even(4))\nprint(is_even(7))\n```",
+         "True, then False."),
+        ("What does this code do?\n```python\nname = input('Enter your name: ')\nprint(f'Welcome, {name}!')\n```",
+         "It prompts the user to type their name, then prints a welcome message with that name."),
+        ("What does this code do?\n```python\ntry:\n    x = 1 / 0\nexcept ZeroDivisionError:\n    print('Cannot divide by zero')\n```",
+         "It tries to divide by zero, catches the ZeroDivisionError, and prints: 'Cannot divide by zero'."),
+        ("What does this code do?\n```python\nclass Dog:\n    def __init__(self, name):\n        self.name = name\n    def bark(self):\n        return f'{self.name} says woof!'\nd = Dog('Rex')\nprint(d.bark())\n```",
+         "It defines a Dog class with a name attribute and bark method, creates a Dog named 'Rex', and prints: 'Rex says woof!'."),
+        ("What is the output?\n```python\na = [1, 2, 3]\nb = a\nb.append(4)\nprint(a)\n```",
+         "[1, 2, 3, 4]. Lists are assigned by reference in Python, so b and a point to the same object."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 12b: Code Writing
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_12b_code_writing(min_examples=2000):
+    examples = []
+    qa = [
+        ("Write a Python function that returns the sum of a list.",
+         "```python\ndef sum_list(numbers):\n    return sum(numbers)\n```"),
+        ("Write a Python function that checks if a number is even.",
+         "```python\ndef is_even(n):\n    return n % 2 == 0\n```"),
+        ("Write a Python function to find the maximum of two numbers.",
+         "```python\ndef max_two(a, b):\n    return a if a > b else b\n```"),
+        ("Write a Python function to calculate the factorial of a number.",
+         "```python\ndef factorial(n):\n    if n == 0 or n == 1:\n        return 1\n    return n * factorial(n - 1)\n```"),
+        ("Write a Python function that reverses a string.",
+         "```python\ndef reverse_string(s):\n    return s[::-1]\n```"),
+        ("Write a Python function to count vowels in a string.",
+         "```python\ndef count_vowels(s):\n    return sum(1 for c in s.lower() if c in 'aeiou')\n```"),
+        ("Write a Python function that returns the Nth Fibonacci number.",
+         "```python\ndef fibonacci(n):\n    a, b = 0, 1\n    for _ in range(n):\n        a, b = b, a + b\n    return a\n```"),
+        ("Write a Python function to check if a string is a palindrome.",
+         "```python\ndef is_palindrome(s):\n    s = s.lower().replace(' ', '')\n    return s == s[::-1]\n```"),
+        ("Write a Python function that returns only the even numbers from a list.",
+         "```python\ndef get_evens(numbers):\n    return [n for n in numbers if n % 2 == 0]\n```"),
+        ("Write a Python function to calculate the average of a list.",
+         "```python\ndef average(numbers):\n    return sum(numbers) / len(numbers) if numbers else 0\n```"),
+        ("Write a Python function that checks if a number is prime.",
+         "```python\ndef is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, int(n**0.5) + 1):\n        if n % i == 0:\n            return False\n    return True\n```"),
+        ("Write a Python function to convert Celsius to Fahrenheit.",
+         "```python\ndef celsius_to_fahrenheit(c):\n    return (c * 9 / 5) + 32\n```"),
+        ("Write a Python function that takes a list and returns it sorted in descending order.",
+         "```python\ndef sort_descending(lst):\n    return sorted(lst, reverse=True)\n```"),
+        ("Write a Python function to flatten a nested list one level deep.",
+         "```python\ndef flatten(nested):\n    return [item for sublist in nested for item in sublist]\n```"),
+        ("Write a Python function to count word frequencies in a sentence.",
+         "```python\ndef word_count(sentence):\n    counts = {}\n    for word in sentence.lower().split():\n        counts[word] = counts.get(word, 0) + 1\n    return counts\n```"),
+        ("Write a Python class for a simple bank account with deposit and withdraw methods.",
+         "```python\nclass BankAccount:\n    def __init__(self, balance=0):\n        self.balance = balance\n\n    def deposit(self, amount):\n        self.balance += amount\n\n    def withdraw(self, amount):\n        if amount <= self.balance:\n            self.balance -= amount\n        else:\n            print('Insufficient funds')\n\n    def get_balance(self):\n        return self.balance\n```"),
+        ("Write a Python function to read a file and return its lines as a list.",
+         "```python\ndef read_lines(filename):\n    with open(filename, 'r') as f:\n        return f.readlines()\n```"),
+        ("Write a Python one-liner to get unique elements from a list while preserving order.",
+         "```python\ndef unique(lst):\n    return list(dict.fromkeys(lst))\n```"),
+        ("Write a Python function to compute compound interest.",
+         "```python\ndef compound_interest(principal, rate, n, t):\n    return principal * (1 + rate / n) ** (n * t)\n```"),
+        ("Write a Python function that takes a dictionary and returns it sorted by value.",
+         "```python\ndef sort_by_value(d):\n    return dict(sorted(d.items(), key=lambda item: item[1]))\n```"),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 12c: Code Debugging
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_12c_code_debugging(min_examples=2000):
+    examples = []
+    qa = [
+        ("Find the bug:\n```python\ndef add(a, b):\n    return a - b\n```",
+         "The function is named 'add' but subtracts. Fix: `return a + b`."),
+        ("Find the bug:\n```python\nfor i in range(10)\n    print(i)\n```",
+         "Missing colon after `range(10)`. Fix: `for i in range(10):`"),
+        ("Find the bug:\n```python\nx = [1, 2, 3]\nprint(x[3])\n```",
+         "IndexError — list indices go from 0 to 2. `x[3]` is out of range. Fix: use `x[2]` for the last element, or `x[-1]`."),
+        ("Find the bug:\n```python\ndef greet(name):\n    print('Hello, ' + Name)\ngreet('Alice')\n```",
+         "Variable name typo: `Name` should be `name` (Python is case-sensitive)."),
+        ("Find the bug:\n```python\nif x = 5:\n    print('five')\n```",
+         "Use `==` for comparison, not `=` (which is assignment). Fix: `if x == 5:`."),
+        ("Find the bug:\n```python\ndef factorial(n):\n    if n == 0:\n        return 1\n    return n * factorial(n)\n```",
+         "Infinite recursion — the recursive call should be `factorial(n - 1)`, not `factorial(n)`."),
+        ("Find the bug:\n```python\nnumbers = [1, 2, 3]\nfor i in range(len(numbers)):\n    print(numbers[i+1])\n```",
+         "When `i` reaches `len(numbers)-1` (2), `numbers[i+1]` is `numbers[3]` which is out of range. Fix: use `range(len(numbers) - 1)`."),
+        ("Find the bug:\n```python\ntotal = 0\nfor n in [1, 2, 3, 4, 5]:\ntotal += n\nprint(total)\n```",
+         "The `total += n` line is not indented inside the for loop. Fix: indent it with 4 spaces."),
+        ("Find the bug:\n```python\ndef divide(a, b):\n    return a / b\nprint(divide(10, 0))\n```",
+         "Division by zero error. Add a check: `if b == 0: return None` (or raise an appropriate error)."),
+        ("Find the bug:\n```python\nwords = 'hello world'\nwords.split()\nprint(words)\n```",
+         "`split()` returns a new list but doesn't modify the original string. Fix: `words = words.split()` then `print(words)`."),
+        ("Find the bug:\n```python\nd = {}\nd['key'] += 1\nprint(d)\n```",
+         "KeyError — `d['key']` doesn't exist yet. Fix: `d['key'] = d.get('key', 0) + 1`."),
+        ("Find the bug:\n```python\nprint('Result: ' + 42)\n```",
+         "TypeError — cannot concatenate string and int. Fix: `print('Result: ' + str(42))` or `print(f'Result: {42}')`."),
+        ("Find the bug:\n```python\nclass Dog:\n    def bark(self):\n        print('Woof!')\nd = Dog\nd.bark()\n```",
+         "`Dog` is the class, not an instance. Fix: `d = Dog()` (call the constructor)."),
+        ("Find the bug:\n```python\ndef is_positive(n):\n    if n > 0:\n        return True\n    elif n < 0:\n        return False\nprint(is_positive(0))\n```",
+         "Missing case for `n == 0` — the function returns `None` implicitly. Add `else: return False` (or handle zero explicitly)."),
+        ("Find the bug:\n```python\nimport random\nnumbers = random.shuffle([1,2,3,4,5])\nprint(numbers)\n```",
+         "`random.shuffle()` shuffles in-place and returns `None`. Fix: create the list first, then shuffle it:\n```python\nnumbers = [1,2,3,4,5]\nrandom.shuffle(numbers)\nprint(numbers)\n```"),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 12d: Code Explanation
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_12d_code_explanation(min_examples=2000):
+    examples = []
+    qa = [
+        ("Explain what a for loop does in Python.",
+         "A for loop repeats a block of code for each item in a sequence (like a list or range). Example: `for i in range(3): print(i)` prints 0, 1, 2."),
+        ("Explain what a function is in programming.",
+         "A function is a reusable block of code that performs a specific task. You define it once and call it whenever needed. Functions take inputs (parameters) and optionally return outputs."),
+        ("Explain what a dictionary is in Python.",
+         "A dictionary is an unordered collection of key-value pairs. You access values by their keys, not by position. Example: `d = {'name': 'Yaya', 'age': 1}` — `d['name']` returns 'Yaya'."),
+        ("What is a list comprehension in Python?",
+         "A concise way to create a list using a single expression. `[expression for item in iterable if condition]`. Example: `[x**2 for x in range(5)]` produces `[0, 1, 4, 9, 16]`."),
+        ("What is recursion in programming?",
+         "A function that calls itself. It solves a problem by reducing it to a simpler version of the same problem. It must have a base case to stop. Classic example: factorial(n) = n * factorial(n-1)."),
+        ("Explain what a class is in Python.",
+         "A class is a blueprint for creating objects. It defines attributes (data) and methods (functions) that objects of that class will have. Objects are instances of classes."),
+        ("What is the difference between a list and a tuple in Python?",
+         "Lists are mutable (can be changed after creation), tuples are immutable (cannot be changed). Lists use [], tuples use (). Use tuples for data that should not change."),
+        ("What is a try/except block in Python?",
+         "A way to handle errors gracefully. Code in the `try` block is executed; if an exception occurs, the `except` block runs instead of crashing. Prevents the program from terminating unexpectedly."),
+        ("What does `if __name__ == '__main__':` mean?",
+         "This code block only runs when the script is executed directly, not when imported as a module. It lets you write code that's both importable and runnable."),
+        ("Explain what `*args` and `**kwargs` do in Python.",
+         "`*args` lets a function accept any number of positional arguments as a tuple. `**kwargs` lets it accept any number of keyword arguments as a dictionary. Useful for flexible function signatures."),
+        ("What is the difference between `==` and `is` in Python?",
+         "`==` checks if two values are equal. `is` checks if two variables point to the same object in memory. For example, two lists with the same values are `==` but not `is`."),
+        ("Explain what a lambda function is.",
+         "A small, anonymous function defined inline. Syntax: `lambda arguments: expression`. Example: `square = lambda x: x**2`. Useful for short operations passed as arguments."),
+        ("What is object-oriented programming (OOP)?",
+         "A programming paradigm that organizes code around objects — combining data (attributes) and behavior (methods). Key concepts: encapsulation, inheritance, polymorphism, abstraction."),
+        ("What is the difference between `append` and `extend` on a list?",
+         "`append` adds one item to the end. `extend` adds all items from another iterable. `[1,2].append([3,4])` → `[1, 2, [3, 4]]`. `[1,2].extend([3,4])` → `[1, 2, 3, 4]`."),
+        ("Explain what `None` means in Python.",
+         "`None` is Python's null value — it represents the absence of a value. Functions return `None` by default. Use `is None` to check for it, not `== None`."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 13a: Tool Call Format
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_13a_tool_call_format(min_examples=2000):
+    examples = []
+
+    CALC_SYS = "You have access to a calculator tool. Use it when math is needed.\nFormat: <tool_call>\n{\"tool\": \"calculator\", \"expression\": \"EXPR\"}\n</tool_call>"
+
+    calc_qa = [
+        ("Calculate 1847 * 293.",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"1847 * 293\"}\n</tool_call>\n<tool_result>\n541171\n</tool_result>\n1847 × 293 = 541,171."),
+        ("What is 2^16?",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"2 ** 16\"}\n</tool_call>\n<tool_result>\n65536\n</tool_result>\n2^16 = 65,536."),
+        ("What is the square root of 7056?",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"7056 ** 0.5\"}\n</tool_call>\n<tool_result>\n84.0\n</tool_result>\nThe square root of 7,056 is 84."),
+        ("Calculate 15% of 8400.",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"8400 * 0.15\"}\n</tool_call>\n<tool_result>\n1260.0\n</tool_result>\n15% of 8,400 = 1,260."),
+        ("What is 999 * 999?",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"999 * 999\"}\n</tool_call>\n<tool_result>\n998001\n</tool_result>\n999 × 999 = 998,001."),
+        ("Compute 3628800 / 3628.",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"3628800 / 3628\"}\n</tool_call>\n<tool_result>\n1000.22...\n</tool_result>\n3,628,800 ÷ 3,628 ≈ 1000.2."),
+        ("What is 123 + 456 + 789?",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"123 + 456 + 789\"}\n</tool_call>\n<tool_result>\n1368\n</tool_result>\n123 + 456 + 789 = 1,368."),
+        ("Calculate 50000 * 1.075 (5000 at 7.5% growth).",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"50000 * 1.075\"}\n</tool_call>\n<tool_result>\n53750.0\n</tool_result>\n50,000 × 1.075 = 53,750."),
+    ]
+    for q, a in calc_qa:
+        examples.append(make_system_example(CALC_SYS, q, a))
+
+    DATE_SYS = "You have access to a datetime tool. Format: <tool_call>\n{\"tool\": \"datetime\", \"query\": \"QUERY\"}\n</tool_call>"
+    date_qa = [
+        ("What day of the week is it today?",
+         "<tool_call>\n{\"tool\": \"datetime\", \"query\": \"current_day\"}\n</tool_call>\n<tool_result>\nMonday\n</tool_result>\nToday is Monday."),
+        ("What is the current time?",
+         "<tool_call>\n{\"tool\": \"datetime\", \"query\": \"current_time\"}\n</tool_call>\n<tool_result>\n14:32:05\n</tool_result>\nThe current time is 2:32 PM."),
+        ("What is today's date?",
+         "<tool_call>\n{\"tool\": \"datetime\", \"query\": \"current_date\"}\n</tool_call>\n<tool_result>\n2024-07-15\n</tool_result>\nToday is July 15, 2024."),
+    ]
+    for q, a in date_qa:
+        examples.append(make_system_example(DATE_SYS, q, a))
+
+    SEARCH_SYS = "You have access to a search tool. Format: <tool_call>\n{\"tool\": \"search\", \"query\": \"QUERY\"}\n</tool_call>"
+    search_qa = [
+        ("What is the current population of Kenya?",
+         "<tool_call>\n{\"tool\": \"search\", \"query\": \"current population of Kenya 2024\"}\n</tool_call>\n<tool_result>\nKenya's population is approximately 55 million (2024 estimate).\n</tool_result>\nKenya's current population is approximately 55 million."),
+        ("Who won the 2024 Olympic marathon?",
+         "<tool_call>\n{\"tool\": \"search\", \"query\": \"2024 Olympics marathon winner\"}\n</tool_call>\n<tool_result>\n[Search result with winner]\n</tool_result>\nI would use the search tool to look that up — let me check."),
+    ]
+    for q, a in search_qa:
+        examples.append(make_system_example(SEARCH_SYS, q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 13b: Tool Selection
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_13b_tool_selection(min_examples=2000):
+    examples = []
+
+    TOOLS_SYS = ("You have these tools:\n"
+                 "- calculator: for math and number calculations\n"
+                 "- search: for current events and real-time info\n"
+                 "- datetime: for current date/time\n"
+                 "- no_tool: if you can answer directly from knowledge\n"
+                 "Choose the right tool for each question.")
+
+    selection_qa = [
+        ("What is 2847 * 3916?",
+         "I'll use the calculator for this.\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"2847 * 3916\"}\n</tool_call>\n<tool_result>\n11144052\n</tool_result>\n2,847 × 3,916 = 11,144,052."),
+        ("What is the capital of France?",
+         "I know this from my training — no tool needed.\n\nParis."),
+        ("What time is it right now?",
+         "I need the datetime tool for the current time.\n<tool_call>\n{\"tool\": \"datetime\", \"query\": \"current_time\"}\n</tool_call>"),
+        ("Who is the current president of Kenya?",
+         "I'll search for the most current information.\n<tool_call>\n{\"tool\": \"search\", \"query\": \"current president of Kenya 2024\"}\n</tool_call>"),
+        ("What is 15% tip on a bill of 3,450 shillings?",
+         "I'll use the calculator.\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"3450 * 0.15\"}\n</tool_call>\n<tool_result>\n517.5\n</tool_result>\n15% of 3,450 shillings = 517.50 shillings."),
+        ("What is photosynthesis?",
+         "I can answer this directly from knowledge — no tool needed.\n\nPhotosynthesis is the process by which plants use sunlight, water, and CO2 to produce glucose and oxygen."),
+        ("What is today's date?",
+         "I'll check the datetime tool.\n<tool_call>\n{\"tool\": \"datetime\", \"query\": \"current_date\"}\n</tool_call>"),
+        ("What were the results of yesterday's football match?",
+         "That requires current information, so I'll use the search tool.\n<tool_call>\n{\"tool\": \"search\", \"query\": \"football match results yesterday\"}\n</tool_call>"),
+        ("How many seconds are in 3 days?",
+         "I can calculate this: 3 × 24 × 60 × 60 = 259,200 seconds. Or using the calculator:\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"3 * 24 * 60 * 60\"}\n</tool_call>\n<tool_result>\n259200\n</tool_result>\n259,200 seconds."),
+        ("Is water wet?",
+         "This is a knowledge question — no tool needed.\n\nYes, water is wet in the sense that it makes surfaces wet. Whether water itself is 'wet' is a bit philosophical, but by common definition, yes."),
+    ]
+    for q, a in selection_qa:
+        examples.append(make_system_example(TOOLS_SYS, q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 13c: Multi-Step Agency
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_13c_multi_step_agency(min_examples=2000):
+    examples = []
+
+    TOOLS_SYS = ("Tools available: calculator, search, datetime.\n"
+                 "Think step by step, use tools as needed.")
+
+    multi_step_qa = [
+        ("What is 15% tip on a $85.50 meal, and what is the total?",
+         "<|think|>\nStep 1: Calculate the tip.\nStep 2: Add to original bill.\n</|think|>\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"85.50 * 0.15\"}\n</tool_call>\n<tool_result>\n12.825\n</tool_result>\nTip = $12.83 (rounded).\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"85.50 + 12.83\"}\n</tool_call>\n<tool_result>\n98.33\n</tool_result>\nTip = $12.83. Total = $98.33."),
+        ("If a room is 4m by 5m, what is the area in square feet? (1 meter = 3.281 feet)",
+         "<|think|>\nFirst get area in m², then convert to ft².\n</|think|>\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"4 * 5\"}\n</tool_call>\n<tool_result>\n20\n</tool_result>\nArea = 20 m².\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"20 * 3.281 * 3.281\"}\n</tool_call>\n<tool_result>\n215.28\n</tool_result>\n20 m² ≈ 215.3 square feet."),
+        ("How much will 12,000 shillings be after 3 years at 8% compound interest annually?",
+         "<|think|>\nFormula: A = P(1 + r)^t = 12000 * (1.08)^3\n</|think|>\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"12000 * (1.08 ** 3)\"}\n</tool_call>\n<tool_result>\n15116.54\n</tool_result>\nAfter 3 years at 8% compound interest, 12,000 shillings grows to approximately 15,117 shillings."),
+        ("A car travels 90 km/h. How long to travel 315 km, and what time will it arrive if it leaves at 8:00 AM?",
+         "<|think|>\nTime = distance / speed. Then add to departure time.\n</|think|>\n<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"315 / 90\"}\n</tool_call>\n<tool_result>\n3.5\n</tool_result>\nTravel time = 3.5 hours = 3 hours 30 minutes.\nDeparture: 8:00 AM + 3h30m = 11:30 AM.\nArrival time: 11:30 AM."),
+    ]
+    for q, a in multi_step_qa:
+        examples.append(make_system_example(TOOLS_SYS, q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 13d: Error Recovery
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_13d_error_recovery(min_examples=2000):
+    examples = []
+
+    TOOLS_SYS = "Tools available: calculator, search. If a tool returns an error, handle it gracefully."
+
+    error_qa = [
+        ("What is 100 / 0?",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"100 / 0\"}\n</tool_call>\n<tool_result>\nError: ZeroDivisionError\n</tool_result>\nDivision by zero is undefined in mathematics — you cannot divide a number by zero. The expression has no valid answer."),
+        ("Search for the stock price of a company that doesn't exist: XYZ123Corp.",
+         "<tool_call>\n{\"tool\": \"search\", \"query\": \"XYZ123Corp stock price\"}\n</tool_call>\n<tool_result>\nNo results found.\n</tool_result>\nI couldn't find any information about XYZ123Corp — it may not be a real company or may not be publicly listed."),
+        ("Calculate the square root of -25.",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"(-25) ** 0.5\"}\n</tool_call>\n<tool_result>\n(3.061616997868383e-16+5j)\n</tool_result>\nThe square root of -25 is not a real number. In mathematics, it equals 5i, where i is the imaginary unit (√-1). Real-number calculators may return a complex number or an error."),
+        ("I need to find the current exchange rate but my search tool is down.",
+         "I don't have a working search tool at the moment, so I can't provide the real-time exchange rate. For accurate current rates, please check xe.com, your bank's website, or a financial news source."),
+        ("Compute log(0).",
+         "<tool_call>\n{\"tool\": \"calculator\", \"expression\": \"import math; math.log(0)\"}\n</tool_call>\n<tool_result>\nError: ValueError: math domain error\n</tool_result>\nlog(0) is undefined — the logarithm approaches negative infinity as x approaches 0. It has no finite value."),
+    ]
+    for q, a in error_qa:
+        examples.append(make_system_example(TOOLS_SYS, q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 14a: JSON Output
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_14a_json_output(min_examples=2000):
+    examples = []
+
+    JSON_SYS = "Respond only with valid JSON. No extra text."
+
+    json_qa = [
+        ("Extract name and age as JSON from: 'Alice is 30 years old.'",
+         '{\"name\": \"Alice\", \"age\": 30}'),
+        ("Return the primary colors as a JSON array.",
+         '["red", "blue", "yellow"]'),
+        ("Return info about Kenya as JSON with keys: capital, population, continent.",
+         '{\"capital\": \"Nairobi\", \"population\": \"~55 million\", \"continent\": \"Africa\"}'),
+        ("Extract data from: 'Book: The Great Gatsby, Author: F. Scott Fitzgerald, Year: 1925'",
+         '{\"book\": \"The Great Gatsby\", \"author\": \"F. Scott Fitzgerald\", \"year\": 1925}'),
+        ("Return the days of the week as a JSON array.",
+         '["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]'),
+        ("Return a JSON object with the four seasons.",
+         '{\"seasons\": [\"Spring\", \"Summer\", \"Autumn\", \"Winter\"]}'),
+        ("Convert this to JSON: Name=Juma, Age=25, City=Mombasa, Job=Engineer",
+         '{\"name\": \"Juma\", \"age\": 25, \"city\": \"Mombasa\", \"job\": \"Engineer\"}'),
+        ("Return a JSON object with keys 'question' and 'answer' for: What is 7*8?",
+         '{\"question\": \"What is 7*8?\", \"answer\": 56}'),
+        ("List the first 5 elements of the periodic table as a JSON array of objects with name and symbol.",
+         '[{\"name\": \"Hydrogen\", \"symbol\": \"H\"}, {\"name\": \"Helium\", \"symbol\": \"He\"}, {\"name\": \"Lithium\", \"symbol\": \"Li\"}, {\"name\": \"Beryllium\", \"symbol\": \"Be\"}, {\"name\": \"Boron\", \"symbol\": \"B\"}]'),
+        ("Return the result of 15+27 as JSON with key 'result'.",
+         '{\"result\": 42}'),
+        ("Create a JSON object for a Swahili word: 'maji' meaning 'water', part of speech: noun.",
+         '{\"word\": \"maji\", \"meaning\": \"water\", \"part_of_speech\": \"noun\", \"language\": \"Swahili\"}'),
+        ("Return a JSON boolean: Is Kenya in Africa?",
+         '{\"answer\": true}'),
+        ("List 3 East African countries as JSON.",
+         '{\"east_african_countries\": [\"Kenya\", \"Tanzania\", \"Uganda\"]}'),
+        ("Extract data: 'Order #1042, Product: Laptop, Price: 85000 KES, Status: Shipped'",
+         '{\"order_id\": \"1042\", \"product\": \"Laptop\", \"price_kes\": 85000, \"status\": \"Shipped\"}'),
+        ("Return an empty JSON object.",
+         '{}'),
+        ("Return a JSON number: What is 100 / 4?",
+         '25'),
+        ("Create JSON for a person: Name Amina, female, age 28, speaks English and Swahili.",
+         '{\"name\": \"Amina\", \"gender\": \"female\", \"age\": 28, \"languages\": [\"English\", \"Swahili\"]}'),
+        ("Return nested JSON for a school with name and list of 3 subjects.",
+         '{\"school\": {\"name\": \"Nairobi Academy\", \"subjects\": [\"Mathematics\", \"English\", \"Science\"]}}'),
+    ]
+    for q, a in json_qa:
+        examples.append(make_system_example(JSON_SYS, q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 14b: Markdown & Tables
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_14b_markdown_tables(min_examples=2000):
+    examples = []
+
+    md_qa = [
+        ("Create a markdown table comparing three African countries: Kenya, Nigeria, Ethiopia. Include columns for Capital, Population, and Main Language.",
+         "| Country | Capital | Population | Main Language |\n|---------|---------|------------|---------------|\n| Kenya | Nairobi | ~55M | Swahili, English |\n| Nigeria | Abuja | ~220M | English |\n| Ethiopia | Addis Ababa | ~125M | Amharic |"),
+        ("Write a markdown heading level 2 for 'Introduction to AI'.",
+         "## Introduction to AI"),
+        ("Write a markdown bulleted list of 4 programming languages.",
+         "- Python\n- JavaScript\n- Java\n- C++"),
+        ("Write a markdown numbered list of steps to boil water.",
+         "1. Fill a pot with water.\n2. Place it on the stove.\n3. Turn the heat to high.\n4. Wait until bubbles appear.\n5. The water is boiling."),
+        ("Format this text in bold: 'Important notice'",
+         "**Important notice**"),
+        ("Format this text in italics: 'This is a quote'",
+         "*This is a quote*"),
+        ("Write a markdown code block for: print('Hello, World!')",
+         "```python\nprint('Hello, World!')\n```"),
+        ("Create a markdown table for multiplication: 2x1 through 2x5.",
+         "| Multiplier | Result |\n|-----------|--------|\n| 2 × 1 | 2 |\n| 2 × 2 | 4 |\n| 2 × 3 | 6 |\n| 2 × 4 | 8 |\n| 2 × 5 | 10 |"),
+        ("Write a markdown blockquote for: 'Haraka haraka haina baraka'",
+         "> Haraka haraka haina baraka"),
+        ("Create a markdown table comparing two phone plans: Plan A (500 KES/month, 10GB data) and Plan B (800 KES/month, 20GB data).",
+         "| Plan | Price/Month | Data |\n|------|-------------|------|\n| Plan A | 500 KES | 10 GB |\n| Plan B | 800 KES | 20 GB |"),
+        ("Write a markdown horizontal rule.",
+         "---"),
+        ("Write a markdown link for Safaricom: text='Safaricom', URL='https://safaricom.co.ke'",
+         "[Safaricom](https://safaricom.co.ke)"),
+        ("Create a simple 3-column markdown table with headers: Name, Age, City.",
+         "| Name | Age | City |\n|------|-----|------|\n| Alice | 25 | Nairobi |\n| Bob | 30 | Mombasa |\n| Carol | 22 | Kisumu |"),
+    ]
+    for q, a in md_qa:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 14c: RAG Context Grounding
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_14c_rag_synthesis(min_examples=2000):
+    examples = []
+
+    RAG_SYS = "Answer using ONLY the provided context. If the answer is not in the context, say 'The context does not contain this information.'"
+
+    rag_qa = [
+        ("Context: Kenya gained independence on 12 December 1963 from British colonial rule. Jomo Kenyatta became the first Prime Minister.\n\nQuestion: When did Kenya gain independence?",
+         "Kenya gained independence on 12 December 1963."),
+        ("Context: M-Pesa was launched by Safaricom in Kenya in March 2007. It allows users to transfer money and pay for goods via mobile phone. By 2023 it had over 30 million active users.\n\nQuestion: How many users does M-Pesa have?",
+         "According to the context, M-Pesa had over 30 million active users by 2023."),
+        ("Context: The cheetah can reach speeds of up to 120 km/h. It uses its tail for balance during turns. Cheetahs are found mainly in sub-Saharan Africa.\n\nQuestion: What is the top speed of a cheetah?",
+         "Up to 120 km/h."),
+        ("Context: Nairobi was founded in 1899 as a railway depot. Its name comes from the Maasai phrase 'Enkare Nyirobi' meaning 'cool waters'.\n\nQuestion: What does Nairobi mean?",
+         "Nairobi comes from the Maasai phrase 'Enkare Nyirobi', meaning 'cool waters'."),
+        ("Context: Lake Victoria is Africa's largest lake with an area of about 68,800 km². It is shared by Kenya, Tanzania, and Uganda.\n\nQuestion: Which countries share Lake Victoria?",
+         "Kenya, Tanzania, and Uganda."),
+        ("Context: The 2010 Kenyan Constitution introduced 47 counties with elected governors. It also included an expanded Bill of Rights.\n\nQuestion: How many counties does Kenya have according to the 2010 Constitution?",
+         "47 counties."),
+        ("Context: Eliud Kipchoge ran a marathon in 1:59:40 in Vienna in October 2019, becoming the first person to run a marathon in under 2 hours.\n\nQuestion: Where did Kipchoge run his historic sub-2-hour marathon?",
+         "In Vienna."),
+        ("Context: The Swahili word 'pole' means 'sorry' or 'condolences'. 'Pole pole' means 'slowly'.\n\nQuestion: What does 'pole pole' mean?",
+         "'Pole pole' means slowly."),
+        ("Context: Safaricom is listed on the Nairobi Securities Exchange and is Kenya's largest company by market capitalization.\n\nQuestion: What is Safaricom's market status?",
+         "Safaricom is listed on the Nairobi Securities Exchange and is Kenya's largest company by market capitalization."),
+        ("Context: This passage describes the history of the printing press in Europe during the 15th century.\n\nQuestion: When was M-Pesa invented?",
+         "The context does not contain this information."),
+        ("Context: Photosynthesis produces glucose and oxygen from carbon dioxide and water using light energy.\n\nQuestion: What are the products of photosynthesis?",
+         "Glucose and oxygen."),
+        ("Context: The African Union was founded in 2002 and has 55 member states. Its headquarters is in Addis Ababa, Ethiopia.\n\nQuestion: How many members does the African Union have?",
+         "55 member states."),
+    ]
+    for q, a in rag_qa:
+        examples.append(make_system_example(RAG_SYS, q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 14d: Long-Form Writing
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_14d_long_form(min_examples=2000):
+    examples = []
+
+    long_form_qa = [
+        ("Write a short essay (3 paragraphs) about the importance of education in Kenya.",
+         "Education is the cornerstone of Kenya's development. Since independence, the government has invested heavily in expanding access to schooling, from primary to university level. The Free Primary Education program launched in 2003 dramatically increased enrollment, giving millions of children the opportunity to learn.\n\nKenyan education produces some of Africa's most qualified professionals in medicine, engineering, law, and technology. Universities like the University of Nairobi and Kenyatta University train graduates who contribute both locally and globally. The Silicon Savannah — Nairobi's thriving tech scene — is partly a product of Kenya's educated workforce.\n\nHowever, challenges remain. Quality disparities exist between urban and rural schools, teacher shortages persist in remote areas, and the transition to the new Competency Based Curriculum (CBC) requires resources many families lack. Addressing these gaps is essential if education is to fulfill its promise as the great equalizer in Kenyan society."),
+        ("Write a persuasive paragraph arguing that renewable energy is important for Africa.",
+         "Africa stands at an extraordinary energy crossroads. With abundant sunshine, wind, and geothermal resources, the continent has the potential to leapfrog fossil fuel dependency entirely — much as it leapfrogged landlines by going directly to mobile phones. Kenya already generates over 90% of its electricity from renewables, including geothermal, hydro, wind, and solar. This is not just an environmental achievement; it is an economic one. Renewable energy reduces import bills for expensive fossil fuels, creates local jobs in installation and maintenance, and extends power to communities that grids have never reached. For Africa to develop sustainably and affordably, renewables are not just an option — they are the only sensible path forward."),
+        ("Write a brief biography of Jomo Kenyatta (3-4 sentences).",
+         "Jomo Kenyatta (c. 1897–1978) was the founding father and first president of independent Kenya. Born into the Gikuyu community, he studied in England and became a leading voice for African independence, writing the influential book Facing Mount Kenya. He was imprisoned by the British from 1953 to 1959 during the Mau Mau emergency but emerged to lead Kenya to independence on 12 December 1963. As president until his death in 1978, he promoted national unity through the philosophy of Harambee — 'pulling together.'"),
+        ("Write a 3-paragraph explanation of how the internet works for a general audience.",
+         "The internet is a vast network of computers connected to each other around the world. When you send an email or visit a website, your device breaks the information into small chunks called 'packets'. These packets travel through cables, fiber-optic lines, satellite links, and wireless signals — choosing the fastest available route, like water finding its way through a landscape.\n\nEach device on the internet has a unique address called an IP address, similar to a home address. When you type a website name (like google.com), a system called DNS (Domain Name System) translates it into the right IP address — like looking up a phone number in a directory. Your browser then connects to the server at that address and requests the page you want.\n\nThe server sends the requested information back to you, again in packets, which your browser reassembles into the page you see on screen. All of this typically happens in milliseconds. The beauty of the internet is that there is no single center — it is distributed, meaning it can route around failures, which makes it remarkably resilient."),
+        ("Write a cover letter opening paragraph for a software developer role.",
+         "I am writing to apply for the Software Developer position at your organization. With three years of experience building scalable web applications in Python and JavaScript, and a demonstrated passion for clean, maintainable code, I am confident I can contribute meaningfully to your engineering team. I am particularly drawn to your company's mission of leveraging technology to solve real-world challenges in East Africa, and I believe my background in both backend development and product thinking makes me a strong fit for this role."),
+    ]
+    for q, a in long_form_qa:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
 # ══════════════════════════════════════════════════════════════════════════════
 
 def generate_2b_format(min_examples=2000):
