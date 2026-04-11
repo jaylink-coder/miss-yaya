@@ -573,6 +573,287 @@ def generate_2a_direct_qa(min_examples=2000):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Phase 3a: Physics & Chemistry
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_3a_physics_chemistry(min_examples=2000):
+    examples = []
+    qa = [
+        ("What is Newton's first law of motion?", "An object at rest stays at rest, and an object in motion stays in motion, unless acted on by an external force."),
+        ("What is Newton's second law of motion?", "Force equals mass times acceleration (F = ma)."),
+        ("What is Newton's third law of motion?", "For every action, there is an equal and opposite reaction."),
+        ("What is the speed of light in a vacuum?", "Approximately 300,000 kilometers per second (299,792,458 m/s)."),
+        ("What is the speed of sound in air?", "About 343 meters per second at room temperature."),
+        ("What is gravity?", "The force of attraction between objects with mass. On Earth, it pulls objects toward the center at 9.8 m/s²."),
+        ("What is the law of conservation of energy?", "Energy cannot be created or destroyed, only converted from one form to another."),
+        ("What is kinetic energy?", "The energy an object has due to its motion. KE = ½mv²."),
+        ("What is potential energy?", "Stored energy due to an object's position or state. Gravitational PE = mgh."),
+        ("What is the difference between mass and weight?", "Mass is the amount of matter in an object (constant). Weight is the force gravity exerts on that mass (varies by location)."),
+        ("What is friction?", "A force that opposes relative motion between two surfaces in contact."),
+        ("What is pressure?", "Force applied per unit area (P = F/A). Measured in pascals (Pa)."),
+        ("What is Boyle's law?", "At constant temperature, the pressure of a gas is inversely proportional to its volume."),
+        ("What is Charles's law?", "At constant pressure, the volume of a gas is directly proportional to its absolute temperature."),
+        ("What is the electromagnetic spectrum?", "The range of all types of electromagnetic radiation, from gamma rays to radio waves."),
+        ("What are the colors of visible light from lowest to highest frequency?", "Red, orange, yellow, green, blue, indigo, violet (ROYGBIV)."),
+        ("What is refraction?", "The bending of light as it passes from one medium to another with a different density."),
+        ("What is reflection?", "The bouncing back of light (or other waves) when it hits a surface."),
+        ("What is electrical resistance?", "The opposition to the flow of electric current, measured in ohms (Ω)."),
+        ("What is Ohm's law?", "Voltage equals current times resistance: V = IR."),
+        ("What is a conductor?", "A material that allows electrical current to flow easily, like copper or silver."),
+        ("What is an insulator?", "A material that resists the flow of electrical current, like rubber or wood."),
+        ("What is magnetism?", "A force produced by moving electric charges, causing attraction or repulsion between poles."),
+        ("What is the difference between AC and DC electricity?", "AC (alternating current) reverses direction periodically; DC (direct current) flows in one direction only."),
+        ("What is temperature?", "A measure of the average kinetic energy of particles in a substance."),
+        ("What is absolute zero?", "The theoretical lowest possible temperature: 0 Kelvin or -273.15°C."),
+        ("What is the difference between heat and temperature?", "Heat is the total thermal energy transferred between objects; temperature is a measure of average particle energy."),
+        ("What is an atom?", "The smallest unit of a chemical element, consisting of a nucleus (protons and neutrons) surrounded by electrons."),
+        ("What is an element?", "A pure substance made of only one type of atom, identified by its atomic number."),
+        ("What is a molecule?", "Two or more atoms bonded together, like H2O (water) or O2 (oxygen gas)."),
+        ("What is a compound?", "A substance made of two or more different elements chemically bonded, like NaCl (table salt)."),
+        ("What is the periodic table?", "A chart organizing all known chemical elements by atomic number and properties."),
+        ("What is an acid?", "A substance that donates hydrogen ions (H+) in solution. Has a pH below 7."),
+        ("What is a base?", "A substance that accepts hydrogen ions or donates hydroxide ions (OH-). Has a pH above 7."),
+        ("What is pH?", "A scale from 0-14 measuring acidity or alkalinity. pH 7 is neutral, below 7 is acidic, above 7 is basic."),
+        ("What is oxidation?", "The loss of electrons by a substance (or gain of oxygen) in a chemical reaction."),
+        ("What is reduction?", "The gain of electrons by a substance (or loss of oxygen) in a chemical reaction."),
+        ("What is a chemical bond?", "The force of attraction holding atoms together in compounds, such as ionic or covalent bonds."),
+        ("What is an ionic bond?", "A bond formed by the transfer of electrons between atoms, creating oppositely charged ions that attract each other."),
+        ("What is a covalent bond?", "A bond formed when two atoms share electrons."),
+        ("What is the atomic number?", "The number of protons in an atom's nucleus, which determines the element."),
+        ("What is the atomic mass?", "The total mass of protons and neutrons in an atom's nucleus."),
+        ("What are isotopes?", "Atoms of the same element with the same number of protons but different numbers of neutrons."),
+        ("What is radioactivity?", "The spontaneous emission of particles or energy from unstable atomic nuclei."),
+        ("What is nuclear fission?", "The splitting of a heavy atomic nucleus into two smaller nuclei, releasing large amounts of energy."),
+        ("What is nuclear fusion?", "The joining of two light atomic nuclei to form a heavier nucleus, releasing enormous energy (powers the Sun)."),
+        ("What is Avogadro's number?", "6.022 × 10²³ — the number of atoms, molecules, or particles in one mole of a substance."),
+        ("What is a catalyst?", "A substance that speeds up a chemical reaction without being consumed in the process."),
+        ("What is entropy?", "A measure of disorder or randomness in a system. The second law of thermodynamics states entropy tends to increase."),
+        ("What is the difference between physical and chemical change?", "A physical change alters form or appearance but not composition (e.g., melting ice). A chemical change produces new substances (e.g., burning wood)."),
+        ("What is density?", "Mass per unit volume (D = m/V). Measured in kg/m³ or g/cm³."),
+        ("What is buoyancy?", "The upward force exerted by a fluid on an object immersed in it (Archimedes' principle)."),
+        ("What is surface tension?", "The tendency of liquid surfaces to resist external force, caused by cohesive forces between liquid molecules."),
+        ("What is osmosis?", "The movement of water molecules through a semipermeable membrane from a region of lower to higher solute concentration."),
+        ("What is a semiconductor?", "A material with electrical conductivity between a conductor and insulator (e.g., silicon), used in computer chips."),
+        ("What is the Doppler effect?", "The change in frequency of a wave as the source and observer move toward or away from each other."),
+        ("What is a watt?", "The SI unit of power, equal to one joule per second."),
+        ("What is a joule?", "The SI unit of energy or work, equal to the energy transferred when one newton of force is applied over one meter."),
+        ("What is momentum?", "The product of mass and velocity (p = mv). A conserved quantity in closed systems."),
+        ("What is centripetal force?", "The inward force required to keep an object moving in a circular path."),
+        ("What is a wave?", "A disturbance that transfers energy through matter or space without transferring matter itself."),
+        ("What is wavelength?", "The distance between successive crests (or troughs) of a wave."),
+        ("What is frequency?", "The number of wave cycles that pass a point per second, measured in hertz (Hz)."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 3b: Biology & Medicine
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_3b_biology_medicine(min_examples=2000):
+    examples = []
+    qa = [
+        ("What is a cell?", "The basic structural and functional unit of all living organisms."),
+        ("What is the difference between prokaryotic and eukaryotic cells?", "Prokaryotes (bacteria) lack a nucleus; eukaryotes (plants, animals, fungi) have a membrane-bound nucleus."),
+        ("What is DNA?", "Deoxyribonucleic acid — the molecule that carries genetic instructions for development and reproduction."),
+        ("What is RNA?", "Ribonucleic acid — a molecule that helps carry out the instructions encoded in DNA, including protein synthesis."),
+        ("What is a gene?", "A segment of DNA that codes for a specific protein or function."),
+        ("What is a chromosome?", "A thread-like structure of DNA and protein found in the cell nucleus, containing genes."),
+        ("How many chromosomes do humans have?", "46 chromosomes (23 pairs)."),
+        ("What is mitosis?", "Cell division that produces two genetically identical daughter cells for growth and repair."),
+        ("What is meiosis?", "Cell division that produces four genetically unique cells with half the chromosome number, for sexual reproduction."),
+        ("What is photosynthesis?", "The process by which plants use sunlight, water, and CO2 to produce glucose and oxygen."),
+        ("What is cellular respiration?", "The process by which cells break down glucose to produce ATP energy, using oxygen and releasing CO2."),
+        ("What is ATP?", "Adenosine triphosphate — the primary energy currency of cells."),
+        ("What is a protein?", "Large molecules made of amino acids that perform most biological functions including catalysis (enzymes), structure, and transport."),
+        ("What is an enzyme?", "A protein that acts as a biological catalyst, speeding up chemical reactions in cells."),
+        ("What is the central dogma of biology?", "DNA is transcribed into RNA, which is translated into protein."),
+        ("What is evolution?", "The change in inherited traits of a population over generations, driven by natural selection and other mechanisms."),
+        ("What is natural selection?", "The process by which organisms with traits better suited to their environment tend to survive and reproduce more."),
+        ("What is a species?", "A group of organisms that can interbreed and produce fertile offspring."),
+        ("What is an ecosystem?", "A community of living organisms interacting with their physical environment."),
+        ("What is a food chain?", "A linear sequence showing how energy and nutrients pass from one organism to another."),
+        ("What is a food web?", "An interconnected network of food chains in an ecosystem."),
+        ("What is a producer?", "An organism (usually a plant) that produces its own food through photosynthesis."),
+        ("What is a consumer?", "An organism that obtains energy by eating other organisms."),
+        ("What is a decomposer?", "An organism (like fungi or bacteria) that breaks down dead organic matter, recycling nutrients."),
+        ("What is biodiversity?", "The variety of life on Earth, including species diversity, genetic diversity, and ecosystem diversity."),
+        ("What is the heart?", "A muscular organ that pumps blood throughout the body via the circulatory system."),
+        ("What is the function of blood?", "To transport oxygen, nutrients, hormones, and immune cells, and to remove waste products."),
+        ("What is a red blood cell?", "A cell that carries oxygen bound to hemoglobin from the lungs to body tissues."),
+        ("What is a white blood cell?", "A cell of the immune system that fights infections and foreign substances."),
+        ("What is a platelet?", "A cell fragment that helps blood clot to stop bleeding."),
+        ("What does the liver do?", "It processes nutrients, detoxifies chemicals, produces bile for digestion, and performs over 500 metabolic functions."),
+        ("What does the kidney do?", "It filters blood, removes waste as urine, regulates fluid balance, and controls blood pressure."),
+        ("What is the nervous system?", "The network of neurons (brain, spinal cord, nerves) that coordinates body functions and responds to stimuli."),
+        ("What is a neuron?", "A nerve cell that transmits electrical and chemical signals throughout the nervous system."),
+        ("What is a hormone?", "A chemical messenger produced by glands, transported in blood to regulate body functions."),
+        ("What is insulin?", "A hormone produced by the pancreas that regulates blood glucose levels."),
+        ("What is diabetes?", "A disease in which the body cannot properly regulate blood sugar — either due to insufficient insulin (Type 1) or insulin resistance (Type 2)."),
+        ("What is a virus?", "A tiny infectious agent that replicates only inside living cells and cannot reproduce independently."),
+        ("What is a bacterium?", "A single-celled prokaryotic organism; many are harmless or beneficial, some cause disease."),
+        ("What is the immune system?", "The body's defense system against pathogens, consisting of cells, tissues, and organs that detect and destroy threats."),
+        ("What is a vaccine?", "A preparation that trains the immune system to recognize and fight a specific pathogen without causing disease."),
+        ("What is malaria?", "A life-threatening disease caused by Plasmodium parasites, transmitted by female Anopheles mosquitoes."),
+        ("What is HIV/AIDS?", "HIV is a virus that attacks the immune system; AIDS is the advanced stage when the immune system is severely damaged."),
+        ("What is cancer?", "A disease where cells grow and divide uncontrollably, forming tumors or spreading through the body."),
+        ("What is a stem cell?", "An undifferentiated cell that can develop into specialized cell types."),
+        ("What is the human genome?", "The complete set of genetic instructions in human DNA, containing about 3 billion base pairs and ~20,000 genes."),
+        ("What is CRISPR?", "A gene-editing tool that allows precise modification of DNA sequences, with applications in medicine and agriculture."),
+        ("What is osmosis?", "The diffusion of water across a semipermeable membrane from low to high solute concentration."),
+        ("What is diffusion?", "The movement of particles from an area of high concentration to low concentration."),
+        ("What is mitochondria?", "The organelle known as the powerhouse of the cell — it generates ATP through cellular respiration."),
+        ("What is the cell membrane?", "A selectively permeable lipid bilayer that controls what enters and exits the cell."),
+        ("What is the function of the lungs?", "Gas exchange — taking in oxygen and releasing carbon dioxide."),
+        ("What causes malnutrition?", "Insufficient intake of essential nutrients, vitamins, or minerals, or inability to absorb them properly."),
+        ("What is antibiotic resistance?", "When bacteria evolve to survive exposure to antibiotics that previously killed them."),
+        ("What is homeostasis?", "The maintenance of stable internal conditions (temperature, pH, etc.) within an organism."),
+        ("What is the scientific name for humans?", "Homo sapiens."),
+        ("What is the difference between veins and arteries?", "Arteries carry oxygenated blood away from the heart; veins carry deoxygenated blood back to the heart."),
+        ("What is hemoglobin?", "The iron-containing protein in red blood cells that binds and carries oxygen."),
+        ("What is the largest organ in the human body?", "The skin."),
+        ("How many bones does the adult human body have?", "206."),
+        ("What is cartilage?", "Flexible connective tissue found in joints, the nose, and ears; acts as a cushion between bones."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 3c: Astronomy & Earth Science
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_3c_astronomy_earth(min_examples=2000):
+    examples = []
+    qa = [
+        ("What is the Sun?", "A medium-sized yellow dwarf star at the center of our solar system, about 1.4 million km in diameter."),
+        ("How old is the Sun?", "About 4.6 billion years old."),
+        ("What powers the Sun?", "Nuclear fusion — hydrogen atoms fuse into helium in the core, releasing enormous energy."),
+        ("How far is the Earth from the Sun?", "About 150 million kilometers (1 Astronomical Unit or AU)."),
+        ("What is a light-year?", "The distance light travels in one year — about 9.46 trillion kilometers."),
+        ("What is the nearest star to Earth after the Sun?", "Proxima Centauri, about 4.24 light-years away."),
+        ("What is the Milky Way?", "The galaxy that contains our solar system — a barred spiral galaxy with 100-400 billion stars."),
+        ("What is a galaxy?", "A gravitationally bound system of stars, gas, dust, and dark matter."),
+        ("What is a black hole?", "A region of space where gravity is so strong that nothing — not even light — can escape."),
+        ("What is a neutron star?", "The ultra-dense remnant of a massive star's core after a supernova explosion."),
+        ("What is a supernova?", "A powerful stellar explosion that occurs at the end of some stars' lives."),
+        ("How many planets are in our solar system?", "Eight: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune."),
+        ("What is the largest planet?", "Jupiter — over 1,300 Earths could fit inside it."),
+        ("What is the smallest planet?", "Mercury."),
+        ("What is the hottest planet?", "Venus, due to its thick CO2 atmosphere creating a runaway greenhouse effect (~465°C)."),
+        ("What planet is known as the Red Planet?", "Mars, due to its iron oxide (rust) surface."),
+        ("Does Mars have moons?", "Yes — two small moons: Phobos and Deimos."),
+        ("What are Saturn's rings made of?", "Ice, rock, and dust particles ranging from tiny grains to chunks meters across."),
+        ("What is a dwarf planet?", "A celestial body that orbits the Sun but is not large enough to clear its orbital neighborhood. Pluto is the most famous example."),
+        ("What is a comet?", "An icy body that orbits the Sun, developing a glowing tail of gas and dust when near the Sun."),
+        ("What is an asteroid?", "A rocky body orbiting the Sun, mostly found in the asteroid belt between Mars and Jupiter."),
+        ("What is the Moon?", "Earth's only natural satellite, about 384,400 km away, formed about 4.5 billion years ago."),
+        ("What causes tides?", "The Moon's gravitational pull on Earth's oceans, with some contribution from the Sun."),
+        ("What causes a lunar eclipse?", "Earth passes between the Sun and Moon, casting a shadow on the Moon."),
+        ("What causes a solar eclipse?", "The Moon passes between the Sun and Earth, blocking the Sun's light."),
+        ("What are the phases of the Moon?", "New moon, waxing crescent, first quarter, waxing gibbous, full moon, waning gibbous, last quarter, waning crescent."),
+        ("What is the Big Bang theory?", "The leading scientific model: the universe began as an extremely hot, dense point about 13.8 billion years ago and has been expanding since."),
+        ("What is dark matter?", "A type of matter that doesn't emit light, making up about 27% of the universe. Its existence is inferred from gravitational effects."),
+        ("What is dark energy?", "A mysterious form of energy making up about 68% of the universe, driving its accelerating expansion."),
+        ("What is a nebula?", "A cloud of gas and dust in space; some are stellar nurseries where new stars form."),
+        ("What is Earth's atmosphere?", "A layer of gases (mainly nitrogen 78%, oxygen 21%) surrounding Earth, held by gravity."),
+        ("What is the ozone layer?", "A layer in the stratosphere containing ozone (O3) that absorbs most of the Sun's harmful UV radiation."),
+        ("What causes the seasons?", "Earth's axial tilt (23.5°) as it orbits the Sun, causing different hemispheres to receive more direct sunlight at different times of year."),
+        ("What is the greenhouse effect?", "The trapping of heat in Earth's atmosphere by gases like CO2 and water vapor, warming the surface."),
+        ("What is global warming?", "The long-term heating of Earth's surface due to increased greenhouse gases from human activities."),
+        ("What are tectonic plates?", "Large pieces of Earth's lithosphere that move slowly, causing earthquakes, volcanoes, and mountain formation."),
+        ("What causes earthquakes?", "The sudden release of energy when tectonic plates move and stress builds up along fault lines."),
+        ("What is a volcano?", "An opening in Earth's crust through which molten rock (magma), ash, and gases erupt."),
+        ("What is the water cycle?", "The continuous movement of water through evaporation, condensation, precipitation, and collection."),
+        ("What is erosion?", "The wearing away of rock or soil by water, wind, ice, or biological agents."),
+        ("What are the layers of the Earth?", "Crust, mantle, outer core (liquid iron-nickel), inner core (solid iron-nickel)."),
+        ("What is the Richter scale?", "A logarithmic scale measuring earthquake magnitude; each step up is 10 times more powerful."),
+        ("What is a tsunami?", "A series of large ocean waves caused by an underwater earthquake, volcanic eruption, or landslide."),
+        ("What is the troposphere?", "The lowest layer of Earth's atmosphere (0-12 km) where weather occurs."),
+        ("What is a hurricane?", "A large rotating storm with winds over 119 km/h, powered by warm ocean water. Called a typhoon in the Pacific."),
+        ("What is the equator?", "An imaginary line around Earth's middle, equidistant from both poles, at 0° latitude."),
+        ("What are the tropics?", "The region between the Tropic of Cancer (23.5°N) and Tropic of Capricorn (23.5°S), with warm climate year-round."),
+        ("What is a desert?", "A region receiving less than 250mm of precipitation per year."),
+        ("What is a rainforest?", "A dense forest in a wet tropical climate with very high rainfall (over 2,000mm per year)."),
+        ("What is biodiversity hotspot?", "A region with high numbers of endemic species that is threatened by human activity."),
+        ("What is the stratosphere?", "The second layer of Earth's atmosphere (12-50 km), containing the ozone layer."),
+        ("What is altitude?", "Height above sea level. At higher altitudes, air pressure and oxygen levels decrease."),
+        ("What is the International Space Station?", "A habitable space station in low Earth orbit, jointly operated by NASA, Roscosmos, ESA, JAXA, and CSA."),
+        ("When did humans first land on the Moon?", "20 July 1969, when Apollo 11's Neil Armstrong and Buzz Aldrin landed."),
+        ("What is a satellite?", "Any object in orbit around a larger body. Can be natural (the Moon) or artificial (GPS satellites)."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 3d: Technology & Engineering
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_3d_technology(min_examples=2000):
+    examples = []
+    qa = [
+        ("What is a computer?", "An electronic device that processes data according to instructions (programs) to perform calculations and tasks."),
+        ("What is a CPU?", "The Central Processing Unit — the brain of a computer that executes instructions."),
+        ("What is RAM?", "Random Access Memory — temporary, fast storage used while a computer is running."),
+        ("What is a hard drive?", "Permanent storage for data and programs, either HDD (spinning disk) or SSD (flash memory)."),
+        ("What is an operating system?", "Software that manages computer hardware and provides services for programs. Examples: Windows, macOS, Linux."),
+        ("What is the internet?", "A global network of interconnected computers that communicate using standardized protocols."),
+        ("What is the World Wide Web?", "A system of linked documents and resources accessible via the internet through browsers."),
+        ("What is HTTP/HTTPS?", "HyperText Transfer Protocol (Secure) — the protocol for transmitting web pages over the internet."),
+        ("What is an IP address?", "A unique numerical label assigned to each device on a network (e.g., 192.168.1.1)."),
+        ("What is Wi-Fi?", "Wireless networking technology that allows devices to connect to the internet via radio waves."),
+        ("What is Bluetooth?", "A short-range wireless technology for connecting devices like phones, headphones, and keyboards."),
+        ("What is artificial intelligence?", "The simulation of human intelligence by machines — including learning, reasoning, and problem-solving."),
+        ("What is machine learning?", "A type of AI where systems learn from data to improve performance without explicit programming."),
+        ("What is a neural network?", "A computing system inspired by biological neurons, used in machine learning for pattern recognition."),
+        ("What is cloud computing?", "Delivering computing services (storage, processing, software) over the internet rather than local hardware."),
+        ("What is cybersecurity?", "Protecting computers, networks, and data from unauthorized access, theft, and damage."),
+        ("What is encryption?", "Converting data into a coded format so only authorized parties with the key can read it."),
+        ("What is a programming language?", "A formal language used to write instructions that a computer can execute."),
+        ("What is Python?", "A high-level, general-purpose programming language known for its readable syntax."),
+        ("What is an algorithm?", "A step-by-step procedure for solving a problem or accomplishing a task."),
+        ("What is a database?", "An organized collection of structured data stored electronically and accessed via software."),
+        ("What is SQL?", "Structured Query Language — used to manage and query relational databases."),
+        ("What is open source?", "Software whose source code is publicly available, allowing anyone to view, modify, and distribute it."),
+        ("What is a smartphone?", "A mobile phone with advanced computing capabilities including internet access and apps."),
+        ("What is 5G?", "The fifth generation of mobile network technology, offering faster speeds and lower latency than 4G."),
+        ("What is the Internet of Things (IoT)?", "The network of physical devices (appliances, vehicles, sensors) connected to the internet."),
+        ("What is a microchip?", "A tiny electronic circuit on a semiconductor material (usually silicon), containing transistors."),
+        ("What is Moore's law?", "The observation that the number of transistors on a chip doubles approximately every two years."),
+        ("What is GPS?", "Global Positioning System — a satellite-based navigation system providing location and time data."),
+        ("What is M-Pesa?", "A mobile money transfer service launched in Kenya in 2007 by Safaricom, now used across Africa."),
+        ("What is a QR code?", "A matrix barcode that stores information (URLs, text) readable by smartphone cameras."),
+        ("What is 3D printing?", "A manufacturing process that creates three-dimensional objects by layering material based on digital models."),
+        ("What is robotics?", "The branch of technology dealing with the design, construction, and operation of robots."),
+        ("What is virtual reality (VR)?", "Computer-generated simulations that immerse users in a three-dimensional environment."),
+        ("What is augmented reality (AR)?", "Technology that overlays digital content onto the real-world environment."),
+        ("What is blockchain?", "A distributed ledger technology where records are stored in linked blocks, making tampering very difficult."),
+        ("What is cryptocurrency?", "A digital currency using cryptography for security, operating independently of central banks. Bitcoin is the most known."),
+        ("What is a firewall?", "A security system that monitors and controls network traffic based on rules to block threats."),
+        ("What is a byte?", "A unit of digital information equal to 8 bits. A kilobyte is 1,024 bytes."),
+        ("What is binary?", "A base-2 number system using only 0s and 1s — the fundamental language of computers."),
+        ("What is an API?", "Application Programming Interface — a set of protocols allowing different software applications to communicate."),
+        ("What is HTML?", "HyperText Markup Language — the standard language for creating web pages."),
+        ("What is JavaScript?", "A programming language used to make websites interactive and dynamic."),
+        ("What is a server?", "A computer or program that provides data, services, or resources to other computers over a network."),
+        ("What is a browser?", "Software for accessing and displaying web pages. Examples: Chrome, Firefox, Safari."),
+        ("What is automation?", "Using technology to perform tasks with minimal human intervention."),
+        ("What is renewable energy?", "Energy from naturally replenished sources: solar, wind, hydro, geothermal, tidal."),
+        ("What is solar power?", "Electricity generated from sunlight using photovoltaic cells or solar thermal systems."),
+        ("What is nanotechnology?", "Technology dealing with materials and devices at the nanometer scale (1-100 nm)."),
+        ("What is fiber optic cable?", "Cables that transmit data as pulses of light through glass or plastic fibers at very high speeds."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Phase 2b: Output Format Control
 # ══════════════════════════════════════════════════════════════════════════════
 
