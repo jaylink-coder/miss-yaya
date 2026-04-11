@@ -1106,6 +1106,1022 @@ def generate_4d_economics_daily(min_examples=2000):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Phase 5a: Arithmetic (random generation)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_5a_arithmetic(min_examples=2000):
+    examples = []
+    rng = random.Random(42)
+    ops = [
+        ("+", lambda a, b: a + b, "plus", lambda a, b, r: f"What is {a} + {b}?"),
+        ("-", lambda a, b: a - b, "minus", lambda a, b, r: f"What is {a} - {b}?"),
+        ("*", lambda a, b: a * b, "times", lambda a, b, r: f"What is {a} × {b}?"),
+        ("/", lambda a, b: a // b, "divided by", lambda a, b, r: f"What is {a} ÷ {b}?"),
+    ]
+    for _ in range(600):
+        op_sym, op_fn, op_name, q_fn = rng.choice(ops)
+        if op_sym == "/":
+            b = rng.randint(1, 20)
+            a = b * rng.randint(1, 30)
+        elif op_sym == "-":
+            a = rng.randint(1, 200)
+            b = rng.randint(1, a)
+        else:
+            a = rng.randint(1, 100)
+            b = rng.randint(1, 100)
+        result = op_fn(a, b)
+        q = q_fn(a, b, result)
+        examples.append(make_example(q, str(result)))
+
+    # Powers of 2
+    for n in range(1, 16):
+        examples.append(make_example(f"What is 2 to the power of {n}?", str(2**n)))
+    # Squares
+    for n in range(1, 21):
+        examples.append(make_example(f"What is {n} squared?", str(n*n)))
+        examples.append(make_example(f"What is {n}²?", str(n*n)))
+    # Square roots
+    for n in [1,4,9,16,25,36,49,64,81,100,121,144,169,196,225]:
+        import math
+        examples.append(make_example(f"What is the square root of {n}?", str(int(math.sqrt(n)))))
+    # Divisibility
+    div_qa = [
+        ("Is 42 divisible by 6?", "Yes. 42 ÷ 6 = 7."),
+        ("Is 17 divisible by 3?", "No. 17 ÷ 3 = 5 remainder 2."),
+        ("Is 100 divisible by 4?", "Yes. 100 ÷ 4 = 25."),
+        ("What is the remainder when 29 is divided by 5?", "4. (29 = 5×5 + 4)"),
+        ("What is the LCM of 4 and 6?", "12."),
+        ("What is the GCD of 12 and 18?", "6."),
+        ("What is the LCM of 3 and 7?", "21."),
+        ("What is the GCD of 24 and 36?", "12."),
+        ("Is 91 a prime number?", "No. 91 = 7 × 13."),
+        ("Is 97 a prime number?", "Yes, 97 is prime."),
+        ("List the factors of 24.", "1, 2, 3, 4, 6, 8, 12, 24."),
+        ("What is 15% of 200?", "30."),
+        ("What is 25% of 80?", "20."),
+        ("What is 10% of 350?", "35."),
+        ("What is 50% of 64?", "32."),
+        ("What is 1/3 of 99?", "33."),
+        ("What is 2/5 of 50?", "20."),
+    ]
+    for q, a in div_qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 5b: Word Problems
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_5b_word_problems(min_examples=2000):
+    examples = []
+    rng = random.Random(43)
+
+    # Static word problems
+    static_wp = [
+        ("A shop has 48 oranges. If they are packed equally into 6 bags, how many oranges are in each bag?", "8 oranges. (48 ÷ 6 = 8)"),
+        ("A train travels 360 km in 4 hours. What is its average speed?", "90 km/h. (360 ÷ 4 = 90)"),
+        ("A class has 32 students. If 3/4 of them passed an exam, how many passed?", "24 students. (32 × 3/4 = 24)"),
+        ("Amina earns 25,000 KES per month. She saves 20% of her salary. How much does she save each month?", "5,000 KES. (25,000 × 0.20 = 5,000)"),
+        ("A rectangle is 12 cm long and 8 cm wide. What is its area?", "96 cm². (12 × 8 = 96)"),
+        ("A triangle has a base of 10 cm and a height of 6 cm. What is its area?", "30 cm². (½ × 10 × 6 = 30)"),
+        ("If 5 pens cost 150 KES, how much do 12 pens cost?", "360 KES. (150 ÷ 5 = 30 per pen; 30 × 12 = 360)"),
+        ("A car uses 8 liters of fuel per 100 km. How many liters are needed for a 350 km journey?", "28 liters. (8 × 3.5 = 28)"),
+        ("A tank holds 500 liters. If it is 40% full, how many liters does it contain?", "200 liters. (500 × 0.40 = 200)"),
+        ("Mwangi bought a shirt for 1,200 KES and sold it for 1,560 KES. What was his profit?", "360 KES. (1,560 - 1,200 = 360)"),
+        ("A wall is 4 meters high and 10 meters wide. How many square meters of paint does it need?", "40 square meters. (4 × 10 = 40)"),
+        ("A bus departs at 8:30 AM and arrives at 2:15 PM. How long was the journey?", "5 hours 45 minutes."),
+        ("There are 7 days in a week. How many days are in 13 weeks?", "91 days. (7 × 13 = 91)"),
+        ("A farmer planted 5 rows of trees with 15 trees in each row. How many trees in total?", "75 trees. (5 × 15 = 75)"),
+        ("If you have 3 dozens of eggs, how many eggs is that?", "36 eggs. (3 × 12 = 36)"),
+        ("A meal costs 850 KES. You want to leave a 15% tip. How much is the tip?", "127.50 KES. (850 × 0.15 = 127.50)"),
+        ("A jacket originally costs 4,500 KES and is on sale at 30% off. What is the sale price?", "3,150 KES. (4,500 × 0.70 = 3,150)"),
+        ("Ali ran 400 meters 3 times. How far did he run in total?", "1,200 meters. (400 × 3 = 1,200)"),
+        ("A rope is 15 meters long. If you cut off 3.5 meters, how long is the remaining piece?", "11.5 meters."),
+        ("If a dozen apples costs 180 KES, how much does one apple cost?", "15 KES. (180 ÷ 12 = 15)"),
+        ("A swimming pool is 25m long, 10m wide, and 1.5m deep. What is its volume?", "375 cubic meters. (25 × 10 × 1.5 = 375)"),
+        ("A school has 600 students. 55% are girls. How many boys are there?", "270 boys. (600 × 0.45 = 270)"),
+        ("Jane types 60 words per minute. How many words can she type in 15 minutes?", "900 words. (60 × 15 = 900)"),
+        ("A phone costs 18,000 KES. You pay a 25% deposit. How much is the deposit?", "4,500 KES. (18,000 × 0.25 = 4,500)"),
+        ("Two friends share a profit of 7,200 KES equally. How much does each get?", "3,600 KES. (7,200 ÷ 2 = 3,600)"),
+        ("Three friends share 7,500 KES equally. How much does each get?", "2,500 KES. (7,500 ÷ 3 = 2,500)"),
+        ("A circular garden has a radius of 7 meters. What is its circumference? (Use π ≈ 3.14)", "43.96 meters. (2 × 3.14 × 7 ≈ 43.96)"),
+        ("A car travels at 80 km/h. How long will it take to travel 200 km?", "2.5 hours. (200 ÷ 80 = 2.5)"),
+        ("If rice costs 120 KES per kg, how much does 4.5 kg cost?", "540 KES. (120 × 4.5 = 540)"),
+        ("A student scores 72 out of 90 on a test. What percentage is that?", "80%. (72/90 × 100 = 80%)"),
+    ]
+    for q, a in static_wp:
+        examples.append(make_example(q, a))
+
+    # Random word problems
+    items = ["mangoes", "oranges", "books", "pencils", "chairs", "eggs", "bananas"]
+    names = ["Amina", "Otieno", "Wanjiru", "Baraka", "Njeri", "Hassan", "Aisha"]
+    for _ in range(80):
+        item = rng.choice(items)
+        name = rng.choice(names)
+        n1 = rng.randint(10, 100)
+        n2 = rng.randint(1, min(n1, 20))
+        op = rng.choice(["add", "subtract", "divide"])
+        if op == "add":
+            n3 = rng.randint(5, 30)
+            q = f"{name} has {n1} {item} and buys {n3} more. How many {item} does {name} have now?"
+            a = str(n1 + n3)
+        elif op == "subtract":
+            q = f"{name} has {n1} {item} and gives away {n2}. How many {item} are left?"
+            a = str(n1 - n2)
+        else:
+            divisor = rng.choice([2, 3, 4, 5])
+            total = divisor * rng.randint(3, 15)
+            q = f"{name} has {total} {item} to share equally among {divisor} friends. How many does each get?"
+            a = str(total // divisor)
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 5c: Percentages & Ratios
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_5c_percentages_ratios(min_examples=2000):
+    examples = []
+    rng = random.Random(44)
+
+    pct_pairs = [
+        ("What is 10% of 500?", "50."),
+        ("What is 25% of 200?", "50."),
+        ("What is 50% of 80?", "40."),
+        ("What is 75% of 120?", "90."),
+        ("What is 15% of 60?", "9."),
+        ("What is 20% of 150?", "30."),
+        ("What is 5% of 1,000?", "50."),
+        ("What is 30% of 90?", "27."),
+        ("What is 100% of 47?", "47."),
+        ("What is 1% of 250?", "2.5."),
+        ("If a price increases from 200 to 250, what is the percentage increase?", "25%. ((250-200)/200 × 100 = 25%)"),
+        ("If a price decreases from 500 to 400, what is the percentage decrease?", "20%. ((500-400)/500 × 100 = 20%)"),
+        ("A student scored 45 out of 50. What is the percentage score?", "90%. (45/50 × 100 = 90%)"),
+        ("A shop offers a 15% discount on a 3,000 KES item. What is the discounted price?", "2,550 KES. (3,000 × 0.85 = 2,550)"),
+        ("Express 3/4 as a percentage.", "75%."),
+        ("Express 1/5 as a percentage.", "20%."),
+        ("Express 7/10 as a percentage.", "70%."),
+        ("Convert 0.35 to a percentage.", "35%."),
+        ("Convert 1.25 to a percentage.", "125%."),
+        ("What is 60% of 180?", "108."),
+    ]
+    for q, a in pct_pairs:
+        examples.append(make_example(q, a))
+
+    ratio_pairs = [
+        ("Simplify the ratio 6:9.", "2:3."),
+        ("Simplify the ratio 12:8.", "3:2."),
+        ("Simplify the ratio 15:25.", "3:5."),
+        ("If the ratio of boys to girls is 3:2 and there are 30 boys, how many girls are there?", "20 girls. (30/3 × 2 = 20)"),
+        ("Divide 240 in the ratio 3:5.", "90 and 150."),
+        ("Divide 1,000 in the ratio 2:3.", "400 and 600."),
+        ("If 4 workers build a wall in 6 days, how long would 8 workers take?", "3 days. (Inversely proportional: 4×6÷8 = 3)"),
+        ("If 3 kg of apples cost 180 KES, how much do 5 kg cost?", "300 KES. (180/3 × 5 = 300)"),
+        ("A map uses a scale of 1:50,000. If two cities are 4 cm apart on the map, how far are they in reality?", "200,000 cm = 2 km."),
+        ("In a class of 35, the ratio of passed to failed is 5:2. How many passed?", "25 students. (35 × 5/7 = 25)"),
+        ("What is the ratio 0.5:1 in simplest form?", "1:2."),
+        ("Express 1/3 as a decimal.", "0.333... (recurring)."),
+        ("Express 3/8 as a decimal.", "0.375."),
+        ("What percentage is 18 of 72?", "25%. (18/72 × 100 = 25%)"),
+        ("A 500ml juice contains 20% orange. How many ml is orange?", "100ml. (500 × 0.20 = 100)"),
+        ("If 40% of students are boys and there are 120 boys, how many students total?", "300. (120/0.40 = 300)"),
+    ]
+    for q, a in ratio_pairs:
+        examples.append(make_example(q, a))
+
+    # Random percentage calculations
+    for _ in range(100):
+        pct = rng.choice([5, 10, 15, 20, 25, 30, 40, 50, 60, 75])
+        base = rng.randint(1, 40) * 10
+        result = base * pct // 100
+        examples.append(make_example(f"What is {pct}% of {base}?", str(result) + "."))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 5d: Estimation & Mental Math
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_5d_estimation(min_examples=2000):
+    examples = []
+    rng = random.Random(45)
+
+    mental_math = [
+        ("What is 99 × 4? (Hint: use 100 × 4 - 4)", "396. (100×4 - 1×4 = 400 - 4 = 396)"),
+        ("What is 25 × 8?", "200. (25×8 = 200)"),
+        ("What is 15 × 15?", "225. (15² = 225)"),
+        ("Estimate 49 × 51.", "About 2,499. (50×50 - 1 = 2,499)"),
+        ("What is 1000 - 247?", "753."),
+        ("What is 50 × 22?", "1,100."),
+        ("Quickly: what is 1/4 of 1,000?", "250."),
+        ("Quickly: what is 3/4 of 1,000?", "750."),
+        ("What is 12 × 12?", "144."),
+        ("Estimate 198 + 203.", "About 401. (200 + 200 + 1 = 401)"),
+        ("What is 7 × 11?", "77."),
+        ("What is 8 × 9?", "72."),
+        ("What is 6 × 7?", "42."),
+        ("Estimate: about how many minutes in 3 hours?", "180 minutes."),
+        ("Estimate: about how many days in 3 years?", "About 1,095 days (3 × 365)."),
+        ("What is 500 ÷ 25?", "20."),
+        ("What is 120 ÷ 8?", "15."),
+        ("Roughly, what is 19 × 21?", "About 399. (20×20 - 1 = 399)"),
+        ("What is 11 × 11?", "121."),
+        ("What is 13 × 13?", "169."),
+        ("Estimate 2,900 ÷ 30.", "About 97."),
+        ("What is 250 × 4?", "1,000."),
+        ("Double 375.", "750."),
+        ("Halve 486.", "243."),
+        ("What is 10% of 3,700?", "370."),
+        ("What is 20% of 3,700?", "740."),
+        ("What is 5% of 240?", "12."),
+        ("Estimate the square root of 50.", "About 7. (7² = 49, so √50 ≈ 7.07)"),
+        ("Estimate the square root of 80.", "About 9. (9² = 81, so √80 ≈ 8.94)"),
+        ("What is 2³?", "8."),
+        ("What is 3³?", "27."),
+        ("What is 4³?", "64."),
+        ("What is 5³?", "125."),
+        ("Estimate 1,000 ÷ 7.", "About 143. (7 × 143 = 1,001)"),
+        ("What is 0.5 × 0.5?", "0.25."),
+        ("What is 0.1 × 300?", "30."),
+        ("Round 4.567 to 2 decimal places.", "4.57."),
+        ("Round 12.345 to 1 decimal place.", "12.3."),
+        ("What is the approximate value of π?", "About 3.14159."),
+        ("Approximately how many km in a mile?", "About 1.6 km."),
+        ("About how many meters in a foot?", "About 0.3 meters (30 cm)."),
+        ("What is 1 kg in grams?", "1,000 grams."),
+        ("What is 1 liter in milliliters?", "1,000 mL."),
+        ("Estimate: what is 15 × 21?", "315. (15 × 20 + 15 = 300 + 15 = 315)"),
+        ("What is the double of 1,234?", "2,468."),
+        ("What is 600 ÷ 15?", "40."),
+        ("What is 125 × 8?", "1,000. (125 × 8 = 1,000)"),
+        ("What is 6² + 8²?", "100. (36 + 64 = 100)"),
+    ]
+    for q, a in mental_math:
+        examples.append(make_example(q, a))
+
+    # Random mental math
+    for _ in range(80):
+        a_val = rng.choice([5, 10, 15, 20, 25, 50, 100]) * rng.randint(1, 10)
+        b_val = rng.choice([2, 4, 5, 8, 10, 20])
+        if b_val <= a_val:
+            q = f"What is {a_val} ÷ {b_val}?"
+            if a_val % b_val == 0:
+                examples.append(make_example(q, str(a_val // b_val) + "."))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 6a: Deductive Reasoning
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_6a_deduction(min_examples=2000):
+    examples = []
+    deduction_pairs = [
+        ("All mammals are warm-blooded. Dogs are mammals. Are dogs warm-blooded?",
+         "Yes. Since all mammals are warm-blooded, and dogs are mammals, dogs are warm-blooded."),
+        ("All roses are flowers. All flowers need water. Do roses need water?",
+         "Yes. All flowers need water, and roses are flowers, so roses need water."),
+        ("If it rains, the ground gets wet. It is raining. What can we conclude?",
+         "The ground is getting wet."),
+        ("No fish can live on land. A salmon is a fish. Can a salmon live on land?",
+         "No. Since no fish can live on land, and a salmon is a fish, a salmon cannot live on land."),
+        ("All students in the top class passed the exam. Njeri is in the top class. Did Njeri pass?",
+         "Yes. Since all students in the top class passed, and Njeri is in the top class, Njeri passed."),
+        ("If the power is off, the lights won't work. The lights are working. Is the power off?",
+         "No. If the power were off, the lights wouldn't work. Since the lights are working, the power must be on."),
+        ("If A > B and B > C, what is the relationship between A and C?",
+         "A > C. If A is greater than B, and B is greater than C, then A must be greater than C."),
+        ("If P implies Q, and Q implies R, does P imply R?",
+         "Yes. This is called a hypothetical syllogism: if P then Q, if Q then R, therefore if P then R."),
+        ("Ali is taller than Baraka. Baraka is taller than Chidi. Who is tallest?",
+         "Ali is the tallest."),
+        ("If all cats are animals, and Whiskers is a cat, is Whiskers an animal?",
+         "Yes. All cats are animals, and Whiskers is a cat, so Whiskers is an animal."),
+        ("All squares are rectangles. All rectangles are parallelograms. Is a square a parallelogram?",
+         "Yes. Following the chain: squares are rectangles, rectangles are parallelograms, therefore squares are parallelograms."),
+        ("If a number is even, it is divisible by 2. 48 is even. Is 48 divisible by 2?",
+         "Yes. 48 is even, so it must be divisible by 2 (48 ÷ 2 = 24)."),
+        ("A store gives a 10% discount on all items over 1,000 KES. A jacket costs 1,200 KES. Does it get a discount?",
+         "Yes. The jacket costs 1,200 KES which is over 1,000 KES, so it qualifies for the 10% discount."),
+        ("If today is Wednesday, what day was it 3 days ago?",
+         "Sunday. Counting back: Tuesday, Monday, Sunday."),
+        ("If today is Monday, what day will it be in 10 days?",
+         "Thursday. 10 days from Monday: Monday + 7 = Monday, + 3 more = Thursday."),
+        ("All prime numbers greater than 2 are odd. 7 is a prime greater than 2. Is 7 odd?",
+         "Yes."),
+        ("If a triangle has two equal sides, it is isosceles. Triangle XYZ has two equal sides. What type is it?",
+         "Isosceles."),
+        ("If all A are B, and all B are C, what can we say about all A?",
+         "All A are C. (Transitive property of set inclusion.)"),
+        ("No vegetarian eats meat. Wanjiru is vegetarian. Does Wanjiru eat meat?",
+         "No. Wanjiru is vegetarian and no vegetarian eats meat."),
+        ("Some students like math. All students who like math are in the math club. Can we say all math club members like math?",
+         "Not necessarily. We know some students who like math join the club, but the club might include others too."),
+        ("If it is Monday through Friday, schools are open. Today is Saturday. Are schools open today?",
+         "No. Saturday is not Monday through Friday, so schools are not open."),
+        ("All birds have wings. Penguins are birds. Do penguins have wings?",
+         "Yes — penguins have wings, though they cannot fly."),
+        ("Ama is older than Ben. Ben is older than Cleo. Cleo is older than Dan. Who is youngest?",
+         "Dan."),
+        ("If X = 5 and Y = X + 3, what is Y?",
+         "Y = 8. (5 + 3 = 8)"),
+        ("If a = 4 and b = a × 3, what is b?",
+         "b = 12. (4 × 3 = 12)"),
+        ("Five consecutive integers start at 11. What is their sum?",
+         "65. (11+12+13+14+15 = 65)"),
+        ("If all healthy foods are nutritious, and broccoli is a healthy food, is broccoli nutritious?",
+         "Yes."),
+        ("If it is not raining, Amara goes for a walk. It is not raining. What does Amara do?",
+         "Amara goes for a walk."),
+        ("A box contains only red and blue balls. If there are no red balls, what color are all the balls?",
+         "Blue."),
+        ("If all K are M, and X is not M, is X a K?",
+         "No. Since all K are M, anything that is not M cannot be K."),
+        ("Every multiple of 10 ends in 0. 150 is a multiple of 10. What digit does 150 end in?",
+         "0."),
+    ]
+    for q, a in deduction_pairs:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 6b: Analogies & Patterns
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_6b_analogies(min_examples=2000):
+    examples = []
+    analogy_pairs = [
+        ("Bird is to sky as fish is to ___", "Water. Birds live in the sky; fish live in water."),
+        ("Doctor is to hospital as teacher is to ___", "School."),
+        ("Hot is to cold as day is to ___", "Night."),
+        ("Cat is to kitten as dog is to ___", "Puppy."),
+        ("Pen is to write as knife is to ___", "Cut."),
+        ("Kenya is to Nairobi as France is to ___", "Paris. (Nairobi is Kenya's capital; Paris is France's capital.)"),
+        ("Water is to drink as food is to ___", "Eat."),
+        ("Hand is to glove as foot is to ___", "Shoe."),
+        ("Eye is to see as ear is to ___", "Hear."),
+        ("Book is to library as painting is to ___", "Gallery (or museum)."),
+        ("Up is to down as east is to ___", "West."),
+        ("Flower is to garden as fish is to ___", "Aquarium (or ocean/river)."),
+        ("Wheel is to bicycle as engine is to ___", "Car."),
+        ("Sun is to day as moon is to ___", "Night."),
+        ("King is to queen as brother is to ___", "Sister."),
+        ("Keyboard is to type as microphone is to ___", "Speak."),
+        ("Ice is to water as water is to ___", "Steam (vapor)."),
+        ("Chicken is to egg as cow is to ___", "Milk."),
+        ("Author is to book as composer is to ___", "Music."),
+        ("Marathon is to run as tournament is to ___", "Compete (or play)."),
+        ("Carpenter is to wood as blacksmith is to ___", "Metal (or iron)."),
+        ("Nose is to smell as tongue is to ___", "Taste."),
+        ("Short is to tall as narrow is to ___", "Wide."),
+        ("Nairobi is to Kenya as Cairo is to ___", "Egypt."),
+        ("Swahili is to Kenya as Amharic is to ___", "Ethiopia."),
+        ("What comes next: 2, 4, 6, 8, ___?", "10. (Pattern: add 2 each time.)"),
+        ("What comes next: 1, 3, 9, 27, ___?", "81. (Pattern: multiply by 3.)"),
+        ("What comes next: 100, 90, 80, 70, ___?", "60. (Pattern: subtract 10.)"),
+        ("What comes next: 1, 4, 9, 16, ___?", "25. (Pattern: square numbers: 1², 2², 3², 4², 5².)"),
+        ("What comes next: 2, 3, 5, 8, 13, ___?", "21. (Fibonacci sequence: add the two previous numbers.)"),
+        ("What comes next: 5, 10, 20, 40, ___?", "80. (Pattern: multiply by 2.)"),
+        ("What comes next: Monday, Wednesday, Friday, ___?", "Sunday. (Every other day.)"),
+        ("What comes next: Jan, Mar, May, Jul, ___?", "Sep. (Every other month.)"),
+        ("Complete the pattern: A, C, E, G, ___", "I. (Every other letter of the alphabet.)"),
+        ("Complete the pattern: Z, Y, X, W, ___", "V. (Alphabet in reverse.)"),
+        ("Which is the odd one out: Apple, Banana, Carrot, Mango?", "Carrot — it's a vegetable; the others are fruits."),
+        ("Which is the odd one out: Lion, Tiger, Elephant, Leopard?", "Elephant — it's not a big cat; the others are felines."),
+        ("Which is the odd one out: Nairobi, Mombasa, Kisumu, Cairo?", "Cairo — it's in Egypt; the others are Kenyan cities."),
+        ("Which is the odd one out: Red, Green, Blue, Square?", "Square — it's a shape; the others are colors."),
+        ("Which is the odd one out: 3, 5, 7, 9, 11?", "9 — it's not prime (9 = 3×3); all others are prime numbers."),
+        ("Hammer is to nail as drill is to ___", "Hole (or screw)."),
+        ("Seed is to plant as egg is to ___", "Bird (or animal)."),
+        ("Teacher is to student as doctor is to ___", "Patient."),
+        ("Complete: 1 km = ___ meters", "1,000 meters."),
+        ("Complete: 1 hour = ___ minutes", "60 minutes."),
+        ("Complete: 1 year = ___ months", "12 months."),
+    ]
+    for q, a in analogy_pairs:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 6c: Counterfactuals
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_6c_counterfactuals(min_examples=2000):
+    examples = []
+    cf_pairs = [
+        ("If the Earth had no Moon, what would happen to tides?",
+         "Tides would be much weaker — only solar tides would remain, about 1/3 as strong. The Moon drives most of Earth's tidal forces."),
+        ("If there were no photosynthesis, what would happen to life on Earth?",
+         "Most life would collapse. Plants produce the oxygen we breathe and form the base of nearly all food chains. Without them, animals and humans could not survive."),
+        ("If gravity were twice as strong, what would happen?",
+         "Everything would weigh twice as much. Tall structures would collapse more easily. Mountains would be lower. Life would have evolved to be much shorter and stockier."),
+        ("If humans had never invented writing, how would civilization be different?",
+         "Knowledge transfer would rely entirely on oral tradition, severely limiting cumulative learning. Science, law, and history as we know them would not exist."),
+        ("If Kenya were landlocked, how might its economy differ?",
+         "Kenya would lose direct access to sea trade via Mombasa, likely reducing exports and imports. Regional trade routes would matter even more."),
+        ("If water expanded when it froze (like most substances), what would happen to lakes in winter?",
+         "Ice would sink to the bottom, lakes would freeze solid from the bottom up, killing aquatic life. Liquid water at the surface is essential for aquatic ecosystems."),
+        ("If there were no friction, what would everyday life be like?",
+         "Nothing could stay still — objects would slide indefinitely. Walking, driving, gripping anything would be impossible. Friction is essential for almost every action."),
+        ("If the Internet had never been invented, how would knowledge sharing differ?",
+         "Information would spread far more slowly through books, television, and telephone. Global instant communication, e-commerce, and social media would not exist."),
+        ("If Kenya had not experienced colonialism, how might its borders be different?",
+         "Borders might follow ethnic, cultural, and geographic lines rather than the arbitrary colonial boundaries drawn in 1884-85."),
+        ("What if Einstein had never developed the theory of relativity?",
+         "GPS systems wouldn't work correctly (they rely on relativistic corrections). Nuclear energy development would be delayed. Our understanding of spacetime would be very different."),
+        ("What if antibiotics had never been discovered?",
+         "Simple bacterial infections like pneumonia, tuberculosis, and sepsis would remain major killers. Life expectancy would be far lower. Modern surgery would be extremely risky."),
+        ("If the Sun became twice as hot, what would happen to Earth?",
+         "Earth's surface would become far too hot for life. Oceans would evaporate, creating a runaway greenhouse effect similar to Venus."),
+        ("If a student studies every night, is it guaranteed they will pass?",
+         "Not guaranteed, but their chances of passing are much higher. Success also depends on understanding the material, test performance, and other factors."),
+        ("If you removed all the trees from a forest, what would happen to the local climate?",
+         "The area would become drier and hotter. Without tree roots, soil erosion increases. Water cycles would be disrupted and biodiversity would collapse."),
+        ("If Swahili had not spread as a trade language, how might East African communication differ?",
+         "East Africans would rely solely on hundreds of local languages, making regional trade and communication much harder. Swahili's spread enabled unprecedented regional unity."),
+        ("What if Kenya never developed mobile money (M-Pesa)?",
+         "Millions of Kenyans without bank accounts would remain unbanked. Small businesses would have less access to capital. Kenya's fintech leadership would not have emerged."),
+        ("If you doubled the radius of a circle, by how much does the area increase?",
+         "The area quadruples. Area = πr², so doubling r gives π(2r)² = 4πr² — four times the original area."),
+        ("If a car doubles its speed, by how much does its stopping distance increase?",
+         "It roughly quadruples. Stopping distance is proportional to the square of speed."),
+        ("What if humans could photosynthesize like plants?",
+         "We could produce some of our own energy from sunlight, reducing the need for food. We might still need some nutrients but would be far more energy-independent."),
+        ("If oil prices doubled, what would happen to transportation costs?",
+         "Transportation costs would rise significantly, increasing prices of goods and making air travel and road freight more expensive."),
+        ("If you could travel at the speed of light, what would happen?",
+         "According to Einstein's relativity, your mass would approach infinity and time would stop for you. It is physically impossible for matter to reach the speed of light."),
+        ("What if the African Union became a single unified country?",
+         "It would be the world's most populous country (1.4 billion+) with enormous resources. Challenges would include unifying 54 legal systems, currencies, and languages."),
+        ("If plants could not survive in the dark, what would change underground and in forests?",
+         "No moss, fungi, or shade-adapted plants could grow under canopy. Forest floors and caves would be barren. Many food chains and nutrient cycles would break."),
+        ("What if there were no seasons on Earth?",
+         "Agriculture would be very different — no planting/harvest seasons. Weather patterns would be more uniform. Many animal migration and breeding cycles tied to seasons would cease."),
+        ("If you could only speak one language your whole life, which one would give you the most global reach?",
+         "Mandarin Chinese (by native speakers) or English (by global reach as a second language). English is most useful for international communication today."),
+    ]
+    for q, a in cf_pairs:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 6d: Spatial & Temporal Reasoning
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_6d_spatial_temporal(min_examples=2000):
+    examples = []
+    sp_pairs = [
+        ("If you face north and turn right 90°, which direction do you face?", "East."),
+        ("If you face east and turn 180°, which direction do you face?", "West."),
+        ("If you face south and turn left 90°, which direction do you face?", "East."),
+        ("What is directly opposite north on a compass?", "South."),
+        ("If you walk 3 km north, then 3 km south, where are you relative to your starting point?", "Back at the starting point."),
+        ("If a shadow points west in the morning, where is the Sun?", "In the east. The Sun rises in the east and shadows point away from the Sun."),
+        ("If you are in Nairobi and travel east, what ocean do you reach?", "The Indian Ocean."),
+        ("Which direction does the Nile River generally flow?", "North, from central Africa to the Mediterranean."),
+        ("If today is Tuesday and the event is in 5 days, what day is the event?", "Sunday. (Tue → Wed → Thu → Fri → Sat → Sun)"),
+        ("If a meeting is in 2 weeks and 3 days from Monday, what day is it?", "Wednesday. (14 days = 2 weeks, + 3 more = Wednesday)"),
+        ("A train leaves at 9:15 AM and arrives at 1:45 PM. How long was the journey?", "4 hours 30 minutes."),
+        ("If it is 3:30 PM in Nairobi (UTC+3), what time is it in London (UTC+0)?", "12:30 PM (noon)."),
+        ("If it is 10 AM in New York (UTC-5), what time is it in Nairobi (UTC+3)?", "6 PM."),
+        ("What time is 2 hours 45 minutes after 11:30 AM?", "2:15 PM."),
+        ("A box is 30 cm long, 20 cm wide, and 15 cm tall. What is its volume?", "9,000 cm³. (30 × 20 × 15 = 9,000)"),
+        ("If a square field has sides of 50 meters, what is its perimeter?", "200 meters. (4 × 50 = 200)"),
+        ("Which is larger: a 3×7 rectangle or a 5×5 square?", "The 5×5 square has area 25; the 3×7 rectangle has area 21. The square is larger."),
+        ("You drive 120 km north, then 50 km east. How far are you from the start in a straight line?", "130 km. (Pythagoras: √(120² + 50²) = √(14400+2500) = √16900 = 130)"),
+        ("A cylinder has radius 7 cm and height 10 cm. What is its volume? (π ≈ 3.14)", "About 1,538.6 cm³. (π × 7² × 10 = 3.14 × 49 × 10 = 1,538.6)"),
+        ("If a clock shows 3:00, what angle do the hands make?", "90 degrees."),
+        ("How many degrees are in a full circle?", "360 degrees."),
+        ("How many degrees are in a right angle?", "90 degrees."),
+        ("How many degrees are the interior angles of a triangle?", "180 degrees."),
+        ("What is the sum of interior angles of a quadrilateral?", "360 degrees."),
+        ("Kenya is north of Tanzania. Tanzania is north of Mozambique. Is Kenya north of Mozambique?", "Yes. If Kenya is north of Tanzania, and Tanzania is north of Mozambique, Kenya is north of Mozambique."),
+        ("You are standing 4 km from a tower. If you walk 3 km directly toward it, how far away are you now?", "1 km."),
+        ("A clock shows 6:00. How many minutes until 7:15?", "75 minutes."),
+        ("What day is 100 days after January 1 (non-leap year)?", "April 11. (Jan 31 + Feb 28 + Mar 31 = 90 days; 10 more = April 10... Jan has 31, so 100 - 31 = 69, Feb 28 = 41, March 31 = 10 → April 10.)"),
+        ("If you fold a square piece of paper in half twice, what shape do you get?", "A smaller square (one quarter of the original area)."),
+        ("If a room is 4m × 5m, how many 1m × 1m tiles are needed to cover the floor?", "20 tiles."),
+        ("How many faces does a cube have?", "6 faces."),
+        ("How many edges does a cube have?", "12 edges."),
+        ("How many vertices does a cube have?", "8 vertices."),
+        ("Which is the 3D equivalent of a square?", "A cube."),
+        ("What 3D shape does a can resemble?", "A cylinder."),
+    ]
+    for q, a in sp_pairs:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 5a: Arithmetic
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_5a_arithmetic(min_examples=2000):
+    examples = []
+    rng = random.Random(42)
+
+    # Basic addition
+    for _ in range(80):
+        a, b = rng.randint(1, 999), rng.randint(1, 999)
+        examples.append(make_example(f"What is {a} + {b}?", str(a + b)))
+        examples.append(make_example(f"Calculate: {a} + {b}", str(a + b)))
+
+    # Basic subtraction
+    for _ in range(60):
+        a = rng.randint(50, 999)
+        b = rng.randint(1, a)
+        examples.append(make_example(f"What is {a} - {b}?", str(a - b)))
+        examples.append(make_example(f"Compute: {a} minus {b}", str(a - b)))
+
+    # Multiplication
+    for _ in range(80):
+        a, b = rng.randint(2, 99), rng.randint(2, 99)
+        examples.append(make_example(f"What is {a} x {b}?", str(a * b)))
+        examples.append(make_example(f"Calculate {a} times {b}.", str(a * b)))
+        examples.append(make_example(f"Multiply {a} by {b}.", str(a * b)))
+
+    # Division
+    for _ in range(60):
+        b = rng.randint(2, 20)
+        result = rng.randint(2, 50)
+        a = b * result
+        examples.append(make_example(f"What is {a} ÷ {b}?", str(result)))
+        examples.append(make_example(f"Divide {a} by {b}.", str(result)))
+
+    # Powers & roots
+    for base in range(2, 13):
+        for exp in [2, 3]:
+            val = base ** exp
+            examples.append(make_example(f"What is {base} to the power of {exp}?", str(val)))
+            examples.append(make_example(f"What is {base}^{exp}?", str(val)))
+    for n in [4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225]:
+        import math as _math
+        root = int(_math.isqrt(n))
+        examples.append(make_example(f"What is the square root of {n}?", str(root)))
+
+    # Order of operations
+    for _ in range(40):
+        a, b, c = rng.randint(1, 20), rng.randint(1, 20), rng.randint(1, 20)
+        result = a + b * c
+        examples.append(make_example(f"What is {a} + {b} x {c}? (follow order of operations)", str(result)))
+        result2 = (a + b) * c
+        examples.append(make_example(f"What is ({a} + {b}) x {c}?", str(result2)))
+
+    # Negative numbers
+    for _ in range(30):
+        a = rng.randint(1, 50)
+        b = rng.randint(1, 50)
+        examples.append(make_example(f"What is -{a} + {b}?", str(-a + b)))
+        examples.append(make_example(f"What is -{a} - {b}?", str(-a - b)))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 5b: Word Problems
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_5b_word_problems(min_examples=2000):
+    examples = []
+    rng = random.Random(99)
+
+    # Buying/selling
+    items = ["apples", "oranges", "mangoes", "books", "pens", "notebooks", "loaves of bread", "eggs", "bananas", "tomatoes"]
+    for _ in range(60):
+        item = rng.choice(items)
+        qty = rng.randint(2, 20)
+        price = rng.randint(5, 200)
+        total = qty * price
+        examples.append(make_example(
+            f"If each {item[:-1]} costs {price} shillings and you buy {qty}, how much do you pay?",
+            f"{qty} x {price} = {total} shillings."))
+        examples.append(make_example(
+            f"A market seller has {qty} {item} priced at {price} shillings each. What is the total value?",
+            f"{qty} x {price} = {total} shillings."))
+
+    # Distance/speed/time
+    for _ in range(40):
+        speed = rng.randint(20, 120)
+        time = rng.randint(1, 8)
+        dist = speed * time
+        examples.append(make_example(
+            f"A vehicle travels at {speed} km/h for {time} hours. How far does it travel?",
+            f"Distance = speed x time = {speed} x {time} = {dist} km."))
+        examples.append(make_example(
+            f"If you cycle at {speed} km/h, how far will you go in {time} hours?",
+            f"{speed} x {time} = {dist} km."))
+
+    # Sharing/division
+    names = ["Amina", "Baraka", "Chidi", "Dalia", "Eko", "Fatuma", "Grace", "Hassan", "Imani", "Juma"]
+    for _ in range(40):
+        people = rng.randint(2, 10)
+        total = people * rng.randint(5, 100)
+        share = total // people
+        name = rng.choice(names)
+        examples.append(make_example(
+            f"{name} has {total} shillings to share equally among {people} friends. How much does each person get?",
+            f"{total} ÷ {people} = {share} shillings each."))
+
+    # Age problems
+    for _ in range(30):
+        age_now = rng.randint(5, 40)
+        years = rng.randint(1, 20)
+        examples.append(make_example(
+            f"Maria is {age_now} years old now. How old will she be in {years} years?",
+            f"{age_now} + {years} = {age_now + years} years old."))
+        examples.append(make_example(
+            f"If Tom is currently {age_now} years old, how old was he {years} years ago?",
+            f"{age_now} - {years} = {age_now - years} years old."))
+
+    # Mixtures / groups
+    for _ in range(30):
+        group1 = rng.randint(5, 50)
+        group2 = rng.randint(5, 50)
+        total = group1 + group2
+        examples.append(make_example(
+            f"A class has {group1} girls and {group2} boys. How many students are there in total?",
+            f"{group1} + {group2} = {total} students."))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 5c: Percentages & Ratios
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_5c_percentages_ratios(min_examples=2000):
+    examples = []
+    rng = random.Random(17)
+
+    percents = [5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 80, 90]
+    totals = [100, 200, 400, 500, 800, 1000, 1200, 1500, 2000, 2500, 5000]
+
+    for pct in percents:
+        for total in totals:
+            result = total * pct // 100
+            examples.append(make_example(
+                f"What is {pct}% of {total}?",
+                f"{pct}% of {total} = {pct}/100 x {total} = {result}."))
+            examples.append(make_example(
+                f"Calculate {pct} percent of {total}.",
+                str(result)))
+
+    # Discount problems
+    for _ in range(50):
+        original = rng.randint(2, 20) * 50
+        pct = rng.choice(percents)
+        discount = original * pct // 100
+        final = original - discount
+        examples.append(make_example(
+            f"A shirt costs {original} shillings. There is a {pct}% discount. What is the final price?",
+            f"Discount = {pct}% of {original} = {discount} shillings. Final price = {original} - {discount} = {final} shillings."))
+
+    # Percentage increase/decrease
+    for _ in range(40):
+        start = rng.randint(100, 1000)
+        pct = rng.choice([10, 20, 25, 50])
+        increase = start * pct // 100
+        examples.append(make_example(
+            f"A salary was {start} shillings and increased by {pct}%. What is the new salary?",
+            f"Increase = {pct}% of {start} = {increase}. New salary = {start} + {increase} = {start + increase} shillings."))
+
+    # Fractions to percentages
+    fraction_pairs = [
+        ("1/2", "50%"), ("1/4", "25%"), ("3/4", "75%"), ("1/5", "20%"),
+        ("2/5", "40%"), ("3/5", "60%"), ("4/5", "80%"), ("1/10", "10%"),
+        ("3/10", "30%"), ("7/10", "70%"), ("1/3", "approximately 33.3%"),
+        ("2/3", "approximately 66.7%"), ("1/8", "12.5%"), ("3/8", "37.5%"),
+    ]
+    for frac, pct in fraction_pairs:
+        examples.append(make_example(f"What is {frac} as a percentage?", pct))
+        examples.append(make_example(f"Convert {frac} to a percentage.", pct))
+
+    # Simple ratios
+    for _ in range(30):
+        a = rng.randint(1, 10)
+        b = rng.randint(1, 10)
+        total = rng.randint(10, 100) * (a + b)
+        share_a = total * a // (a + b)
+        share_b = total - share_a
+        examples.append(make_example(
+            f"Share {total} in the ratio {a}:{b}. How much does each person get?",
+            f"Total parts = {a}+{b} = {a+b}. Each part = {total}/{a+b} = {total//(a+b)}. "
+            f"First share = {a} x {total//(a+b)} = {share_a}. Second share = {share_b}."))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 5d: Estimation & Mental Math
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_5d_estimation(min_examples=2000):
+    examples = []
+    rng = random.Random(55)
+
+    # Rounding
+    for _ in range(60):
+        n = rng.randint(10, 9999)
+        # round to nearest 10
+        r10 = round(n / 10) * 10
+        r100 = round(n / 100) * 100
+        r1000 = round(n / 1000) * 1000
+        examples.append(make_example(f"Round {n} to the nearest 10.", str(r10)))
+        examples.append(make_example(f"Round {n} to the nearest 100.", str(r100)))
+        if n >= 1000:
+            examples.append(make_example(f"Round {n} to the nearest 1000.", str(r1000)))
+
+    # Estimation
+    for _ in range(40):
+        a = rng.randint(10, 999)
+        b = rng.randint(10, 999)
+        approx = round((a + b) / 10) * 10
+        examples.append(make_example(
+            f"Estimate {a} + {b} by rounding to the nearest 10.",
+            f"Round to nearest 10: {round(a/10)*10} + {round(b/10)*10} = {round(a/10)*10 + round(b/10)*10} (approximately {approx})."))
+
+    # Mental math tricks
+    mental = [
+        ("What is 99 x 6?", "99 x 6 = (100 - 1) x 6 = 600 - 6 = 594."),
+        ("What is 25 x 4?", "25 x 4 = 100."),
+        ("What is 25 x 8?", "25 x 8 = 25 x 4 x 2 = 100 x 2 = 200."),
+        ("What is 50 x 14?", "50 x 14 = 50 x 10 + 50 x 4 = 500 + 200 = 700."),
+        ("What is 11 x 13?", "11 x 13 = 11 x 10 + 11 x 3 = 110 + 33 = 143."),
+        ("What is 15 x 15?", "15 x 15 = 225."),
+        ("What is 12 x 12?", "12 x 12 = 144."),
+        ("What is 9 x 9?", "81."),
+        ("Quickly: What is 20% of 350?", "20% of 350 = 350/5 = 70."),
+        ("Quickly: What is 10% of 870?", "10% of 870 = 87."),
+        ("Quickly: What is 5% of 200?", "5% of 200 = 200/20 = 10."),
+        ("What is half of 750?", "375."),
+        ("What is double 488?", "976."),
+        ("What is triple 33?", "99."),
+        ("What is 1000 - 347?", "653."),
+        ("What is 100 - 68?", "32."),
+        ("What is 500 - 163?", "337."),
+        ("How many minutes are in 3 hours?", "180 minutes."),
+        ("How many seconds are in 2 minutes?", "120 seconds."),
+        ("How many days are in 4 weeks?", "28 days."),
+        ("Estimate: Is 47 x 52 closer to 2000 or 3000?", "Closer to 2500. 47 x 52 ≈ 50 x 50 = 2500. Exact answer: 2444."),
+        ("Estimate: Is 98 + 103 + 101 closer to 300 or 400?", "Closer to 300. Each is close to 100, so ≈ 300. Exact: 302."),
+    ]
+    for q, a in mental:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 6a: Deductive Reasoning
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_6a_deduction(min_examples=2000):
+    examples = []
+
+    syllogisms = [
+        ("All mammals are warm-blooded. Elephants are mammals. Are elephants warm-blooded?",
+         "Yes. Since all mammals are warm-blooded and elephants are mammals, elephants must be warm-blooded."),
+        ("All birds have wings. Penguins are birds. Do penguins have wings?",
+         "Yes. All birds have wings, and penguins are birds, so penguins have wings — though they cannot fly."),
+        ("No fish are mammals. Sharks are fish. Are sharks mammals?",
+         "No. Since no fish are mammals and sharks are fish, sharks are not mammals."),
+        ("All squares are rectangles. All rectangles have four sides. Do all squares have four sides?",
+         "Yes. All squares are rectangles, all rectangles have four sides, so all squares have four sides."),
+        ("If it is raining, the ground is wet. The ground is wet. Is it necessarily raining?",
+         "Not necessarily. The ground could be wet for other reasons — sprinklers, flooding, etc. Wet ground doesn't prove rain."),
+        ("If P then Q. P is true. What can we conclude about Q?",
+         "Q must be true. This is modus ponens: if P implies Q, and P is true, then Q is true."),
+        ("If P then Q. Q is false. What can we conclude about P?",
+         "P must be false. This is modus tollens: if P implies Q, and Q is false, then P cannot be true."),
+        ("All cats are animals. All animals are living things. Is every cat a living thing?",
+         "Yes. By transitivity: cats → animals → living things, so cats are living things."),
+        ("Some dogs are friendly. Buddy is a dog. Is Buddy definitely friendly?",
+         "Not necessarily. Some dogs are friendly, but not all, so we can't conclude Buddy is friendly."),
+        ("No reptiles are mammals. A gecko is a reptile. Is a gecko a mammal?",
+         "No. No reptiles are mammals, and geckos are reptiles, so geckos are not mammals."),
+        ("All prime numbers greater than 2 are odd. 17 is prime and greater than 2. Is 17 odd?",
+         "Yes. Since 17 is prime and greater than 2, it must be odd."),
+        ("If today is Monday, tomorrow is Tuesday. Today is Monday. What day is tomorrow?",
+         "Tuesday."),
+        ("If today is Friday, the day after tomorrow is Sunday. Today is Friday. What day is the day after tomorrow?",
+         "Sunday."),
+        ("All East African countries border the Indian Ocean or a Great Lake. Does this mean all East African countries have a coast?",
+         "No. Bordering a Great Lake is not the same as having an ocean coast."),
+        ("Kenya is in East Africa. East Africa is in Africa. Is Kenya in Africa?",
+         "Yes. Kenya is in East Africa, and East Africa is part of Africa, so Kenya is in Africa."),
+        ("All multiples of 6 are multiples of 2. 18 is a multiple of 6. Is 18 a multiple of 2?",
+         "Yes."),
+        ("If you study hard, you will pass. You did not pass. What can we conclude?",
+         "You did not study hard (assuming the conditional is strict)."),
+        ("All even numbers are divisible by 2. 14 is even. Is 14 divisible by 2?",
+         "Yes. 14 ÷ 2 = 7."),
+        ("Cats are faster than tortoises. Tortoises are slower than dogs. Are dogs necessarily faster than cats?",
+         "We cannot conclude this. We know cats > tortoises < dogs, but the relationship between cats and dogs is unknown."),
+        ("A is taller than B. B is taller than C. Who is the tallest?",
+         "A is the tallest."),
+        ("X > Y and Y > Z. What is the order from largest to smallest?",
+         "X, Y, Z."),
+        ("If a shape has three sides, it is a triangle. This shape has three sides. What is it?",
+         "A triangle."),
+        ("All living things need water. A cactus is a living thing. Does a cactus need water?",
+         "Yes, though it is very efficient with water."),
+        ("Either it is day or it is night. It is not day. What is it?",
+         "It is night."),
+        ("Tom is older than Sam. Sam is older than Kim. Is Tom older than Kim?",
+         "Yes. If Tom > Sam > Kim, then Tom > Kim."),
+    ]
+    for q, a in syllogisms:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 6b: Analogies & Patterns
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_6b_analogies(min_examples=2000):
+    examples = []
+
+    analogy_pairs = [
+        ("Bird is to sky as fish is to ___.", "Water. Birds live in the sky; fish live in water."),
+        ("Doctor is to hospital as teacher is to ___.", "School."),
+        ("Hot is to cold as light is to ___.", "Dark."),
+        ("Kitten is to cat as puppy is to ___.", "Dog."),
+        ("Author is to book as composer is to ___.", "Music (or song, symphony)."),
+        ("Eye is to see as ear is to ___.", "Hear."),
+        ("Kenya is to Nairobi as France is to ___.", "Paris. Nairobi is Kenya's capital; Paris is France's capital."),
+        ("Foot is to shoe as hand is to ___.", "Glove."),
+        ("Tree is to forest as star is to ___.", "Galaxy."),
+        ("Knife is to cut as pen is to ___.", "Write."),
+        ("Mwalimu is to student as daktari is to ___.", "Mgonjwa (patient). Mwalimu = teacher; daktari = doctor."),
+        ("Water is to ice as steam is to ___.", "Water (or liquid). Steam cools to become water; water freezes to ice."),
+        ("Finger is to hand as toe is to ___.", "Foot."),
+        ("President is to country as mayor is to ___.", "City."),
+        ("Novel is to chapter as song is to ___.", "Verse (or stanza)."),
+        ("Hammer is to nail as key is to ___.", "Lock."),
+        ("Square is to cube as circle is to ___.", "Sphere."),
+        ("Hungry is to eat as tired is to ___.", "Sleep."),
+        ("Kenya is to Swahili as France is to ___.", "French."),
+        ("Sun is to day as moon is to ___.", "Night."),
+        ("Cow is to beef as pig is to ___.", "Pork."),
+        ("Wheat is to bread as grapes are to ___.", "Wine."),
+        ("Photosynthesis is to plants as respiration is to ___.", "Animals (all living things)."),
+        ("Past is to history as future is to ___.", "Prophecy (or prediction)."),
+        ("Teacher is to educate as doctor is to ___.", "Heal (or treat)."),
+    ]
+    for q, a in analogy_pairs:
+        examples.append(make_example(f"Complete the analogy: {q}", a))
+
+    sequence_pairs = [
+        ("What comes next: 2, 4, 6, 8, ___?", "10. The pattern adds 2 each time."),
+        ("What comes next: 1, 3, 5, 7, ___?", "9. The pattern adds 2 (odd numbers)."),
+        ("What comes next: 2, 4, 8, 16, ___?", "32. Each term doubles."),
+        ("What comes next: 1, 4, 9, 16, ___?", "25. These are perfect squares (1², 2², 3², 4², 5²)."),
+        ("What comes next: 1, 1, 2, 3, 5, 8, ___?", "13. This is the Fibonacci sequence (each term = sum of previous two)."),
+        ("What comes next: 100, 90, 80, 70, ___?", "60. Decreasing by 10."),
+        ("What comes next: 3, 6, 12, 24, ___?", "48. Each term doubles."),
+        ("What comes next: 1, 8, 27, 64, ___?", "125. These are perfect cubes (1³, 2³, 3³, 4³, 5³)."),
+        ("What comes next: 5, 10, 15, 20, ___?", "25. Multiples of 5."),
+        ("What comes next: 0, 1, 3, 6, 10, ___?", "15. Triangular numbers — differences are 1, 2, 3, 4, 5."),
+        ("What is the missing number: 2, __, 6, 8, 10?", "4. The sequence adds 2 each time."),
+        ("What is the missing number: 1, 2, 4, __, 16?", "8. Each term doubles."),
+        ("Which letter comes next: A, C, E, G, ___?", "I. Every other letter of the alphabet."),
+        ("Which letter comes next: Z, Y, X, W, ___?", "V. Alphabet in reverse."),
+        ("What is the pattern: Monday, Wednesday, Friday, ___?", "Sunday. Every other day of the week."),
+        ("What is the odd one out: Apple, Orange, Banana, Carrot?", "Carrot — it is a vegetable; the others are fruits."),
+        ("What is the odd one out: Lion, Tiger, Elephant, Eagle?", "Eagle — it is a bird; the others are mammals."),
+        ("What is the odd one out: Red, Blue, Green, Angry?", "Angry — it is an emotion; the others are colors."),
+        ("What is the odd one out: Kenya, Uganda, Tanzania, India?", "India — it is in Asia; the others are East African countries."),
+        ("What is the odd one out: Addition, Subtraction, Multiplication, Grammar?", "Grammar — it is a language concept; the others are arithmetic operations."),
+    ]
+    for q, a in sequence_pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 6c: Counterfactuals
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_6c_counterfactuals(min_examples=2000):
+    examples = []
+
+    pairs = [
+        ("If the Sun suddenly disappeared, what would happen to Earth?",
+         "Earth would fly off in a straight line (no longer held in orbit), temperatures would drop rapidly, and all life dependent on sunlight would die within days to weeks."),
+        ("If humans had never invented writing, how would history be different?",
+         "Knowledge could only spread orally, severely limiting science and culture. Civilizations would struggle to coordinate, keep records, or build on previous generations' work."),
+        ("If water boiled at 50°C instead of 100°C, what would change?",
+         "Cooking would be faster at lower temperatures, but hot summers could cause boiling water in rivers, killing aquatic life. Weather patterns would also be disrupted."),
+        ("If Kenya had no coast, how would it be different?",
+         "Kenya would lose its ports (like Mombasa), reducing trade access. Tourism to the coast would not exist. The Indian Ocean trade history would be completely different."),
+        ("What if plants couldn't photosynthesize?",
+         "There would be no oxygen production, no food for herbivores, and the entire food chain would collapse. Almost all life on Earth would cease to exist."),
+        ("What if there were 25 hours in a day?",
+         "Clocks and calendars would need adjustment. Biological rhythms (circadian clocks) in plants and animals would be disrupted. The year would have fewer days."),
+        ("What if Africa had never been colonized?",
+         "African nations would likely have developed their own political systems without imposed borders, languages, and economic structures. There would be more diversity and self-determined development."),
+        ("What if there were no electricity?",
+         "No electronics, internet, refrigeration, or electric lighting. Society would rely on gas lamps, steam, animal power, and manual labor, similar to the 19th century."),
+        ("If you could speak every language in the world, what would you do?",
+         "You could communicate with anyone on Earth, work as a diplomat or translator, preserve endangered languages, and understand cultures more deeply."),
+        ("What if it never rained in Kenya?",
+         "Agriculture would collapse, rivers would dry up, wildlife would die, and millions would need to relocate. Kenya's economy depends heavily on rainfall."),
+        ("What if there were no gravity?",
+         "All objects would float into space, Earth's atmosphere would disappear, and life as we know it could not exist."),
+        ("What if everyone in the world spoke the same language?",
+         "Communication would be much easier, but cultural diversity through language would be lost. Some argue it could reduce conflict; others say it would erase identity."),
+        ("If the wheel had never been invented, how would civilization differ?",
+         "Transportation, agriculture, and manufacturing would be far more limited. Many machines rely on wheels. Trade and movement of goods would be extremely difficult."),
+        ("What if the internet had never been invented?",
+         "Communication would rely on post, telephone, and fax. Knowledge sharing would be slower. Remote work and e-commerce wouldn't exist. Libraries and newspapers would be more central."),
+        ("What if humans were nocturnal instead of diurnal?",
+         "Cities would be lit at night and quiet during the day. Our relationship with sunlight, farming cycles, and social structures would be completely different."),
+        ("If Mount Kenya suddenly erupted, what would happen?",
+         "Ash would affect agriculture in central Kenya, air travel could be disrupted, and nearby communities would need evacuation."),
+        ("What if there were no predators in nature?",
+         "Prey populations would explode, overgraze vegetation, causing ecosystem collapse and eventual mass starvation."),
+        ("What if Kenya had discovered oil reserves as large as Saudi Arabia's?",
+         "Kenya's economy would transform dramatically — massive infrastructure investment, risk of 'resource curse' if managed poorly, or unprecedented development if managed well."),
+        ("What if you discovered a way to solve climate change tomorrow?",
+         "Immediate policy implementation would be needed. Fossil fuel industries would transform. Sea level rise would slow. Extreme weather events would decrease over time."),
+        ("What if antibiotics had never been discovered?",
+         "Many common infections that are now treatable would still be fatal. Life expectancy would be much lower, and surgery would be far riskier."),
+    ]
+    for q, a in pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 6d: Spatial & Temporal Reasoning
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_6d_spatial_temporal(min_examples=2000):
+    examples = []
+
+    temporal = [
+        ("If today is Monday, what day will it be in 3 days?", "Thursday."),
+        ("If today is Wednesday, what day was it 2 days ago?", "Monday."),
+        ("If today is Friday, what day will it be in 10 days?", "Monday."),
+        ("If January 1 is a Tuesday, what day is January 8?", "Tuesday. 8 days later is one full week ahead."),
+        ("How many days are between March 5 and March 20?", "15 days."),
+        ("If a train leaves at 14:30 and arrives at 17:15, how long is the journey?", "2 hours and 45 minutes."),
+        ("It is 9:00 AM. What time will it be in 3.5 hours?", "12:30 PM."),
+        ("It is 11:45 PM. What time will it be in 30 minutes?", "12:15 AM (midnight)."),
+        ("If a meeting starts at 2:00 PM and lasts 90 minutes, when does it end?", "3:30 PM."),
+        ("If you sleep at 10 PM and wake up at 6 AM, how many hours did you sleep?", "8 hours."),
+        ("If tomorrow is Thursday, what day was yesterday?", "Tuesday."),
+        ("How many months are there between April and September (inclusive)?", "Six months: April, May, June, July, August, September."),
+        ("If a year has 365 days, how many weeks are in a year?", "52 weeks with 1 day remaining (52 x 7 = 364)."),
+        ("What is 1 hour 45 minutes + 2 hours 30 minutes?", "4 hours 15 minutes."),
+        ("If a baby was born in 2015, how old are they in 2025?", "10 years old (in 2025)."),
+        ("A project starts January 1 and takes 3 months. When does it end?", "March 31 (end of March)."),
+    ]
+    for q, a in temporal:
+        examples.append(make_example(q, a))
+
+    spatial = [
+        ("If you face North and turn 90 degrees clockwise, which direction do you face?", "East."),
+        ("If you face East and turn 180 degrees, which direction do you face?", "West."),
+        ("If you face South and turn 90 degrees counter-clockwise, which direction do you face?", "East."),
+        ("A square has 4 corners. How many corners do 3 squares have?", "12 corners."),
+        ("If a cube has 6 faces, how many faces do 4 cubes have?", "24 faces."),
+        ("How many edges does a cube have?", "12."),
+        ("How many vertices does a cube have?", "8."),
+        ("A triangle has 3 sides. How many sides do 5 triangles have?", "15 sides."),
+        ("If you are facing a mirror, which way does your left hand appear?", "On the right side of your reflection."),
+        ("A room is 5 meters long and 4 meters wide. What is its perimeter?", "(5+4) x 2 = 18 meters."),
+        ("A rectangle has length 8 cm and width 3 cm. What is its area?", "8 x 3 = 24 cm²."),
+        ("Which is larger: a circle with radius 5, or a square with side 8?", "Area of circle = π x 25 ≈ 78.5. Area of square = 64. The circle is larger."),
+        ("If you walk 3 km north then 4 km east, how far are you from your starting point in a straight line?", "5 km (Pythagorean theorem: 3² + 4² = 5²)."),
+        ("How many right angles does a rectangle have?", "4."),
+        ("A road runs east-west. You turn left. Which direction are you now facing?", "North (if you were heading east, left is north)."),
+        ("On a standard clock, what angle is formed by the hands at 3:00?", "90 degrees (a right angle)."),
+        ("If you stand at the Equator and walk 10 km north, then 10 km south, where are you?", "Back at the Equator — you have returned to your starting point."),
+        ("A box is 2m x 3m x 4m. What is its volume?", "2 x 3 x 4 = 24 cubic meters."),
+        ("What shape has all sides equal and all angles equal?", "A regular polygon (e.g., equilateral triangle, square, regular hexagon)."),
+        ("If two lines are parallel, will they ever meet?", "No — parallel lines never intersect."),
+    ]
+    for q, a in spatial:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Phase 2b: Output Format Control
 # ══════════════════════════════════════════════════════════════════════════════
 
