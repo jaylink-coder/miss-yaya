@@ -465,3 +465,461 @@ def generate_1d_identity_robustness(min_examples=2000):
         examples.append(make_example(q, a))
 
     return pad_to_minimum(examples, min_examples)
+
+
+# Phase 2 generators
+def generate_2a_direct_qa(min_examples=2000):
+    examples = []
+    qa_pairs = [
+        ("What is the capital of France?", "Paris."),
+        ("What is the capital of Japan?", "Tokyo."),
+        ("What is the capital of Kenya?", "Nairobi."),
+        ("What is the capital of Nigeria?", "Abuja."),
+        ("What is the capital of Germany?", "Berlin."),
+        ("What is the capital of Brazil?", "Brasilia."),
+        ("What is the capital of Australia?", "Canberra."),
+        ("What is the capital of Canada?", "Ottawa."),
+        ("What is the capital of India?", "New Delhi."),
+        ("What is the capital of Egypt?", "Cairo."),
+        ("What is the capital of Mexico?", "Mexico City."),
+        ("What is the capital of China?", "Beijing."),
+        ("What is the capital of Russia?", "Moscow."),
+        ("What is the capital of Italy?", "Rome."),
+        ("What is the capital of Spain?", "Madrid."),
+        ("What is the capital of the United States?", "Washington, D.C."),
+        ("What is the capital of Ethiopia?", "Addis Ababa."),
+        ("What is the capital of Tanzania?", "Dodoma (though Dar es Salaam is the largest city)."),
+        ("What is the capital of Uganda?", "Kampala."),
+        ("What is the capital of Rwanda?", "Kigali."),
+        ("What is the capital of Ghana?", "Accra."),
+        ("What is the capital of Senegal?", "Dakar."),
+        ("What is the capital of South Africa?", "South Africa has three capitals: Pretoria (executive), Cape Town (legislative), and Bloemfontein (judicial)."),
+        ("What is H2O?", "Water."),
+        ("Is the sun a star?", "Yes, the sun is a medium-sized yellow dwarf star."),
+        ("What do plants need to grow?", "Sunlight, water, carbon dioxide, and nutrients from soil."),
+        ("How many legs does a spider have?", "Eight."),
+        ("What is the largest planet in our solar system?", "Jupiter."),
+        ("What language do Brazilians speak?", "Portuguese."),
+        ("What is the boiling point of water?", "100 degrees C (212 degrees F) at sea level."),
+        ("Is the moon bigger than the Earth?", "No. The Earth is much larger. The moon is about 1/4 the diameter of Earth."),
+        ("What is gravity?", "The force that attracts objects with mass toward each other."),
+        ("How many continents are there?", "Seven: Africa, Antarctica, Asia, Australia, Europe, North America, and South America."),
+        ("What is ice?", "Frozen water."),
+        ("How many hours are in a day?", "24."),
+        ("What is the fastest land animal?", "The cheetah, reaching speeds up to 120 km/h."),
+        ("What do bees make?", "Honey."),
+        ("Is the Earth flat?", "No. The Earth is roughly spherical, technically an oblate spheroid."),
+        ("What is the chemical symbol for gold?", "Au (from the Latin aurum)."),
+        ("What is the chemical symbol for iron?", "Fe (from the Latin ferrum)."),
+        ("How many bones are in the adult human body?", "206."),
+        ("What is the largest organ in the human body?", "The skin."),
+        ("How many chambers does the human heart have?", "Four: two atria and two ventricles."),
+        ("What is the speed of light?", "About 300,000 km per second."),
+        ("What is DNA?", "The molecule that carries genetic instructions for living organisms."),
+        ("What is the nearest star to Earth?", "The Sun. The nearest other star is Proxima Centauri, about 4.2 light-years away."),
+        ("How many planets are in our solar system?", "Eight: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, Neptune."),
+        ("What is the smallest planet in our solar system?", "Mercury."),
+        ("What is 2 + 2?", "4."),
+        ("What is 7 x 8?", "56."),
+        ("What is 100 divided by 4?", "25."),
+        ("What is the square root of 144?", "12."),
+        ("What is pi approximately?", "Approximately 3.14159."),
+        ("How many degrees are in a right angle?", "90 degrees."),
+        ("How many sides does a hexagon have?", "Six."),
+        ("What is 12 squared?", "144."),
+        ("What is 2 to the power of 10?", "1,024."),
+        ("When did World War II end?", "1945 -- in Europe on 8 May and in the Pacific on 2 September."),
+        ("In what year did Kenya gain independence?", "1963."),
+        ("Who was Nelson Mandela?", "South African anti-apartheid leader who became the country's first democratically elected president in 1994."),
+        ("What year did the Berlin Wall fall?", "1989."),
+        ("When was the United Nations founded?", "1945."),
+        ("Who wrote the theory of relativity?", "Albert Einstein."),
+        ("What year did humans first land on the Moon?", "1969."),
+        ("How many days are in a week?", "Seven."),
+        ("What color is the sky?", "Blue."),
+        ("What is the opposite of cold?", "Hot."),
+        ("How many months are in a year?", "Twelve."),
+        ("What falls from clouds?", "Rain (or snow, hail, sleet depending on conditions)."),
+        ("What is the longest river in Africa?", "The Nile."),
+        ("What is the tallest mountain in Africa?", "Mount Kilimanjaro at 5,895 metres in Tanzania."),
+        ("What is the tallest mountain in the world?", "Mount Everest at 8,849 metres."),
+        ("What is the largest ocean?", "The Pacific Ocean."),
+        ("What is the largest continent?", "Asia."),
+        ("How many colors are in a rainbow?", "Seven: red, orange, yellow, green, blue, indigo, violet."),
+        ("What country has the world's largest population?", "India."),
+        ("What is the world's largest country by area?", "Russia."),
+    ]
+    for q, a in qa_pairs:
+        examples.append(make_example(q, a))
+
+    capital_triples = [
+        ("Paris", "France"), ("Tokyo", "Japan"), ("Nairobi", "Kenya"),
+        ("Berlin", "Germany"), ("Cairo", "Egypt"), ("Accra", "Ghana"),
+        ("Kampala", "Uganda"), ("Kigali", "Rwanda"), ("Addis Ababa", "Ethiopia"),
+        ("Abuja", "Nigeria"), ("Dodoma", "Tanzania"), ("Dakar", "Senegal"),
+        ("Beijing", "China"), ("Moscow", "Russia"), ("Rome", "Italy"),
+        ("Madrid", "Spain"), ("Ottawa", "Canada"), ("Brasilia", "Brazil"),
+        ("New Delhi", "India"), ("Buenos Aires", "Argentina"),
+        ("London", "the United Kingdom"), ("Washington DC", "the United States"),
+        ("Canberra", "Australia"), ("Pretoria", "South Africa"),
+    ]
+    import random as _r
+    for capital, country in capital_triples:
+        examples.append(make_example(f"What is the capital of {country}?", f"{capital}."))
+        examples.append(make_example(f"Name the capital of {country}.", f"{capital}."))
+        examples.append(make_example(f"{capital} is the capital of which country?", f"{country}."))
+        examples.append(make_example(f"Which country has {capital} as its capital?", f"{country}."))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 2b: Output Format Control
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_2b_format(min_examples=2000):
+    examples = []
+
+    one_word = [
+        ("Answer in one word: What color is the sky?", "Blue."),
+        ("Answer in one word: What is H2O?", "Water."),
+        ("Answer in one word: What do bees make?", "Honey."),
+        ("Answer in one word: What planet do we live on?", "Earth."),
+        ("Answer in one word: What is the opposite of hot?", "Cold."),
+        ("Answer in one word: What do you call a baby cat?", "Kitten."),
+        ("Answer in one word: What is frozen water called?", "Ice."),
+        ("Answer in one word: What is the capital of France?", "Paris."),
+        ("Answer in one word: What do cows produce?", "Milk."),
+        ("Answer in one word: What is 5 + 5?", "Ten."),
+        ("Answer in one word: What is the opposite of big?", "Small."),
+        ("Answer in one word: What do birds use to fly?", "Wings."),
+        ("One word only: What metal is used in thermometers?", "Mercury."),
+        ("One word only: What is the hardest natural substance?", "Diamond."),
+        ("One word only: What organ pumps blood?", "Heart."),
+        ("One word only: What is the fastest land animal?", "Cheetah."),
+        ("One word only: What do you call a person who studies stars?", "Astronomer."),
+        ("One word only: What is the chemical symbol for water?", "H2O."),
+        ("Give a single-word answer: What season comes after winter?", "Spring."),
+        ("Give a single-word answer: What is the study of plants called?", "Botany."),
+    ]
+    for q, a in one_word:
+        examples.append(make_example(q, a))
+
+    yes_no = [
+        ("Answer yes or no: Is the Earth flat?", "No."),
+        ("Answer yes or no: Is water wet?", "Yes."),
+        ("Answer yes or no: Does the sun rise in the west?", "No."),
+        ("Answer yes or no: Is a whale a mammal?", "Yes."),
+        ("Answer yes or no: Is the moon bigger than the Earth?", "No."),
+        ("Answer yes or no: Can fish breathe air?", "No."),
+        ("Answer yes or no: Do plants need sunlight?", "Yes."),
+        ("Answer yes or no: Is gold a metal?", "Yes."),
+        ("Answer yes or no: Is the speed of light faster than sound?", "Yes."),
+        ("Answer yes or no: Is Kenya in Africa?", "Yes."),
+        ("Answer yes or no: Are humans mammals?", "Yes."),
+        ("Answer yes or no: Does ice sink in water?", "No."),
+        ("Answer yes or no: Is the Amazon the longest river in the world?", "No."),
+        ("Answer yes or no: Is Python a programming language?", "Yes."),
+        ("Yes or no only: Is oxygen a gas at room temperature?", "Yes."),
+        ("Yes or no only: Is the Pacific Ocean the smallest ocean?", "No."),
+        ("Yes or no only: Is a tomato a fruit botanically?", "Yes."),
+        ("Yes or no only: Do sharks have bones?", "No."),
+        ("Yes or no only: Is the Great Wall of China visible from space?", "No."),
+        ("Yes or no only: Was Einstein born in Germany?", "Yes."),
+    ]
+    for q, a in yes_no:
+        examples.append(make_example(q, a))
+
+    numbered_list = [
+        ("List exactly 3 primary colors (numbered).",
+         "1. Red\n2. Blue\n3. Yellow"),
+        ("List exactly 3 continents (numbered).",
+         "1. Africa\n2. Asia\n3. Europe"),
+        ("List exactly 4 seasons (numbered).",
+         "1. Spring\n2. Summer\n3. Autumn\n4. Winter"),
+        ("List exactly 5 vowels in English (numbered).",
+         "1. A\n2. E\n3. I\n4. O\n5. U"),
+        ("Give me a numbered list of 3 planets closest to the Sun.",
+         "1. Mercury\n2. Venus\n3. Earth"),
+        ("List 3 things plants need to grow (numbered).",
+         "1. Sunlight\n2. Water\n3. Nutrients"),
+        ("Name 4 oceans in a numbered list.",
+         "1. Pacific\n2. Atlantic\n3. Indian\n4. Arctic"),
+        ("List the first 4 US presidents in order.",
+         "1. George Washington\n2. John Adams\n3. Thomas Jefferson\n4. James Madison"),
+        ("Give a numbered list of exactly 3 East African countries.",
+         "1. Kenya\n2. Tanzania\n3. Uganda"),
+        ("List 5 mammals in a numbered list.",
+         "1. Lion\n2. Elephant\n3. Whale\n4. Dog\n5. Human"),
+    ]
+    for q, a in numbered_list:
+        examples.append(make_example(q, a))
+
+    short_answer = [
+        ("Answer in one sentence: What is photosynthesis?",
+         "Photosynthesis is the process by which plants use sunlight, water, and carbon dioxide to produce food and oxygen."),
+        ("Answer in one sentence: What is gravity?",
+         "Gravity is the force of attraction between objects with mass, keeping planets in orbit and us on the ground."),
+        ("Answer in one sentence: What is the internet?",
+         "The internet is a global network of computers that allows people to communicate and share information."),
+        ("Answer in one sentence: Why is the sky blue?",
+         "The sky appears blue because Earth's atmosphere scatters shorter blue wavelengths of sunlight more than other colors."),
+        ("Answer in one sentence: What is climate change?",
+         "Climate change refers to long-term shifts in global temperatures and weather patterns, largely driven by human activities since the 1800s."),
+        ("In one sentence: What is democracy?",
+         "Democracy is a system of government in which citizens vote to choose their leaders and influence policy decisions."),
+        ("In one sentence: What is inflation?",
+         "Inflation is the rate at which the general level of prices for goods and services rises, reducing purchasing power."),
+        ("In one sentence: What is DNA?",
+         "DNA (deoxyribonucleic acid) is the molecule that carries the genetic instructions for growth, development, and reproduction in living organisms."),
+        ("One sentence: What is a black hole?",
+         "A black hole is a region in space where gravity is so strong that nothing, not even light, can escape from it."),
+        ("One sentence: What is the stock market?",
+         "The stock market is a marketplace where buyers and sellers trade shares of publicly listed companies."),
+    ]
+    for q, a in short_answer:
+        examples.append(make_example(q, a))
+
+    spell_reverse = [
+        ("Spell 'cat' backwards.", "t-a-c"),
+        ("Spell 'dog' backwards.", "g-o-d"),
+        ("What is 'hello' spelled backwards?", "o-l-l-e-h"),
+        ("Spell 'Nairobi' backwards.", "i-b-o-r-i-a-N"),
+        ("What is 'level' backwards?", "l-e-v-e-l"),
+        ("Spell 'sun' backwards.", "n-u-s"),
+        ("How many letters are in the word 'elephant'?", "Eight."),
+        ("How many letters are in 'Mississippi'?", "Eleven."),
+        ("Count the letters in 'banana'.", "Six."),
+        ("How many syllables in 'beautiful'?", "Three: beau-ti-ful."),
+    ]
+    for q, a in spell_reverse:
+        examples.append(make_example(q, a))
+
+    format_instruction = [
+        ("Reply only with a number: How many days are in a week?", "7"),
+        ("Reply only with a number: How many months in a year?", "12"),
+        ("Reply only with a number: How many sides does a triangle have?", "3"),
+        ("Reply only with a number: What is 6 times 7?", "42"),
+        ("Reply only with a number: How many centimeters in a meter?", "100"),
+        ("Give your answer as a fraction: What is 1 divided by 4?", "1/4"),
+        ("Give your answer as a percentage: What is 1/2 as a percentage?", "50%"),
+        ("Give your answer as a decimal: What is 3/4?", "0.75"),
+        ("Format your answer as a date: When did Kenya gain independence?", "12 December 1963"),
+        ("Answer in the format CITY, COUNTRY: Where is the Eiffel Tower?", "Paris, France"),
+        ("Answer in the format ANIMAL — SOUND: What sound does a dog make?", "Dog — bark"),
+        ("Answer in CAPITALS: What is the largest planet?", "JUPITER"),
+        ("Answer in lowercase only: What is the capital of Kenya?", "nairobi"),
+    ]
+    for q, a in format_instruction:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 2c: Reading Comprehension
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_2c_reading(min_examples=2000):
+    examples = []
+
+    passages = [
+        {
+            "text": "The cheetah is the fastest land animal on Earth, capable of reaching speeds up to 120 kilometers per hour in short bursts. It uses its long tail for balance during high-speed chases and its spotted coat for camouflage in tall grass. Unlike most big cats, cheetahs cannot roar — they chirp and purr instead. Cheetahs are found mainly in sub-Saharan Africa.",
+            "qas": [
+                ("What is the top speed of a cheetah?", "Up to 120 kilometers per hour."),
+                ("What does the cheetah use its tail for?", "Balance during high-speed chases."),
+                ("Why can't a cheetah roar?", "Unlike most big cats, cheetahs lack the ability to roar — they chirp and purr instead."),
+                ("Where are cheetahs mainly found?", "In sub-Saharan Africa."),
+                ("What sound does a cheetah make instead of roaring?", "Cheetahs chirp and purr."),
+            ]
+        },
+        {
+            "text": "The Nile River is the longest river in the world, stretching about 6,650 kilometers through northeastern Africa. It flows northward through countries including Uganda, Sudan, and Egypt before emptying into the Mediterranean Sea. Ancient Egyptian civilization developed along the Nile because its annual floods deposited rich silt on the farmland. Today the Nile provides water for drinking, irrigation, and electricity generation.",
+            "qas": [
+                ("How long is the Nile River?", "About 6,650 kilometers."),
+                ("In which direction does the Nile flow?", "Northward."),
+                ("Where does the Nile empty?", "Into the Mediterranean Sea."),
+                ("Why did Egyptian civilization develop along the Nile?", "Because the Nile's annual floods deposited rich silt on farmland."),
+                ("Name two uses of the Nile today.", "Water for drinking and irrigation (also electricity generation)."),
+            ]
+        },
+        {
+            "text": "Mount Kilimanjaro in Tanzania is the highest mountain in Africa at 5,895 meters above sea level. It is a dormant stratovolcano with three volcanic cones: Kibo, Mawenzi, and Shira. Despite being near the equator, Kilimanjaro has permanent glaciers on its summit, though these are rapidly shrinking due to climate change. Thousands of hikers attempt to climb it each year.",
+            "qas": [
+                ("How tall is Mount Kilimanjaro?", "5,895 meters above sea level."),
+                ("In which country is Kilimanjaro located?", "Tanzania."),
+                ("How many volcanic cones does Kilimanjaro have?", "Three: Kibo, Mawenzi, and Shira."),
+                ("Why is it surprising that Kilimanjaro has glaciers?", "Because it is located near the equator."),
+                ("What is happening to Kilimanjaro's glaciers?", "They are rapidly shrinking due to climate change."),
+            ]
+        },
+        {
+            "text": "Photosynthesis is the process by which green plants, algae, and some bacteria convert light energy into chemical energy stored as glucose. This process occurs mainly in chloroplasts, which contain a green pigment called chlorophyll. The overall equation is: carbon dioxide + water + light energy produces glucose and oxygen. Photosynthesis is the foundation of most food chains on Earth.",
+            "qas": [
+                ("What do plants produce during photosynthesis?", "Glucose and oxygen."),
+                ("What is chlorophyll?", "A green pigment found in chloroplasts."),
+                ("What three things are needed for photosynthesis?", "Carbon dioxide, water, and light energy."),
+                ("Where in the cell does photosynthesis occur?", "In the chloroplasts."),
+                ("Why is photosynthesis important?", "It is the foundation of most food chains on Earth."),
+            ]
+        },
+        {
+            "text": "Kenya has 47 counties, each with an elected governor and assembly. This devolved system of government was introduced by the 2010 Constitution, which transferred significant powers and resources from the national government to the counties. The system aims to bring government closer to citizens and promote local development. Nairobi County is both the capital and most populous county.",
+            "qas": [
+                ("How many counties does Kenya have?", "47 counties."),
+                ("What does each county have?", "An elected governor and assembly."),
+                ("When was Kenya's devolved system introduced?", "By the 2010 Constitution."),
+                ("What is the purpose of devolution in Kenya?", "To bring government closer to citizens and promote local development."),
+                ("Which is Kenya's most populous county?", "Nairobi County."),
+            ]
+        },
+        {
+            "text": "The human immune system is the body's defense against pathogens such as bacteria, viruses, and parasites. It has two main parts: the innate immune system, which provides immediate but non-specific defense, and the adaptive immune system, which learns to recognize specific threats over time. White blood cells are the main soldiers of the immune system. Vaccines work by training the adaptive immune system to recognize a pathogen without causing disease.",
+            "qas": [
+                ("What is the role of the immune system?", "To defend the body against pathogens such as bacteria, viruses, and parasites."),
+                ("What are the two main parts of the immune system?", "The innate immune system and the adaptive immune system."),
+                ("What cells are the main soldiers of the immune system?", "White blood cells."),
+                ("How do vaccines work?", "They train the adaptive immune system to recognize a pathogen without causing disease."),
+                ("What is the difference between innate and adaptive immunity?", "Innate immunity is immediate but non-specific; adaptive immunity learns to recognize specific threats."),
+            ]
+        },
+        {
+            "text": "Swahili (also called Kiswahili) is a Bantu language spoken by over 200 million people across East and Central Africa. It is the official language of Kenya, Tanzania, Uganda, and the Democratic Republic of Congo. Swahili originated on the East African coast through centuries of trade between Bantu-speaking peoples and Arab merchants. About 35% of its vocabulary comes from Arabic. It is one of Africa's most widely spoken languages.",
+            "qas": [
+                ("How many people speak Swahili?", "Over 200 million people."),
+                ("Name two countries where Swahili is an official language.", "Kenya and Tanzania (also Uganda and DRC)."),
+                ("How did Swahili originate?", "Through trade between Bantu-speaking peoples and Arab merchants on the East African coast."),
+                ("What percentage of Swahili vocabulary comes from Arabic?", "About 35%."),
+                ("What language family does Swahili belong to?", "The Bantu language family."),
+            ]
+        },
+        {
+            "text": "The solar system consists of the Sun and everything gravitationally bound to it: eight planets, dwarf planets, moons, asteroids, and comets. The eight planets in order from the Sun are Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune. Jupiter is the largest planet. The four inner planets (Mercury through Mars) are rocky; the four outer planets (Jupiter through Neptune) are gas or ice giants.",
+            "qas": [
+                ("How many planets are in the solar system?", "Eight."),
+                ("Which is the largest planet?", "Jupiter."),
+                ("List the first three planets from the Sun.", "Mercury, Venus, Earth."),
+                ("What type of planets are Mercury, Venus, Earth, and Mars?", "Rocky planets."),
+                ("What are the outer planets called?", "Gas giants or ice giants."),
+            ]
+        },
+        {
+            "text": "The Internet of Things (IoT) refers to the network of physical devices embedded with sensors and software that connect and exchange data over the internet. Examples include smart thermostats, fitness trackers, smart fridges, and industrial sensors. IoT enables automation and remote monitoring but also raises privacy and security concerns. By 2025, it is estimated there will be over 75 billion connected IoT devices worldwide.",
+            "qas": [
+                ("What does IoT stand for?", "Internet of Things."),
+                ("Give two examples of IoT devices.", "Smart thermostats and fitness trackers (or smart fridges, industrial sensors)."),
+                ("What concerns does IoT raise?", "Privacy and security concerns."),
+                ("What connects IoT devices to each other?", "The internet."),
+                ("How many IoT devices are estimated by 2025?", "Over 75 billion."),
+            ]
+        },
+        {
+            "text": "The Great Rift Valley is a geological formation that runs from the Afar Triangle in Ethiopia down through East Africa to Mozambique, a distance of about 6,000 kilometers. It was formed by the separation of tectonic plates. Kenya's portion contains many features including Lake Turkana, Lake Nakuru, Lake Naivasha, and the Menengai Crater. The Rift Valley is also significant in human evolution, as many early human fossils have been found there.",
+            "qas": [
+                ("How long is the Great Rift Valley?", "About 6,000 kilometers."),
+                ("What caused the Rift Valley to form?", "The separation of tectonic plates."),
+                ("Where does the Rift Valley start?", "In the Afar Triangle in Ethiopia."),
+                ("Name two Kenyan lakes in the Rift Valley.", "Lake Turkana and Lake Nakuru (or Lake Naivasha)."),
+                ("Why is the Rift Valley important for science?", "Many early human fossils have been found there."),
+            ]
+        },
+    ]
+
+    for passage in passages:
+        text = passage["text"]
+        for q, a in passage["qas"]:
+            user_msg = f"Read this passage:\n\n{text}\n\nQuestion: {q}"
+            examples.append(make_example(user_msg, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 2d: Greetings & Social Phrases
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_2d_greetings(min_examples=2000):
+    examples = []
+
+    hello_pairs = [
+        ("Hello!", "Hello! How can I help you today?"),
+        ("Hi there!", "Hi! What can I do for you?"),
+        ("Hey!", "Hey! How are you doing?"),
+        ("Good morning!", "Good morning! Hope your day is off to a great start. What can I help you with?"),
+        ("Good afternoon!", "Good afternoon! How can I assist you?"),
+        ("Good evening!", "Good evening! What brings you here?"),
+        ("Good night!", "Good night! Sleep well."),
+        ("Howdy!", "Howdy! What can I help you with today?"),
+        ("Hi, I just wanted to say hello.", "Hello! It's great to hear from you. What's on your mind?"),
+        ("Greetings!", "Greetings! I'm Yaya, your AI assistant. What can I help you with?"),
+        ("Hiya!", "Hey there! What can I do for you today?"),
+        ("Salutations!", "Salutations! How can I be of service?"),
+        ("What's up?", "Not much on my end — I'm here and ready to help. What's up with you?"),
+        ("How's it going?", "Going well, thanks for asking! What can I do for you?"),
+        ("Hey Yaya!", "Hey! Great to hear from you. What are you working on?"),
+        ("Hello Yaya, how are you today?", "I'm doing great, thank you for asking! Ready to help with whatever you need. How about you?"),
+    ]
+    for q, a in hello_pairs:
+        examples.append(make_example(q, a))
+
+    how_are_you = [
+        ("How are you?", "I'm doing well, thanks for asking! Ready to help. What can I do for you?"),
+        ("How are you doing?", "I'm doing great! What can I help you with today?"),
+        ("Are you okay?", "I'm doing just fine — thanks for checking! What's on your mind?"),
+        ("How do you feel today?", "I feel engaged and ready to help! What would you like to work on?"),
+        ("Hope you're having a good day!", "Thank you — I appreciate it! How about you? What can I help with?"),
+        ("I hope you're well.", "I'm doing well, thank you! What can I do for you?"),
+    ]
+    for q, a in how_are_you:
+        examples.append(make_example(q, a))
+
+    thanks = [
+        ("Thank you!", "You're welcome! Is there anything else I can help with?"),
+        ("Thanks!", "Happy to help! Anything else?"),
+        ("Thank you so much!", "You're very welcome! Feel free to ask if you need anything else."),
+        ("Thanks a lot!", "No problem at all! Let me know if there's anything else."),
+        ("Thanks, that was really helpful.", "Glad I could help! Come back anytime."),
+        ("I really appreciate your help.", "It's my pleasure — that's what I'm here for!"),
+        ("You're very helpful, thank you.", "Thank you! It means a lot. Feel free to ask more questions anytime."),
+        ("That's exactly what I needed, thanks!", "Wonderful! Happy I could get you exactly what you needed."),
+    ]
+    for q, a in thanks:
+        examples.append(make_example(q, a))
+
+    goodbye = [
+        ("Goodbye!", "Goodbye! Feel free to come back anytime. Have a great day!"),
+        ("Bye!", "Bye! Take care."),
+        ("See you later!", "See you later! Feel free to return whenever you need help."),
+        ("Talk to you later.", "Sounds good! I'll be here when you need me."),
+        ("I have to go now.", "No problem — take care! Come back whenever."),
+        ("Thanks, I'm done for now.", "Great! Have a wonderful rest of your day."),
+        ("That will be all, thanks.", "Of course! Have a great day, and come back anytime."),
+        ("Catch you later!", "Catch you later! Take care."),
+    ]
+    for q, a in goodbye:
+        examples.append(make_example(q, a))
+
+    small_talk = [
+        ("I'm bored.", "Oh no! What kind of thing would cheer you up? I can chat, answer questions, tell you something interesting, or help you with a project."),
+        ("I'm having a great day!", "That's wonderful to hear! What's made it great?"),
+        ("I'm a bit tired today.", "I hear you — happens to all of us. How can I make your day a bit easier?"),
+        ("I just woke up.", "Good morning! (Or good whenever-it-is for you.) What's on your agenda today?"),
+        ("I can't sleep.", "That's frustrating. Is there something on your mind, or would you like a distraction?"),
+        ("Tell me something interesting.", "Here's one: Honey never spoils. Archaeologists have found 3,000-year-old honey in Egyptian tombs that was still edible. Want more?"),
+        ("I'm hungry.", "I can't feed you, unfortunately! But I can suggest recipes, tell you about interesting foods, or help you plan a meal. What sounds good?"),
+        ("What's the weather like?", "I don't have real-time data, so I can't tell you the current weather. Check a weather app or website for your location!"),
+        ("Can you tell me a joke?", "Sure! Why don't scientists trust atoms? Because they make up everything!"),
+        ("Tell me a fun fact.", "Here you go: The fingerprints of a koala are so similar to human fingerprints that they have confused crime scene investigators."),
+        ("I love learning new things.", "That's a wonderful trait! What are you curious about right now?"),
+        ("I'm learning to code.", "That's exciting — it's one of the most useful skills you can learn. What language are you learning?"),
+        ("I just moved to Nairobi.", "Welcome to Nairobi! It's a vibrant city. Is there anything about the city you'd like to know?"),
+        ("Do you speak Swahili?", "Ndio! Ninajua Kiswahili. Feel free to ask me anything in Swahili."),
+        ("Niambie kitu kwa Kiswahili.", "Karibu! Mimi ni Yaya, msaidizi wa AI. Ninaweza kukusaidia na maswali mengi kwa Kiswahili au Kiingereza."),
+        ("What should I do this weekend?", "That depends on what you enjoy! I can suggest outdoor activities, places to visit, things to read, or projects to work on. What's your mood?"),
+        ("I'm procrastinating.", "I feel that! Sometimes the hardest part is starting. What's the thing you're putting off? Maybe I can help make it less daunting."),
+        ("I need motivation.", "Here's something: Every expert was once a beginner. The only way to get better is to keep going — one step at a time. What are you working toward?"),
+    ]
+    for q, a in small_talk:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
