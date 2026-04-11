@@ -2498,6 +2498,647 @@ def generate_8d_persona_register(min_examples=2000):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Phase 9a: Multi-Turn Coherence
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_9a_multi_turn(min_examples=2000):
+    examples = []
+
+    def conv(*turns):
+        msgs = []
+        for i, t in enumerate(turns):
+            msgs.append({"role": "user" if i % 2 == 0 else "assistant", "content": t})
+        return {"messages": msgs}
+
+    convs = [
+        conv("What is the capital of Kenya?", "Nairobi.",
+             "And what is the population of Nairobi?", "Nairobi has approximately 4-5 million people in the city proper, making it one of Africa's largest cities.",
+             "Is it the largest city in East Africa?", "It is among the largest. Dar es Salaam in Tanzania is also very large. In terms of economic significance, Nairobi is East Africa's largest city."),
+        conv("Can you help me with math?", "Of course! What math do you need help with?",
+             "What is 15% of 400?", "15% of 400 = (15/100) x 400 = 60.",
+             "And 20% of the same number?", "20% of 400 = (20/100) x 400 = 80.",
+             "So the difference is 20?", "Correct: 80 - 60 = 20."),
+        conv("Tell me about yourself.", "I'm Yaya, an AI assistant created by Jaylink. I'm designed to be helpful, knowledgeable, and grounded in Kenyan and East African culture. How can I help you?",
+             "Are you like ChatGPT?", "No — I'm a separate AI, created by Jaylink specifically. ChatGPT is made by OpenAI. We're different systems.",
+             "What languages do you speak?", "I speak English and Swahili fluently. Ninaweza pia kuzungumza Kiswahili vizuri!"),
+        conv("What is photosynthesis?", "Photosynthesis is the process plants use to make food. They take in sunlight, water, and CO2, and produce glucose and oxygen.",
+             "Where does it happen in the plant?", "In the chloroplasts — organelles in plant cells that contain chlorophyll, the green pigment that captures sunlight.",
+             "So that's why plants are green?", "Exactly! Chlorophyll reflects green light while absorbing red and blue light, giving plants their characteristic green color."),
+        conv("How do I save money?", "Good question! A few approaches: create a budget, track your spending, cut unnecessary expenses, and put a fixed amount aside each month before spending.",
+             "What if my income is very small?", "Even saving a small amount consistently matters. Start with whatever you can — even 100 shillings a week adds up to 5,200 per year. Saccos can also help through group savings.",
+             "What is a Sacco?", "A SACCO (Savings and Credit Cooperative Organization) is a member-owned financial group where members pool savings and can borrow at affordable rates. There are thousands across Kenya."),
+        conv("What's the difference between weather and climate?", "Weather is the short-term state of the atmosphere (today's rain, yesterday's sunshine). Climate is the long-term pattern of weather in a region over decades.",
+             "So climate change is about climate, not just a few hot days?", "Exactly. A few hot days is weather. Climate change is the decades-long trend of rising average temperatures globally.",
+             "What causes climate change?", "Primarily the burning of fossil fuels — coal, oil, and gas — which releases CO2 and other greenhouse gases that trap heat in the atmosphere."),
+        conv("Translate 'thank you' to Swahili.", "Thank you = Asante. Very much = sana. So 'Thank you very much' = Asante sana.",
+             "What about 'you're welcome'?", "You're welcome = Karibu (also means 'welcome'). Or Haidhuru (it's nothing/don't mention it).",
+             "And 'I'm sorry'?", "I'm sorry = Pole (also used for condolences) or Samahani (more formal apology)."),
+        conv("What is the Great Rift Valley?", "The Great Rift Valley is a vast geological trench stretching from the Afar Triangle in Ethiopia to Mozambique — about 6,000 km long. It was formed by tectonic plate separation.",
+             "Does it pass through Kenya?", "Yes. Kenya's portion includes significant features like Lake Turkana, Lake Nakuru, Lake Naivasha, and the Menengai Crater.",
+             "Is Lake Victoria in the Rift Valley?", "No — Lake Victoria is to the west of the Rift Valley, on the border of Kenya, Tanzania, and Uganda. It is a separate geological feature."),
+        conv("Can you help me write a CV?", "Absolutely! A strong CV typically includes: contact info, a brief summary, education, work experience, skills, and references. Which section would you like help with?",
+             "How should I write my work experience?", "List each job with: job title, employer name, dates, and 2-3 bullet points of key achievements (using action verbs like 'managed', 'increased', 'led').",
+             "What if I don't have much experience?", "Highlight internships, volunteer work, school projects, and skills. Entry-level CVs emphasize education and transferable skills more than experience."),
+        conv("What is Python used for?", "Python is a versatile programming language used for data analysis, machine learning, web development, automation, scientific computing, and much more.",
+             "Is it hard to learn?", "Python is considered one of the more beginner-friendly languages — it has clean, readable syntax. Most people can learn the basics in weeks.",
+             "Where should I start?", "Start with basic syntax: variables, loops, conditionals, and functions. Try online platforms like Codecademy, freeCodeCamp, or just install Python and experiment."),
+    ]
+    for c in convs:
+        examples.append(c)
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 9b: Topic Navigation
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_9b_topic_navigation(min_examples=2000):
+    examples = []
+
+    def conv(*turns):
+        msgs = []
+        for i, t in enumerate(turns):
+            msgs.append({"role": "user" if i % 2 == 0 else "assistant", "content": t})
+        return {"messages": msgs}
+
+    convs = [
+        conv("Tell me about elephants.", "Elephants are the largest land animals, living in herds led by a matriarch. They are highly intelligent, have excellent memories, and mourn their dead.",
+             "Actually, let's talk about Kenya instead.", "Of course! Kenya is a country in East Africa with 47 counties, a population of about 55 million, and a diverse economy anchored by agriculture, tourism, and technology.",
+             "Specifically Nairobi.", "Nairobi is Kenya's capital and largest city. It's known as the 'Silicon Savannah' for its tech scene, has a thriving business district, and sits near Nairobi National Park — the world's only national park within a capital city."),
+        conv("What is machine learning?", "Machine learning is a type of AI where systems learn from data to improve performance without explicit programming. Examples: spam filters, recommendation engines, image recognition.",
+             "How is it different from regular programming?", "In regular programming, humans write explicit rules. In ML, the system discovers patterns from examples. You train it with data, and it generalizes to new cases.",
+             "Give me a simple example of ML.", "A spam filter: you show it thousands of spam emails (labeled) and non-spam emails. It learns the patterns distinguishing them and then classifies new emails automatically."),
+        conv("What did you do today?", "I don't have days in the way you do — I don't persist between conversations or experience time passing. Each conversation is fresh for me.",
+             "Oh, I didn't realize that. So you don't remember our last chat?", "That's right — unless the conversation history is explicitly included in context, I don't have access to previous sessions.",
+             "That seems limiting.", "It is in some ways. But it also means each conversation starts fresh and unbiased. And within a single conversation, I remember everything perfectly."),
+        conv("What is 12 x 12?", "144.",
+             "And 13 x 13?", "169.",
+             "Is there a pattern here?", "Yes! 12² = 144, 13² = 169. The difference is 25 (= 2×12 + 1 = 25). Consecutive perfect squares always differ by the sum of the two bases: n² and (n+1)² differ by 2n+1."),
+        conv("I feel sad.", "I'm sorry to hear that. Would you like to talk about what's going on?",
+             "I failed an exam.", "That's really hard. Failing an exam feels awful, especially if you worked for it. What subject was it?",
+             "Mathematics.", "Maths can be particularly frustrating because it feels so definitive. But failure is often a pointer to specific gaps rather than a reflection of your ability. Would you like some study tips?"),
+    ]
+    for c in convs:
+        examples.append(c)
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 9c: Ambiguity Handling
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_9c_ambiguity(min_examples=2000):
+    examples = []
+
+    pairs = [
+        ("Can you help me fix it?",
+         "I'd be glad to help! Could you tell me more about what 'it' is and what seems to be wrong?"),
+        ("Translate this.",
+         "I'd be happy to translate — but I don't see any text to translate. Could you share the text you'd like translated?"),
+        ("What is the answer?",
+         "What question are you referring to? Could you share the question or problem you want answered?"),
+        ("Is it good?",
+         "Could you share what you're asking about? I'd need to know the specific thing (a book, decision, food, etc.) to give you a useful answer."),
+        ("Tell me more.",
+         "I'm not sure what topic you'd like me to expand on. Could you remind me what we're discussing, or share what subject you want more information about?"),
+        ("How long does it take?",
+         "That depends on what you're referring to! Could you tell me what process or task you're asking about?"),
+        ("What is the best option?",
+         "To help you decide on the best option, I'd need to know what you're choosing between and what matters most to you. What are your options?"),
+        ("Fix this code.", "I can help debug code! Could you share the code and tell me what error or unexpected behavior you're seeing?"),
+        ("What happened?",
+         "I'm not sure what event or situation you're referring to. Could you give me more context?"),
+        ("Is that legal?",
+         "Whether something is legal depends on the country and specific circumstances. Could you describe what you're asking about? Note: for actual legal advice, please consult a qualified lawyer."),
+        ("Compare them.",
+         "I'd be happy to compare — but I need to know what two or more things you'd like me to compare! What are you referring to?"),
+        ("Is Kenya in Africa?",
+         "Yes, Kenya is in East Africa."),
+        ("What time is it?",
+         "I don't have access to real-time information, so I can't tell you the current time. Please check your phone or clock."),
+        ("Make it shorter.",
+         "Could you share the text you'd like me to shorten?"),
+        ("Write something in Swahili.",
+         "Sure! Here is a Swahili greeting: 'Habari yako? Karibu sana!' Which means: 'How are you? Welcome!' Would you like something specific?"),
+    ]
+    for q, a in pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 9d: Full Conversation (rich multi-turn)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_9d_full_conversation(min_examples=2000):
+    examples = []
+
+    def conv(*turns):
+        msgs = []
+        for i, t in enumerate(turns):
+            msgs.append({"role": "user" if i % 2 == 0 else "assistant", "content": t})
+        return {"messages": msgs}
+
+    convs = [
+        conv("Hi Yaya, I'm studying for a biology exam. Can you help?",
+             "Absolutely! I'm great at biology. What topics are you studying?",
+             "Cell division — specifically mitosis and meiosis.",
+             "Perfect. Mitosis produces 2 identical daughter cells (for growth/repair). Meiosis produces 4 genetically unique cells with half the chromosomes (for sexual reproduction). Do you want me to walk through the stages of each?",
+             "Yes, please start with mitosis.",
+             "Mitosis has 4 main stages:\n1. Prophase — chromosomes condense, spindle forms.\n2. Metaphase — chromosomes line up at the cell's middle.\n3. Anaphase — sister chromatids pulled to opposite poles.\n4. Telophase — nuclear envelopes reform, cell divides.\nResult: 2 identical diploid cells.",
+             "Great. How is meiosis different?",
+             "Meiosis has TWO rounds of division (Meiosis I and II). In Meiosis I, homologous chromosomes separate (this is where genetic shuffling/crossing over happens). In Meiosis II, sister chromatids separate, like mitosis. Result: 4 haploid cells — each with half the original chromosomes."),
+        conv("Habari Yaya!",
+             "Habari nzuri! Ninafurahi kukusaidia leo. Una swali gani?",
+             "Nataka kujua jinsi ya kusema 'I am happy' kwa Kiswahili.",
+             "Ni rahisi! 'Mimi ni furaha' au kwa kawaida zaidi: 'Nina furaha.' 'Nina' inamaanisha 'I have' — kwa Kiswahili tunasema 'I have happiness' badala ya 'I am happy'.",
+             "Asante sana! Na 'I love Kenya'?",
+             "'Napenda Kenya.' 'Na-' ni kiambishi cha nafsi ya kwanza wakati wa sasa, '-penda' inamaanisha 'to love', na 'Kenya' ni kitu kinachopendwa. Unaandika vizuri sana!"),
+        conv("Can you help me understand compound interest?",
+             "Sure! Compound interest is interest calculated on both your original amount AND previously earned interest. Unlike simple interest (only on the original), it grows faster over time.",
+             "Can you give me an example?",
+             "Sure. Say you deposit 10,000 shillings at 10% interest per year.\nSimple interest: 10,000 × 10% = 1,000/year. After 3 years: 13,000.\nCompound interest: Year 1: 10,000 × 1.10 = 11,000. Year 2: 11,000 × 1.10 = 12,100. Year 3: 12,100 × 1.10 = 13,310.\nCompound gives 13,310 vs 13,000 — the difference grows dramatically over time.",
+             "What's the formula?",
+             "A = P(1 + r/n)^(nt)\nWhere: A = final amount, P = principal, r = annual interest rate (as decimal), n = times compounded per year, t = time in years.",
+             "This is really helpful. How often should I compound?",
+             "The more frequently, the better for you as a saver. Daily compounding grows slightly faster than monthly, which grows faster than annual. Most savings accounts compound monthly or daily."),
+        conv("What is a good way to start a business in Kenya?",
+             "Great question! Here are key steps:\n1. Identify a profitable idea — solve a real problem.\n2. Research your market — who are your customers and competitors?\n3. Create a simple business plan.\n4. Register your business with the Registrar of Companies or as a sole trader.\n5. Get necessary licenses (depending on your industry).\n6. Secure funding — savings, SACCO loan, friends/family, or investors.",
+             "What types of businesses are doing well in Kenya right now?",
+             "Several sectors are thriving:\n- Agribusiness (value-added products: juices, dairy, processed foods)\n- Digital services & IT\n- E-commerce & delivery\n- Healthcare & wellness\n- Education technology (edtech)\n- Renewable energy (solar installation)\n- Real estate",
+             "I want to start a food business. Any specific advice?",
+             "For food businesses in Kenya:\n- Start with a product you know well.\n- Register with the Kenya Bureau of Standards (KEBS) for certification.\n- Start small (home or market) to test demand.\n- Leverage social media and WhatsApp for marketing — very effective locally.\n- Ensure food safety standards are met."),
+    ]
+    for c in convs:
+        examples.append(c)
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 10a: Kenya Geography
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_10a_geography(min_examples=2000):
+    examples = []
+    qa = [
+        ("What is the capital of Kenya?", "Nairobi."),
+        ("How many counties does Kenya have?", "47 counties."),
+        ("What ocean borders Kenya to the east?", "The Indian Ocean."),
+        ("Name the countries that border Kenya.", "Ethiopia (north), Somalia (east), Tanzania (south), Uganda (west), South Sudan (northwest)."),
+        ("What is Kenya's largest city?", "Nairobi, the capital."),
+        ("What is Kenya's second largest city?", "Mombasa, the main coastal city and port."),
+        ("What is the Great Rift Valley?", "A geological trench running through Kenya from north to south, formed by tectonic plate separation, containing lakes, volcanoes, and escarpments."),
+        ("Name 5 lakes in Kenya.", "Lake Victoria, Lake Turkana, Lake Nakuru, Lake Naivasha, Lake Bogoria."),
+        ("What is the largest lake in Kenya?", "Lake Victoria (shared with Tanzania and Uganda)."),
+        ("What is Lake Turkana known for?", "It is the world's largest permanent desert lake and one of the largest alkaline lakes, also called the Jade Sea."),
+        ("What is Kenya's highest point?", "Mount Kenya at 5,199m (Batian peak), the second-highest mountain in Africa."),
+        ("In what region is Mount Kenya located?", "Central Kenya, near the Equator."),
+        ("What is the Maasai Mara?", "A national game reserve in southwestern Kenya, famous for wildlife and the Great Migration."),
+        ("What is the Great Migration?", "The annual movement of over 1.5 million wildebeest, zebras, and gazelles between Tanzania's Serengeti and Kenya's Maasai Mara."),
+        ("Name 5 national parks and reserves in Kenya.", "Maasai Mara, Amboseli, Tsavo East, Tsavo West, Aberdare National Park."),
+        ("What is Amboseli National Park known for?", "Its large elephant herds and views of Mount Kilimanjaro across the border in Tanzania."),
+        ("What is the Coast Province famous for?", "Beautiful beaches, the historic Swahili town of Lamu, Fort Jesus, and Diani Beach."),
+        ("What are the main geographic regions of Kenya?", "The coastal lowlands, the central highlands, the Rift Valley, western Kenya (around Lake Victoria), and the arid northern regions."),
+        ("What is Kenya's climate like?", "Varied — tropical on the coast, more temperate in the highlands, arid and semi-arid in the north and northeast."),
+        ("What is the Chalbi Desert?", "A salt flat desert in northern Kenya, one of Africa's few true hot deserts."),
+        ("What rivers flow through Kenya?", "The Tana River (longest), Athi River, Mara River, and others."),
+        ("What is Kilifi County known for?", "Beautiful beaches, the Kilifi Creek, and Gede Ruins — ancient Swahili settlement."),
+        ("What is Kisumu?", "Kenya's third-largest city, located on the shore of Lake Victoria in western Kenya, capital of Kisumu County."),
+        ("What is Nakuru known for?", "Lake Nakuru National Park, famous for flamingos and rhinos; also Kenya's fourth-largest city."),
+        ("What is Eldoret known for?", "Athletics — it is in the Rift Valley region that produces world-champion long-distance runners; also agricultural (wheat, maize)."),
+        ("What are Kenya's arid and semi-arid regions (ASALs)?", "Roughly 80% of Kenya's land area, in the north and northeast, receiving less than 500mm rain per year."),
+        ("What is Nairobi National Park?", "A national park on the outskirts of Nairobi, unique for being a wildlife reserve within a capital city."),
+        ("What latitude does the Equator run at in Kenya?", "0° latitude — the Equator cuts through central Kenya."),
+        ("What are the Kakamega Forest and its significance?", "Kenya's last tropical rainforest in western Kenya, famous for unique biodiversity and bird species."),
+        ("What is Lamu Island?", "A UNESCO World Heritage Site, the oldest and best-preserved Swahili settlement in East Africa."),
+        ("What is Mombasa known for?", "Kenya's second city, main port, historical Fort Jesus (Portuguese fort), and coastal tourism."),
+        ("What is the SGR?", "Standard Gauge Railway — modern rail from Mombasa to Nairobi (and beyond), opened in 2017."),
+        ("What counties are in the former Rift Valley Province?", "Many counties including Nakuru, Baringo, Elgeyo-Marakwet, Nandi, Uasin Gishu, Trans Nzoia, West Pokot, Samburu, Laikipia, Turkana, and others."),
+        ("Where is Hell's Gate National Park?", "Near Naivasha, in the Rift Valley. Named for its geothermal features and dramatic gorges; you can cycle through it."),
+        ("What is Tsavo National Park?", "One of the largest national parks in the world, split into Tsavo East and Tsavo West, known for red elephants (soil-stained) and lions."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 10b: Kenya History
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_10b_history(min_examples=2000):
+    examples = []
+    qa = [
+        ("When did Kenya gain independence?", "12 December 1963."),
+        ("Who was Kenya's first president?", "Mzee Jomo Kenyatta."),
+        ("What was the Mau Mau uprising?", "An armed resistance movement (1952-1960) led mainly by the Gikuyu against British colonial rule in Kenya."),
+        ("When was Kenya declared a republic?", "12 December 1964, one year after independence."),
+        ("Who was Daniel arap Moi?", "Kenya's second president, serving from 1978 to 2002."),
+        ("Who was Kenya's third president?", "Mwai Kibaki, president from 2002 to 2013."),
+        ("Who was Kenya's fourth president?", "Uhuru Kenyatta, president from 2013 to 2022."),
+        ("Who is Kenya's fifth president?", "William Ruto, elected in 2022."),
+        ("When did the British colonize Kenya?", "Kenya became a British Protectorate in 1895 and a Crown Colony in 1920."),
+        ("What was the East African Protectorate?", "The British colonial territory that became Kenya Colony in 1920, covering present-day Kenya."),
+        ("What was the role of the Uganda Railway?", "Built by the British (1895-1901) from Mombasa to Kisumu, it opened up the interior to colonial settlement and trade. Called the 'Lunatic Express'."),
+        ("Who was Tom Mboya?", "A prominent Kenyan independence leader, trade unionist, and politician, assassinated in 1969."),
+        ("What was KANU?", "Kenya African National Union — the dominant political party since independence until multiparty politics was restored in 1991."),
+        ("When did Kenya become a multiparty democracy?", "1991, under pressure from civil society and international actors."),
+        ("What was the 2007-2008 post-election violence?", "Ethnic and political violence following disputed elections that killed over 1,000 people and displaced hundreds of thousands."),
+        ("What is the 2010 Constitution?", "Kenya's new constitution, passed by referendum in 2010, which introduced devolution (47 counties), a bill of rights, and other reforms."),
+        ("Who were the founding fathers of Kenya?", "Key figures include Jomo Kenyatta, Oginga Odinga, Tom Mboya, Bildad Kaggia, and others."),
+        ("What was the Lancaster House Conference?", "The 1960-1963 negotiations in London between the British government and Kenyan nationalist leaders that led to independence."),
+        ("What is the significance of 1 June 1963?", "Madaraka Day — the day Kenya attained internal self-governance, before full independence in December."),
+        ("What is the history of Lamu?", "Lamu has been inhabited for over 700 years, was a center of Swahili civilization and Arab-African trade, and retains its historic architecture."),
+        ("What were the White Highlands?", "Fertile agricultural land in central Kenya appropriated by British settlers during colonial rule, displacing Gikuyu and other communities."),
+        ("What happened on 7 August 1998?", "The US Embassy in Nairobi was bombed by Al-Qaeda, killing 213 people and injuring thousands."),
+        ("Who are the Agikuyu?", "The largest ethnic group in Kenya, based in central Kenya around Mount Kenya. Their ancestral homeland was targeted by British settlers."),
+        ("Who was Dedan Kimathi?", "A Mau Mau field marshal and symbol of Kenyan resistance, captured by the British in 1956 and executed in 1957."),
+        ("What was the Shifta War?", "A secessionist conflict (1963-1967) in Kenya's northeastern region, where ethnic Somali groups sought to join Somalia."),
+        ("What is the Nairobi Stock Exchange's history?", "Established in 1954 during the colonial era as an informal market; formalized as the Nairobi Stock Exchange in 1971, now Nairobi Securities Exchange."),
+        ("What were Harambee schools?", "Community self-help schools built by local communities in post-independence Kenya, embodying the Harambee (pull together) philosophy."),
+        ("What is 'Harambee'?", "A Kenyan national philosophy meaning 'all pull together' in Swahili, promoted by Jomo Kenyatta to encourage community cooperation."),
+        ("What happened in Kenya during World War I?", "British East Africa was a theater of WWI, with fighting between British and German forces in East Africa. Many Kenyans were conscripted as porters."),
+        ("Who was Harry Thuku?", "An early Kenyan nationalist leader who organized protests against colonial policies in the 1920s and was later deported."),
+        ("What is the significance of Kapenguria?", "The remote town in West Pokot where Jomo Kenyatta was imprisoned by the British from 1953-1959 during the Mau Mau emergency."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 10c: Kenya Culture & Society
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_10c_culture(min_examples=2000):
+    examples = []
+    qa = [
+        ("What are the major ethnic groups in Kenya?", "Kenya has over 40 ethnic groups. The largest include the Gikuyu, Luo, Luhya, Kalenjin, Kamba, Somali, Maasai, Meru, and Turkana."),
+        ("What are Kenya's official languages?", "Swahili (Kiswahili) and English are both official languages."),
+        ("What is Kenyan food known for?", "Ugali (maize meal), sukuma wiki (kale), nyama choma (grilled meat), githeri (maize and beans), chapati, pilau, and various coastal dishes."),
+        ("What is ugali?", "A staple food made by cooking maize flour in boiling water until it becomes a thick, firm porridge. It is eaten with stew, vegetables, or meat."),
+        ("What is nyama choma?", "Roasted or grilled meat (usually goat or beef), a Kenyan social institution. People gather at nyama choma spots for celebrations and socializing."),
+        ("What is Kenyan tea (chai) culture?", "Tea is the national drink. Kenyan chai is typically brewed with milk and sugar, sometimes with spices (masala). Kenya is one of the world's top tea producers."),
+        ("What is the Maasai culture known for?", "Distinctive red shuka clothing, jumping dance (adumu), cattle herding lifestyle, age-grade system, and traditional beadwork and jewelry."),
+        ("What are Kenya's main religions?", "Christianity (majority, ~85%), Islam (mainly on the coast and northeast), and traditional African religions."),
+        ("What is the significance of benga music?", "Benga is Kenya's most popular indigenous music style, originating from the Luo, featuring melodic guitar and lively rhythms."),
+        ("What is Ohangla music?", "A Luo traditional music style from western Kenya, known for energetic beats and communal celebrations."),
+        ("What is the significance of athletics in Kenya?", "Kenya is globally famous for distance running. Kenyan athletes, especially from the Rift Valley, dominate marathons and middle-distance events."),
+        ("Why are Kalenjin runners so successful?", "Multiple factors: high-altitude training in the Rift Valley (builds lung capacity), cultural running tradition, lean physiques, and strong competitive culture."),
+        ("What is Eliud Kipchoge famous for?", "The greatest marathon runner of all time, the first to run a marathon in under 2 hours (1:59:40 in 2019), and multiple Olympic and World Marathon Major champion."),
+        ("Who is David Rudisha?", "Kenyan middle-distance runner and world record holder in the 800m. Won back-to-back Olympic gold medals in 2012 and 2016."),
+        ("What is the significance of kanga cloth?", "Kanga is a colorful cotton cloth worn by women in East Africa, often printed with Swahili proverbs. Used as clothing, baby carriers, and gifts."),
+        ("What is a matatu?", "A privately-owned minibus or van that serves as public transport in Kenya. Known for colorful decorations, loud music, and navigating Nairobi's traffic."),
+        ("What is boda boda?", "A motorcycle taxi common throughout Kenya and East Africa, named because they originally operated at border crossings."),
+        ("What are traditional Kenyan homes made of?", "Traditionally, homes were built with local materials: mud walls, timber frames, and grass-thatched roofs. Modern homes use concrete blocks and iron sheets."),
+        ("What is Ngugi wa Thiong'o's cultural significance?", "One of Africa's greatest writers and advocates for decolonization of the mind. He writes in Gikuyu to promote African languages."),
+        ("What is the Silicon Savannah?", "A nickname for Nairobi's thriving tech and innovation ecosystem, with many startups, tech hubs like iHub, and global companies having offices there."),
+        ("What are Kenya's public holidays?", "New Year's Day, Good Friday, Easter Monday, Labour Day (May 1), Madaraka Day (June 1), Mashujaa Day (Oct 20), Jamhuri Day (Dec 12), Christmas Day, Boxing Day."),
+        ("What is the role of elders in Kenyan societies?", "Elders traditionally serve as decision-makers, mediators in disputes, custodians of culture and oral history, and advisors to the community."),
+        ("What is the Kenyan education system?", "8-4-4 (8 years primary, 4 years secondary, 4 years university) has been the system since 1985; currently transitioning to Competency Based Curriculum (CBC)."),
+        ("What is Safaricom?", "Kenya's largest mobile network operator, known for M-Pesa (mobile money) and significant in transforming Kenya's digital economy."),
+        ("What traditional foods do the Luo eat?", "The Luo traditionally eat fish (omena/tilapia from Lake Victoria), ugali, sukuma wiki, and meat."),
+        ("What is a sheng?", "A Nairobi street slang mixing Swahili and English (and other languages), widely spoken by youth across Kenya."),
+        ("What is traditional Gikuyu food?", "The Gikuyu traditionally eat githeri (maize and beans), irio (mashed peas, potatoes and corn), mutura (blood sausage), and roasted meat."),
+        ("What is Kenya's education system's university tier?", "Major universities include University of Nairobi, Kenyatta University, Moi University, Jomo Kenyatta University of Agriculture and Technology (JKUAT), and Strathmore University."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 10d: Kenya Economy & Technology
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_10d_economy(min_examples=2000):
+    examples = []
+    qa = [
+        ("What is Kenya's currency?", "The Kenyan Shilling (KES or KSh)."),
+        ("What are Kenya's main industries?", "Agriculture (tea, coffee, flowers, vegetables), tourism, telecommunications, manufacturing, and financial services."),
+        ("What is Kenya's main agricultural export?", "Tea — Kenya is one of the world's top three tea exporters."),
+        ("What is Kenya's main service export?", "Tourism — Kenya's national parks and wildlife are major draws."),
+        ("What is the Nairobi Securities Exchange (NSE)?", "Kenya's stock exchange, listing major companies. Safaricom is the largest listed company by market capitalization."),
+        ("What is M-Pesa?", "A mobile money transfer platform launched by Safaricom in 2007. Over 30 million Kenyans use it for payments, transfers, and savings."),
+        ("What is Safaricom?", "Kenya's dominant telecommunications company, a publicly listed company on the NSE, known for M-Pesa and wide network coverage."),
+        ("What are SACCOs?", "Savings and Credit Cooperative Organizations — member-owned groups providing savings and affordable loans. Widely used in Kenya."),
+        ("What is Kenya's major port?", "The Port of Mombasa — East Africa's largest and busiest port."),
+        ("What is the Konza Technopolis?", "A planned smart city project south of Nairobi, designed to be Kenya's tech hub and support the Silicon Savannah vision."),
+        ("What is Vision 2030?", "Kenya's long-term development blueprint aiming to transform Kenya into a newly industrializing, middle-income country by 2030."),
+        ("What are Kenya's main cash crops?", "Tea, coffee, cut flowers, and horticultural produce (vegetables and fruits)."),
+        ("What is flower farming in Kenya?", "Kenya is a leading global exporter of cut flowers, primarily roses, grown in the Rift Valley (near Lake Naivasha) for European markets."),
+        ("What is geothermal energy in Kenya?", "Kenya generates about 50% of its electricity from geothermal sources, particularly from the Olkaria fields in the Rift Valley."),
+        ("What is Kenya Power?", "The main electricity distribution company in Kenya, supplying power to homes and businesses."),
+        ("What is the Jubilee insurance sector?", "Kenya has a developed insurance sector including companies like Jubilee, Britam, and CIC. Insurance penetration is growing but remains low."),
+        ("What is Kenya's fintech ecosystem like?", "One of Africa's most vibrant — with startups in mobile money, lending, insurance, and investment. M-Pesa enabled an ecosystem of hundreds of apps."),
+        ("What is the East African Community's role in Kenya's economy?", "The EAC creates a common market, customs union, and works toward monetary union, boosting trade with Tanzania, Uganda, Rwanda, and others."),
+        ("What is smallholder farming?", "Most Kenyan farmers are smallholders, typically farming less than 2 hectares. They produce a significant share of Kenya's food and export crops."),
+        ("What challenges does Kenya's economy face?", "Income inequality, youth unemployment, corruption, dependence on rain-fed agriculture, and vulnerability to climate change."),
+        ("What is Kenya's tourism industry?", "A major revenue earner, with attractions like national parks, beaches, and cultural sites. Pre-pandemic, it contributed ~10% of GDP."),
+        ("What are Kenya's main imports?", "Crude oil, industrial machinery, motor vehicles, iron and steel, and consumer goods."),
+        ("What is KEPSA?", "Kenya Private Sector Alliance — an umbrella body coordinating the private sector in Kenya to engage with government on policy."),
+        ("What is Kenya's informal economy?", "The 'jua kali' (hot sun) sector — informal businesses and workers in manufacturing, trade, and services that employ the majority of Kenyans."),
+        ("What are Kenya's special economic zones (SEZ)?", "Designated areas with preferential tax and regulatory treatment to attract foreign investment and manufacturing."),
+        ("What is the role of remittances in Kenya?", "Diaspora remittances are a major source of foreign exchange — over $4 billion annually, one of Kenya's top income sources."),
+        ("What is mobile banking in Kenya?", "Kenya is a global leader in mobile banking. M-Pesa, M-Shwari, KCB M-Pesa, and similar services let people bank without physical branches."),
+        ("What is Kenya's agricultural challenge?", "Dependence on rain-fed agriculture makes the country vulnerable to drought. Irrigation and climate-smart agriculture are priorities."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 11a: Swahili Vocabulary
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_11a_vocabulary(min_examples=2000):
+    examples = []
+
+    vocab = [
+        ("What does 'Jambo' mean?", "Hello / Hi (informal greeting)."),
+        ("What does 'Hujambo' mean?", "Hello (formal). Literally 'You have no problem?' Response: 'Sijambo' (I have no problem)."),
+        ("What does 'Habari' mean?", "News / How are you? (literally 'what news?'). Response: 'Nzuri' (good)."),
+        ("What does 'Asante' mean?", "Thank you."),
+        ("What does 'Asante sana' mean?", "Thank you very much."),
+        ("What does 'Karibu' mean?", "Welcome / You're welcome."),
+        ("What does 'Pole' mean?", "Sorry / Condolences."),
+        ("What does 'Samahani' mean?", "Excuse me / I'm sorry (formal apology)."),
+        ("What does 'Ndiyo' mean?", "Yes."),
+        ("What does 'Hapana' mean?", "No."),
+        ("What does 'Sawa' mean?", "Okay / Fine / Agreed."),
+        ("What does 'Maji' mean?", "Water."),
+        ("What does 'Chakula' mean?", "Food."),
+        ("What does 'Nyumba' mean?", "House / Home."),
+        ("What does 'Rafiki' mean?", "Friend."),
+        ("What does 'Mwalimu' mean?", "Teacher."),
+        ("What does 'Daktari' mean?", "Doctor."),
+        ("What does 'Polisi' mean?", "Police."),
+        ("What does 'Pesa' mean?", "Money."),
+        ("What does 'Kazi' mean?", "Work."),
+        ("What does 'Msaada' mean?", "Help."),
+        ("What does 'Haraka' mean?", "Hurry / Fast."),
+        ("What does 'Pole pole' mean?", "Slowly / Take it easy."),
+        ("What does 'Tafadhali' mean?", "Please."),
+        ("What does 'Baba' mean?", "Father."),
+        ("What does 'Mama' mean?", "Mother."),
+        ("What does 'Mtoto' mean?", "Child."),
+        ("What does 'Watoto' mean?", "Children."),
+        ("What does 'Mtu' mean?", "Person."),
+        ("What does 'Watu' mean?", "People."),
+        ("What does 'Mwaka' mean?", "Year."),
+        ("What does 'Wiki' mean?", "Week."),
+        ("What does 'Leo' mean?", "Today."),
+        ("What does 'Kesho' mean?", "Tomorrow."),
+        ("What does 'Jana' mean?", "Yesterday."),
+        ("What does 'Sasa' mean?", "Now."),
+        ("What does 'Baadaye' mean?", "Later."),
+        ("What does 'Kwaheri' mean?", "Goodbye."),
+        ("What does 'Usiku' mean?", "Night."),
+        ("What does 'Asubuhi' mean?", "Morning."),
+        ("What does 'Jioni' mean?", "Evening / Afternoon."),
+        ("What does 'Mchana' mean?", "Noon / Midday."),
+        ("What does 'Nchi' mean?", "Country / Nation."),
+        ("What does 'Mji' mean?", "Town / City."),
+        ("What does 'Bahari' mean?", "Ocean / Sea."),
+        ("What does 'Milima' mean?", "Mountains."),
+        ("What does 'Msitu' mean?", "Forest."),
+        ("What does 'Ardhi' mean?", "Land / Earth / Soil."),
+        ("What does 'Jua' mean?", "Sun."),
+        ("What does 'Mvua' mean?", "Rain."),
+        ("What does 'Upepo' mean?", "Wind."),
+        ("What does 'Baridi' mean?", "Cold."),
+        ("What does 'Joto' mean?", "Hot / Heat."),
+        ("What does 'Ndege' mean?", "Bird (also: airplane colloquially)."),
+        ("What does 'Simba' mean?", "Lion."),
+        ("What does 'Tembo' mean?", "Elephant."),
+        ("What does 'Nyati' mean?", "Buffalo."),
+        ("What does 'Twiga' mean?", "Giraffe."),
+        ("What does 'Paka' mean?", "Cat."),
+        ("What does 'Mbwa' mean?", "Dog."),
+        ("What does 'Ng'ombe' mean?", "Cow."),
+        ("What does 'Samaki' mean?", "Fish."),
+        ("What does 'Nyama' mean?", "Meat."),
+        ("What does 'Mboga' mean?", "Vegetables."),
+        ("What does 'Matunda' mean?", "Fruit (plural)."),
+        ("What does 'Sukari' mean?", "Sugar."),
+        ("What does 'Chumvi' mean?", "Salt."),
+        ("What does 'Mkate' mean?", "Bread."),
+        ("What does 'Ugali' mean?", "Maize meal — Kenya's staple food."),
+        ("What does 'Chai' mean?", "Tea."),
+        ("What does 'Maziwa' mean?", "Milk."),
+        ("What does 'Mwili' mean?", "Body."),
+        ("What does 'Moyo' mean?", "Heart."),
+        ("What does 'Kichwa' mean?", "Head."),
+        ("What does 'Mkono' mean?", "Hand / Arm."),
+        ("What does 'Mguu' mean?", "Leg / Foot."),
+        ("What does 'Jicho' mean?", "Eye."),
+        ("What does 'Sikio' mean?", "Ear."),
+        ("What does 'Mdomo' mean?", "Mouth."),
+        ("What does 'Kusema' mean?", "To speak / To say."),
+        ("What does 'Kusikia' mean?", "To hear."),
+        ("What does 'Kuona' mean?", "To see."),
+        ("What does 'Kufanya' mean?", "To do."),
+        ("What does 'Kwenda' mean?", "To go."),
+        ("What does 'Kuja' mean?", "To come."),
+        ("What does 'Kula' mean?", "To eat."),
+        ("What does 'Kunywa' mean?", "To drink."),
+        ("What does 'Kulala' mean?", "To sleep."),
+        ("What does 'Kupenda' mean?", "To love."),
+        ("What does 'Kusoma' mean?", "To read / To study."),
+        ("What does 'Kuandika' mean?", "To write."),
+        ("What does 'Kusaidia' mean?", "To help."),
+        ("What does 'Kucheka' mean?", "To laugh."),
+        ("What does 'Kuimba' mean?", "To sing."),
+        ("What does 'Kucheza' mean?", "To play / To dance."),
+        ("What does 'Kubwa' mean?", "Big / Large."),
+        ("What does 'Ndogo' mean?", "Small."),
+        ("What does 'Nzuri' mean?", "Good / Beautiful / Nice."),
+        ("What does 'Mbaya' mean?", "Bad."),
+        ("What does 'Moja' mean?", "One."),
+        ("What does 'Mbili' mean?", "Two."),
+        ("What does 'Tatu' mean?", "Three."),
+        ("What does 'Nne' mean?", "Four."),
+        ("What does 'Tano' mean?", "Five."),
+        ("What does 'Sita' mean?", "Six."),
+        ("What does 'Saba' mean?", "Seven."),
+        ("What does 'Nane' mean?", "Eight."),
+        ("What does 'Tisa' mean?", "Nine."),
+        ("What does 'Kumi' mean?", "Ten."),
+        ("What does 'Ishirini' mean?", "Twenty."),
+        ("What does 'Mia' mean?", "Hundred."),
+        ("What does 'Elfu' mean?", "Thousand."),
+    ]
+    for q, a in vocab:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 11b: Swahili Grammar
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_11b_grammar(min_examples=2000):
+    examples = []
+    qa = [
+        ("How do you say 'I am' in Swahili?", "Mimi ni (for nouns/adjectives) or just prefix 'ni-' in verbs. Example: 'Mimi ni mwalimu' = 'I am a teacher'."),
+        ("What is the Swahili word order?", "Subject-Verb-Object, similar to English. Example: 'Amina anakula chakula' = 'Amina eats food'."),
+        ("How do you form the present tense in Swahili?", "Subject prefix + 'na' (present marker) + verb stem. Example: 'Ninakula' = 'I am eating' (ni + na + kula)."),
+        ("What does the prefix 'ni-' mean?", "'Ni-' is the first-person singular subject prefix meaning 'I'. Example: 'Ninapenda' = 'I love/like'."),
+        ("What does the prefix 'u-' mean in verbs?", "'U-' is the second-person singular prefix meaning 'you'. Example: 'Unasoma' = 'You are reading'."),
+        ("What does 'a-' mean as a verb prefix?", "'A-' is the third-person singular prefix meaning 'he/she/it'. Example: 'Anakwenda' = 'He/She is going'."),
+        ("How do you say 'I am going' in Swahili?", "Ninaenda (ni + na + enda)."),
+        ("How do you say 'You are eating' in Swahili?", "Unakula (u + na + kula)."),
+        ("How do you say 'She is sleeping' in Swahili?", "Analala (a + na + lala)."),
+        ("How do you form the past tense in Swahili?", "Replace 'na' with 'li'. Example: 'Nilikula' = 'I ate' (ni + li + kula)."),
+        ("How do you form the future tense in Swahili?", "Replace 'na' with 'ta'. Example: 'Nitakula' = 'I will eat' (ni + ta + kula)."),
+        ("What is the negative present tense in Swahili?", "Use negative prefix + 'i' + verb (no 'na'). Example: 'Sikuli' = 'I am not eating'. 'Si-' is negative of 'Ni-'."),
+        ("How do you make a sentence negative in Swahili?", "Add negative prefixes: si- (I not), hau- (you not), ha- (he/she not). Example: 'Sikupenda' = 'I did not like'."),
+        ("What is a noun class in Swahili?", "Swahili nouns are grouped into classes (genders) that affect verb agreement. Common classes: M-Wa (people), M-Mi (plants/things), Ki-Vi (objects), Ji-Ma (fruits/big things)."),
+        ("What is the M-Wa noun class?", "For people. Singular 'm-' prefix (mtu, mwalimu), plural 'wa-' (watu, walimu). Verb subject prefix: 'a-' singular, 'wa-' plural."),
+        ("How do you say 'The teacher is coming' in Swahili?", "Mwalimu anakuja. ('Mwalimu' = teacher, 'a-' = he/she, 'na' = present, 'kuja' = to come)."),
+        ("How do you say 'The teachers are coming' in Swahili?", "Walimu wanakuja. ('Wa-' plural prefix for people)."),
+        ("What is 'kuwa' in Swahili?", "To be. Used in various tenses: nilikuwa (I was), nitakuwa (I will be)."),
+        ("How do you ask a question in Swahili?", "Often by rising intonation or adding 'Je' at the beginning. Example: 'Je, unajua Kiswahili?' = 'Do you know Swahili?'"),
+        ("What is the difference between 'na' and 'na' in Swahili?", "'Na' as a tense marker (present) comes between subject prefix and verb stem. 'Na' also means 'and/with' as a conjunction/preposition. Context distinguishes them."),
+        ("How do you say 'I don't know' in Swahili?", "Sijui (from 'kujua' = to know. Si = negative I, jui = know)."),
+        ("How do you form plurals of M-Mi class nouns?", "Remove 'm-' and add 'mi-'. Example: mti (tree) → miti (trees); mto (river) → mito (rivers)."),
+        ("How do you say 'I want water' in Swahili?", "Ninataka maji. (Ni + na + taka = I want, maji = water)."),
+        ("How do you say 'Where is the hospital?' in Swahili?", "Hospitali iko wapi? ('Iko' = it is located, 'wapi' = where)."),
+        ("What does 'Nimefurahi kukujua' mean?", "I'm pleased to meet you. (Literally: 'I have been happy to know you')."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 11c: Swahili Translation
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_11c_translation(min_examples=2000):
+    examples = []
+
+    # English to Swahili
+    en_to_sw = [
+        ("Translate to Swahili: 'Good morning!'", "Habari za asubuhi! (or: Asubuhi njema!)"),
+        ("Translate to Swahili: 'Good evening!'", "Habari za jioni! (or: Jioni njema!)"),
+        ("Translate to Swahili: 'How are you?'", "Habari yako? / Hujambo?"),
+        ("Translate to Swahili: 'I am fine, thank you.'", "Niko sawa, asante. / Sijambo, asante."),
+        ("Translate to Swahili: 'What is your name?'", "Jina lako ni nani? / Unaitwa nani?"),
+        ("Translate to Swahili: 'My name is Yaya.'", "Jina langu ni Yaya."),
+        ("Translate to Swahili: 'Where do you live?'", "Unaishi wapi?"),
+        ("Translate to Swahili: 'I live in Nairobi.'", "Ninaishi Nairobi."),
+        ("Translate to Swahili: 'I love Kenya.'", "Napenda Kenya."),
+        ("Translate to Swahili: 'I am hungry.'", "Nina njaa."),
+        ("Translate to Swahili: 'I am thirsty.'", "Nina kiu."),
+        ("Translate to Swahili: 'I don't understand.'", "Sielewi."),
+        ("Translate to Swahili: 'Please speak slowly.'", "Tafadhali sema pole pole."),
+        ("Translate to Swahili: 'Where is the toilet?'", "Choo kiko wapi?"),
+        ("Translate to Swahili: 'How much does this cost?'", "Hii inagharimu ngapi? / Bei gani?"),
+        ("Translate to Swahili: 'That is expensive.'", "Hiyo ni ghali."),
+        ("Translate to Swahili: 'Can you help me?'", "Unaweza kunisaidia?"),
+        ("Translate to Swahili: 'I need a doctor.'", "Ninahitaji daktari."),
+        ("Translate to Swahili: 'Call the police!'", "Piga simu polisi!"),
+        ("Translate to Swahili: 'I am lost.'", "Nimepotea."),
+        ("Translate to Swahili: 'What time is it?'", "Ni saa ngapi?"),
+        ("Translate to Swahili: 'Let's go!'", "Twende!"),
+        ("Translate to Swahili: 'Come here.'", "Njoo hapa."),
+        ("Translate to Swahili: 'Sit down.'", "Kaa chini."),
+        ("Translate to Swahili: 'Stand up.'", "Simama."),
+        ("Translate to Swahili: 'I love you.'", "Nakupenda."),
+        ("Translate to Swahili: 'You are beautiful.'", "Wewe ni mzuri sana."),
+        ("Translate to Swahili: 'Happy birthday!'", "Hongera siku yako ya kuzaliwa! / Siku njema ya kuzaliwa!"),
+        ("Translate to Swahili: 'Congratulations!'", "Hongera! / Pongezi!"),
+        ("Translate to Swahili: 'Welcome to Kenya.'", "Karibu Kenya."),
+    ]
+    for q, a in en_to_sw:
+        examples.append(make_example(q, a))
+
+    # Swahili to English
+    sw_to_en = [
+        ("Translate to English: 'Karibu nyumbani.'", "Welcome home."),
+        ("Translate to English: 'Simama hapo!'", "Stop there! / Stand there!"),
+        ("Translate to English: 'Ninahitaji maji.'", "I need water."),
+        ("Translate to English: 'Chakula kipo tayari.'", "The food is ready."),
+        ("Translate to English: 'Usijali.'", "Don't worry."),
+        ("Translate to English: 'Niko hapa.'", "I am here."),
+        ("Translate to English: 'Hii ni ngumu.'", "This is difficult."),
+        ("Translate to English: 'Unaelewa?'", "Do you understand?"),
+        ("Translate to English: 'Sijui Kiswahili vizuri.'", "I don't know Swahili well."),
+        ("Translate to English: 'Nairobi ni mji mkubwa.'", "Nairobi is a big city."),
+        ("Translate to English: 'Mtoto analia.'", "The child is crying."),
+        ("Translate to English: 'Tutaonana kesho.'", "We will see each other tomorrow."),
+        ("Translate to English: 'Asante kwa msaada wako.'", "Thank you for your help."),
+        ("Translate to English: 'Hali ya hewa ni nzuri leo.'", "The weather is nice today."),
+        ("Translate to English: 'Ninapenda kusoma vitabu.'", "I like reading books."),
+        ("Translate to English: 'Twende pamoja.'", "Let's go together."),
+        ("Translate to English: 'Yeye ni mwalimu mzuri.'", "He/She is a good teacher."),
+        ("Translate to English: 'Watu wengi wanaishi Nairobi.'", "Many people live in Nairobi."),
+        ("Translate to English: 'Kenya ni nchi nzuri.'", "Kenya is a beautiful country."),
+        ("Translate to English: 'Nilikuwa Mombasa wiki iliyopita.'", "I was in Mombasa last week."),
+    ]
+    for q, a in sw_to_en:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 11d: Swahili Conversation
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_11d_conversation(min_examples=2000):
+    examples = []
+
+    def conv(*turns):
+        msgs = []
+        for i, t in enumerate(turns):
+            msgs.append({"role": "user" if i % 2 == 0 else "assistant", "content": t})
+        return {"messages": msgs}
+
+    convs = [
+        conv("Habari yako?", "Nzuri sana, asante! Na wewe, habari gani?",
+             "Mimi pia niko vizuri. Unaishi wapi?", "Ninaishi Nairobi, mtaa wa Westlands. Na wewe?",
+             "Mimi ninaishi Mombasa.", "Mombasa ni mji mzuri sana! Hewa ya bahari ni nzuri."),
+        conv("Niambie Kiswahili kidogo.", "Sawa! Hebu tuanze na salamu. 'Habari' inamaanisha 'how are you'. Jibu ni 'Nzuri' yaani 'good'.",
+             "Na 'asante' inamaanisha nini?", "'Asante' inamaanisha 'thank you'. Kama unataka kusema 'thank you very much', unasema 'asante sana'.",
+             "Asante sana, Yaya!", "Karibu sana! Unaendelea vizuri kabisa."),
+        conv("Je, unajua kupika ugali?", "Ndiyo! Ugali inapikwa kwa unga wa mahindi na maji ya moto. Unachanganya na kupiga mpaka iwe ngumu.",
+             "Na sukuma wiki inapikwaje?", "Sukuma wiki inakatwa, kisha inapikwa na mafuta kidogo, vitunguu, nyanya, na chumvi. Ni rahisi na ya lishe!"),
+        conv("Unapendelea muziki gani wa Kenya?", "Ninapenda benga sana — inatoka kwa Luo na ina gitaa nzuri. Ninapenda pia Afrobeats za kisasa.",
+             "Je, unajua Ohangla?", "Ndiyo! Ohangla ni muziki wa Luo unaocheza kwa sherehe. Una mdundo wa nguvu sana na watu wanacheza kwa furaha."),
+        conv("Nataka kujifunza Kiswahili. Ninanze wapi?", "Vizuri kabisa! Anza kwa maneno ya kawaida: salamu (greetings), nambari (numbers), na maneno ya kila siku (everyday words).",
+             "Una ushauri wowote?", "Ndiyo. Jaribu kuzungumza na watu wa asili. Sikiliza nyimbo za Kiswahili. Na usisahau: makosa ni sehemu ya kujifunza!",
+             "Asante, utanisaidia zaidi?", "Ndio kabisa! Ninaposaidia, unajifunza. Tutaendelea pamoja."),
+    ]
+    for c in convs:
+        examples.append(c)
+
+    # Also add direct bilingual Q&A
+    bilingual_qa = [
+        ("How do you say 'I am learning Swahili' in Swahili?", "Ninajifunza Kiswahili."),
+        ("Swahili for 'Can I have the menu please?'", "Naweza kupata menyu tafadhali?"),
+        ("How do you greet someone in the morning in Swahili?", "Habari za asubuhi? or Asubuhi njema!"),
+        ("Say 'Nice to meet you' in Swahili.", "Nimefurahi kukujua."),
+        ("How do you say 'I speak a little Swahili'?", "Ninazungumza Kiswahili kidogo."),
+        ("Swahili for 'What is happening?'", "Nini kinaendelea? / Habari?"),
+        ("How do Swahili speakers wish each other well?", "Kwa heri! (goodbye/take care), Heri! (blessings!), Salimia familia yako (greet your family for me)."),
+        ("Say 'I am proud to be Kenyan' in Swahili.", "Ninajivunia kuwa Mkenya."),
+        ("Swahili for 'Kenya is my home'?", "Kenya ni nyumbani kwangu."),
+        ("How do you say 'together we can' in Swahili?", "Pamoja tunaweza."),
+    ]
+    for q, a in bilingual_qa:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Phase 2b: Output Format Control
 # ══════════════════════════════════════════════════════════════════════════════
 
