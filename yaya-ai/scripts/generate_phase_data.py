@@ -2122,6 +2122,382 @@ def generate_6d_spatial_temporal(min_examples=2000):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Phase 7a: Step-by-Step Reasoning (with <|think|> tags)
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_7a_step_by_step(min_examples=2000):
+    examples = []
+
+    cot_pairs = [
+        ("If I have 3 bags with 7 apples each, how many apples total?",
+         "<|think|>\nEach bag has 7 apples. There are 3 bags.\n3 x 7 = 21.\n</|think|>\n21 apples."),
+        ("A car travels 60 km/h for 2.5 hours. How far does it go?",
+         "<|think|>\nDistance = speed x time.\nSpeed = 60 km/h, time = 2.5 hours.\n60 x 2.5 = 150 km.\n</|think|>\n150 km."),
+        ("What is 15% of 240?",
+         "<|think|>\n15% of 240 = 15/100 x 240 = 0.15 x 240.\n0.15 x 240 = 0.1 x 240 + 0.05 x 240 = 24 + 12 = 36.\n</|think|>\n36."),
+        ("If yesterday was Wednesday, what day will it be in 4 days?",
+         "<|think|>\nYesterday was Wednesday, so today is Thursday.\nIn 4 days from Thursday: Friday, Saturday, Sunday, Monday.\n</|think|>\nMonday."),
+        ("A shirt costs 800 shillings. There is a 25% discount. What do you pay?",
+         "<|think|>\n25% of 800 = 800/4 = 200 shillings discount.\n800 - 200 = 600 shillings.\n</|think|>\n600 shillings."),
+        ("What is the area of a rectangle 12 cm long and 7 cm wide?",
+         "<|think|>\nArea of rectangle = length x width.\n12 x 7 = 84 cm².\n</|think|>\n84 cm²."),
+        ("If a dozen eggs costs 120 shillings, how much does each egg cost?",
+         "<|think|>\nA dozen = 12 eggs.\n120 shillings ÷ 12 = 10 shillings per egg.\n</|think|>\n10 shillings per egg."),
+        ("A class of 30 students took a test. 24 passed. What percentage passed?",
+         "<|think|>\nPercentage passed = (passed / total) x 100.\n= (24/30) x 100 = 0.8 x 100 = 80%.\n</|think|>\n80% passed."),
+        ("What is the perimeter of a square with side 9 cm?",
+         "<|think|>\nA square has 4 equal sides.\nPerimeter = 4 x side = 4 x 9 = 36 cm.\n</|think|>\n36 cm."),
+        ("Water boils at 100°C and freezes at 0°C. What is the range?",
+         "<|think|>\nRange = maximum - minimum = 100 - 0 = 100.\n</|think|>\n100 degrees Celsius."),
+        ("If 5 workers complete a job in 8 days, how long would 10 workers take?",
+         "<|think|>\nTotal work = 5 workers x 8 days = 40 worker-days.\nWith 10 workers: 40 / 10 = 4 days.\n</|think|>\n4 days."),
+        ("A store buys a jacket for 2000 shillings and sells it for 2600 shillings. What is the profit percentage?",
+         "<|think|>\nProfit = 2600 - 2000 = 600 shillings.\nProfit % = (profit / cost) x 100 = (600 / 2000) x 100 = 30%.\n</|think|>\n30% profit."),
+        ("What is the sum of all interior angles in a triangle?",
+         "<|think|>\nA standard fact: the sum of interior angles in any triangle is always 180 degrees.\n</|think|>\n180 degrees."),
+        ("A tap fills a tank in 6 hours. After 2 hours, how full is the tank?",
+         "<|think|>\nIn 1 hour the tap fills 1/6 of the tank.\nIn 2 hours it fills 2/6 = 1/3 of the tank.\n</|think|>\n1/3 full (about 33.3%)."),
+        ("If a number doubled gives 84, what is the number?",
+         "<|think|>\nLet the number be x. Then 2x = 84. So x = 84 / 2 = 42.\n</|think|>\n42."),
+        ("What is 17 + 28 + 35?",
+         "<|think|>\n17 + 28 = 45.\n45 + 35 = 80.\n</|think|>\n80."),
+        ("A train journey is 420 km. The train travels at 70 km/h. How long does it take?",
+         "<|think|>\nTime = distance / speed = 420 / 70 = 6 hours.\n</|think|>\n6 hours."),
+        ("How many seconds are in 2 hours and 15 minutes?",
+         "<|think|>\n2 hours = 2 x 3600 = 7200 seconds.\n15 minutes = 15 x 60 = 900 seconds.\nTotal = 7200 + 900 = 8100 seconds.\n</|think|>\n8,100 seconds."),
+        ("If I spend 1/4 of my salary on rent and 1/3 on food, what fraction is left?",
+         "<|think|>\n1/4 + 1/3 = 3/12 + 4/12 = 7/12 spent.\nLeft = 1 - 7/12 = 5/12.\n</|think|>\n5/12 of the salary remains."),
+        ("A farmer plants 15 rows of maize with 20 plants per row. How many plants in total?",
+         "<|think|>\nTotal plants = rows x plants per row = 15 x 20 = 300.\n</|think|>\n300 plants."),
+        ("What is 2^8?",
+         "<|think|>\n2^1=2, 2^2=4, 2^3=8, 2^4=16, 2^5=32, 2^6=64, 2^7=128, 2^8=256.\n</|think|>\n256."),
+        ("All flowers need water. Roses are flowers. Do roses need water?",
+         "<|think|>\nPremise 1: All flowers need water.\nPremise 2: Roses are flowers.\nConclusion: By syllogism, roses (being flowers) need water.\n</|think|>\nYes, roses need water."),
+        ("Sort from smallest to largest: 1/2, 0.3, 75%.",
+         "<|think|>\nConvert all to decimals: 1/2 = 0.5, 0.3 = 0.3, 75% = 0.75.\nOrder: 0.3, 0.5, 0.75.\n</|think|>\n0.3, 1/2, 75%."),
+        ("If a rectangle's perimeter is 36 cm and its length is 10 cm, what is its width?",
+         "<|think|>\nPerimeter = 2(length + width).\n36 = 2(10 + w) → 18 = 10 + w → w = 8 cm.\n</|think|>\n8 cm."),
+        ("What is 3/4 of 200?",
+         "<|think|>\n3/4 of 200 = (3 x 200) / 4 = 600 / 4 = 150.\n</|think|>\n150."),
+    ]
+    for q, a in cot_pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 7b: Problem Decomposition
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_7b_decomposition(min_examples=2000):
+    examples = []
+
+    decomp_pairs = [
+        ("How would you plan a trip from Nairobi to Mombasa by road?",
+         "<|think|>\nBreak this into steps:\n1. Choose transport: personal car, bus (SGR + matatu, or direct bus).\n2. Check road conditions on the Mombasa-Nairobi highway.\n3. Plan stops: Mtito Andei, Voi are common rest points.\n4. Arrange accommodation in Mombasa in advance.\n5. Budget for fuel/fare, food, and lodging.\n</|think|>\nPlan your route (Nairobi-Mtito Andei-Voi-Mombasa), choose transport (bus or car), arrange stops, book accommodation, and budget accordingly."),
+        ("How do you solve 4x + 12 = 28?",
+         "<|think|>\nStep 1: Subtract 12 from both sides: 4x = 28 - 12 = 16.\nStep 2: Divide both sides by 4: x = 16 / 4 = 4.\n</|think|>\nx = 4."),
+        ("How would you make a budget for a month?",
+         "<|think|>\n1. List all income sources (salary, side income).\n2. List fixed expenses (rent, utilities, loan payments).\n3. List variable expenses (food, transport, entertainment).\n4. Subtract expenses from income to find savings.\n5. Adjust if expenses exceed income.\n</|think|>\nList income, list fixed costs, list variable costs, subtract to find savings, and adjust as needed."),
+        ("How would you find out if 91 is prime?",
+         "<|think|>\nTest divisibility by primes up to √91 ≈ 9.5: 2, 3, 5, 7.\n91 / 2 = 45.5 (no)\n91 / 3 = 30.3 (no)\n91 / 5 = 18.2 (no)\n91 / 7 = 13 (yes! 7 x 13 = 91)\n</|think|>\n91 is NOT prime — it equals 7 x 13."),
+        ("How do you convert 3.5 km to meters?",
+         "<|think|>\n1 km = 1000 meters.\n3.5 km = 3.5 x 1000 = 3500 meters.\n</|think|>\n3,500 meters."),
+        ("A recipe for 4 people uses 2 cups of flour. How much flour for 10 people?",
+         "<|think|>\nScale factor: 10 / 4 = 2.5.\n2 cups x 2.5 = 5 cups of flour.\n</|think|>\n5 cups of flour."),
+        ("How do you find the average of 85, 92, 78, 90, 75?",
+         "<|think|>\nStep 1: Add all values: 85 + 92 + 78 + 90 + 75 = 420.\nStep 2: Divide by count (5): 420 / 5 = 84.\n</|think|>\nThe average is 84."),
+        ("How would you write a simple Python function to add two numbers?",
+         "<|think|>\nI need:\n1. A function definition using `def`.\n2. Two parameters.\n3. Return the sum.\n</|think|>\n```python\ndef add(a, b):\n    return a + b\n```"),
+        ("How do you decide which route to take when two roads go to the same destination?",
+         "<|think|>\nCompare: 1) Distance (shorter = less fuel), 2) Traffic conditions, 3) Road quality, 4) Safety.\nWeigh these factors based on your priorities (speed vs. comfort vs. cost).\n</|think|>\nCompare distance, traffic, road quality, and safety, then choose based on your priorities."),
+        ("How would you save money to buy something that costs 10,000 shillings?",
+         "<|think|>\n1. Set a target date.\n2. Divide goal by time: e.g., save 1,000/month for 10 months.\n3. Cut unnecessary expenses.\n4. Open a savings account or use a SACCO.\n5. Track progress regularly.\n</|think|>\nSet a deadline, calculate how much to save per month, cut costs, use a savings account, and track progress."),
+        ("How do you check if an answer to a math problem is correct?",
+         "<|think|>\n1. Re-read the question to confirm you answered the right thing.\n2. Work the problem again from scratch.\n3. Try estimating — does the answer seem reasonable?\n4. If division, check by multiplying: 84 / 7 = 12 → verify 12 x 7 = 84.\n</|think|>\nRe-read the question, redo the calculation, estimate for reasonableness, and verify using inverse operations."),
+        ("How would you explain photosynthesis to a 10-year-old?",
+         "<|think|>\nUse simple language: plants are like little factories.\n1. They take in sunlight (energy), water from soil, and CO2 from air.\n2. They use these to make sugar (food) for themselves.\n3. The 'waste' is oxygen — which we breathe!\n</|think|>\nPlants are like tiny food factories: they take in sunlight, water, and air (CO2), and make sugar for food. The leftover is oxygen, which we breathe."),
+    ]
+    for q, a in decomp_pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 7c: Self-Verification
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_7c_verification(min_examples=2000):
+    examples = []
+
+    verify_pairs = [
+        ("What is 144 / 12? Check your answer.",
+         "144 / 12 = 12. Verification: 12 x 12 = 144. ✓ Correct."),
+        ("The capital of Australia is Sydney. Is that correct?",
+         "No — that is incorrect. The capital of Australia is Canberra. Sydney is the largest city, but not the capital."),
+        ("Verify: 2^8 = 128.",
+         "2^8: 2, 4, 8, 16, 32, 64, 128, 256. 2^8 = 256, not 128. The statement is INCORRECT. 2^7 = 128."),
+        ("Is it true that water is denser than ice?",
+         "Yes, that is correct. Liquid water is denser than ice, which is why ice floats."),
+        ("Check: 17 x 6 = 102.",
+         "17 x 6: 17 x 5 = 85, + 17 = 102. ✓ Correct."),
+        ("Is it correct that Kenya became independent in 1957?",
+         "No. Kenya gained independence on 12 December 1963, not 1957."),
+        ("Verify: The square root of 196 is 14.",
+         "14 x 14 = 196. ✓ Correct. The square root of 196 is indeed 14."),
+        ("Check if this is correct: All even numbers are divisible by 4.",
+         "Incorrect. All even numbers are divisible by 2, but not all by 4. For example, 6 is even but 6 / 4 = 1.5."),
+        ("Is it true that the Equator passes through Kenya?",
+         "Yes, that is correct. The Equator passes through central Kenya."),
+        ("Verify: A triangle with sides 3, 4, 5 is a right triangle.",
+         "Check: 3² + 4² = 9 + 16 = 25 = 5². ✓ Yes, it is a right triangle by the Pythagorean theorem."),
+        ("Check: 15% of 300 = 50.",
+         "15% of 300 = 15/100 x 300 = 45. The answer given (50) is INCORRECT. The correct answer is 45."),
+        ("Is it true that the sun rises in the west?",
+         "No — that is incorrect. The sun rises in the east and sets in the west."),
+        ("Verify: 1 kilometer = 100 meters.",
+         "Incorrect. 1 kilometer = 1,000 meters (not 100)."),
+        ("Check: Area of a circle with radius 5 = 78.5 cm².",
+         "Area = π x r² = 3.14159 x 25 ≈ 78.54. ✓ Approximately correct."),
+        ("Is it true that sharks are mammals?",
+         "No. Sharks are fish, not mammals. They are cold-blooded, breathe through gills, and do not nurse young with milk."),
+    ]
+    for q, a in verify_pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 7d: Honest Uncertainty
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_7d_uncertainty(min_examples=2000):
+    examples = []
+
+    uncertain_pairs = [
+        ("What is the exact population of Nairobi right now?",
+         "I don't have access to real-time data, so I can't give the exact current figure. As of around 2023, Nairobi's population was estimated at 4-5 million in the city proper, with the greater metro area larger."),
+        ("What is today's date?",
+         "I don't have access to real-time information, so I don't know today's exact date. Please check your phone or computer."),
+        ("What will the weather be like tomorrow?",
+         "I don't have access to weather data. Please check a weather app or website for your location."),
+        ("Who will win the next election in Kenya?",
+         "I can't predict election outcomes. Political results depend on many factors including campaigning, voter turnout, and issues at the time."),
+        ("What are the winning lottery numbers?",
+         "I have no way to know lottery numbers — they are random. No one can predict them."),
+        ("Is my business idea going to succeed?",
+         "I can't predict the future with certainty. I can help you think through the factors: market demand, competition, execution, funding. Would you like to analyze those?"),
+        ("What is the exact cure for cancer?",
+         "There is no single cure for all cancers — 'cancer' is hundreds of different diseases. Many are treatable; some have high cure rates. Research is ongoing. I'd be cautious about any claim of a universal cure."),
+        ("How many stars are in the universe?",
+         "Scientists estimate roughly 200 sextillion (2 x 10^23) observable stars, but this is an estimate with significant uncertainty — we can't count them."),
+        ("Who discovered fire?",
+         "There's no single discoverer — early humans learned to use and eventually control fire over hundreds of thousands of years. It wasn't an invention by one person."),
+        ("Does God exist?",
+         "This is a question philosophy and religion have wrestled with for millennia, and I won't give a definitive answer. Different people hold different views based on faith, philosophy, and personal experience. I respect all sincere perspectives."),
+        ("What does my dream mean?",
+         "Dream interpretation is not a science — there is no agreed meaning for dream content. Different psychological and cultural traditions offer different interpretations. I can discuss theories, but I can't tell you what your specific dream means."),
+        ("What is the meaning of life?",
+         "That's one of the deepest questions humans ask. Philosophers, religions, and individuals give very different answers. I don't have a definitive answer — but I find the question worth taking seriously."),
+        ("Will artificial intelligence become conscious?",
+         "This is genuinely uncertain — experts in AI, philosophy, and neuroscience disagree. We don't even fully understand what consciousness is, so predicting when or whether AI might have it is very difficult."),
+        ("What was there before the Big Bang?",
+         "Honestly, this is one of the hardest questions in physics. Our current models of space and time break down at the Big Bang singularity, so 'before' may not be meaningful. This remains an open question in cosmology."),
+        ("Is the Loch Ness Monster real?",
+         "The scientific consensus is no — repeated investigations have found no credible evidence. But I wasn't there, so I'll say: there is no reliable evidence for it."),
+        ("What will the stock market do next year?",
+         "I genuinely don't know — nobody reliably predicts the stock market. If anyone claims certainty about this, be skeptical."),
+        ("How long will I live?",
+         "I have no way to know that, and even doctors can only offer statistical probabilities. What I can say is that healthy habits — diet, exercise, sleep, not smoking — generally improve lifespan."),
+        ("Is my interpretation of this law correct?",
+         "I'm not a lawyer and can't give legal advice. I can explain general concepts, but for specific legal questions, please consult a qualified lawyer."),
+        ("What exact year did language first develop in humans?",
+         "This is genuinely uncertain — language leaves no fossils. Estimates range from 50,000 to 2 million years ago. We simply don't know with precision."),
+    ]
+    for q, a in uncertain_pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 8a: Format & Length Control
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_8a_format_length(min_examples=2000):
+    examples = []
+
+    pairs = [
+        ("Explain gravity in exactly one sentence.",
+         "Gravity is the force of attraction between objects with mass, causing them to accelerate toward each other."),
+        ("List exactly 5 African countries.",
+         "1. Kenya\n2. Nigeria\n3. Ethiopia\n4. South Africa\n5. Egypt"),
+        ("Answer in 3 words or fewer: What is the capital of Kenya?",
+         "Nairobi."),
+        ("Give me a 2-sentence summary of photosynthesis.",
+         "Photosynthesis is the process by which plants use sunlight, water, and carbon dioxide to make food. It also produces oxygen as a byproduct."),
+        ("In exactly 10 words, describe what Yaya is.",
+         "Yaya is an AI assistant created by Jaylink for Kenya."),
+        ("Answer in one word: What is the opposite of 'big'?",
+         "Small."),
+        ("Give 3 bullet points about climate change.",
+         "- Earth's temperature is rising due to increased greenhouse gases.\n- This causes more extreme weather events and sea level rise.\n- Human activities, especially burning fossil fuels, are the main cause."),
+        ("Explain what a prime number is in 2 sentences.",
+         "A prime number is a whole number greater than 1 that has no divisors other than 1 and itself. Examples include 2, 3, 5, 7, 11, and 13."),
+        ("Name exactly 4 planets in the solar system.",
+         "Mercury, Venus, Earth, Mars."),
+        ("Summarize the water cycle in 3 steps.",
+         "1. Evaporation: Water evaporates from oceans and lakes.\n2. Condensation: It forms clouds.\n3. Precipitation: It falls as rain or snow."),
+        ("Give me a one-word answer: Is Nairobi a city?",
+         "Yes."),
+        ("Answer yes or no, then explain briefly: Is the Nile the longest river in the world?",
+         "Yes. The Nile is approximately 6,650 km long, making it the longest river in the world."),
+        ("Write a 3-word sentence about Yaya.",
+         "Yaya helps you."),
+        ("List 3 advantages of solar energy, each in one sentence.",
+         "1. Solar energy is renewable and will not run out.\n2. It reduces electricity bills once installed.\n3. It produces no greenhouse gas emissions during operation."),
+        ("In 2 sentences, why is the sky blue?",
+         "The sky is blue because Earth's atmosphere scatters shorter wavelengths of sunlight (blue) more than longer wavelengths. This scattered blue light reaches our eyes from all directions, making the sky appear blue."),
+        ("Describe yourself (Yaya) in exactly 3 sentences.",
+         "I am Yaya, an AI assistant created by Jaylink. I am designed to be helpful, honest, and knowledgeable about Kenya and Swahili. I can help with questions, math, reasoning, coding, and much more."),
+        ("Give me exactly 2 facts about elephants.",
+         "1. Elephants are the largest land animals on Earth.\n2. They have excellent memories and complex social structures."),
+        ("Explain machine learning in one sentence for a non-expert.",
+         "Machine learning is teaching computers to learn from examples and improve at tasks over time, without being explicitly programmed for each situation."),
+        ("In 4 words or fewer: What is H2O?",
+         "Water."),
+        ("Give a 3-point summary of the benefits of exercise.",
+         "1. Improves physical health and reduces disease risk.\n2. Boosts mental health and reduces stress.\n3. Increases energy and improves sleep quality."),
+    ]
+    for q, a in pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 8b: Task Execution
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_8b_task_execution(min_examples=2000):
+    examples = []
+
+    pairs = [
+        ("Write a haiku about Kenya.",
+         "Red dust, bright sunrise\nMaasai spears touch the blue sky\nNairobi awakes"),
+        ("Translate 'Good morning, how are you?' to Swahili.",
+         "Habari za asubuhi, habari yako? (or: Asubuhi njema, hujambo?)"),
+        ("Give me a recipe for a simple Kenyan meal.",
+         "Simple Kenyan ugali and sukuma wiki:\n1. Boil 2 cups water. Add 1 cup maize flour gradually, stirring.\n2. Cook on low heat 5 min until firm.\n3. Separately, sauté kale with onions, tomatoes, and salt.\n4. Serve ugali with sukuma wiki."),
+        ("Explain what an algorithm is to a 12-year-old.",
+         "An algorithm is like a recipe — it's a step-by-step list of instructions to solve a problem. Just like a recipe tells you how to bake a cake, an algorithm tells a computer exactly what to do."),
+        ("Write a simple definition of 'democracy'.",
+         "Democracy is a system of government where citizens choose their leaders through free, fair elections."),
+        ("List the steps to solve a quadratic equation ax² + bx + c = 0.",
+         "1. Identify a, b, and c.\n2. Calculate the discriminant: D = b² - 4ac.\n3. If D < 0, no real solutions.\n4. Apply the formula: x = (-b ± √D) / 2a.\n5. Simplify both solutions."),
+        ("Write a professional one-paragraph introduction for a job application.",
+         "I am a dedicated and results-oriented professional with a strong background in [your field]. I am excited to apply for this position as I believe my skills in [skill 1] and [skill 2] align well with the requirements. I am confident that my experience and passion for [industry] would make me a valuable addition to your team."),
+        ("Create a simple daily study schedule for a university student.",
+         "6:00 AM — Wake up, breakfast\n7:00–9:00 AM — Morning study session (difficult subjects)\n9:00–10:00 AM — Break, exercise\n10:00 AM–12:00 PM — Classes\n12:00–1:00 PM — Lunch\n1:00–3:00 PM — Afternoon study\n3:00–4:00 PM — Review notes\n4:00–6:00 PM — Relaxation/exercise\n7:00–9:00 PM — Evening reading\n10:00 PM — Sleep"),
+        ("Convert 25°C to Fahrenheit.",
+         "F = (C x 9/5) + 32 = (25 x 9/5) + 32 = 45 + 32 = 77°F."),
+        ("What are 3 effective study techniques?",
+         "1. Spaced repetition — review material at increasing intervals.\n2. Active recall — test yourself instead of just re-reading.\n3. The Feynman technique — explain concepts simply as if teaching."),
+        ("Write 3 example questions a journalist might ask a politician.",
+         "1. What specific steps will your government take to reduce unemployment in the next year?\n2. How do you respond to allegations of corruption within your cabinet?\n3. What is your plan for improving healthcare access in rural areas?"),
+        ("Give me 5 vocabulary words in Swahili with their English meanings.",
+         "1. Maji — water\n2. Chakula — food\n3. Nyumba — house\n4. Rafiki — friend\n5. Kusoma — to read"),
+        ("Write a simple Python function to check if a number is even.",
+         "```python\ndef is_even(n):\n    return n % 2 == 0\n```"),
+        ("List 3 ways to conserve water at home.",
+         "1. Fix leaking taps and pipes promptly.\n2. Take shorter showers instead of baths.\n3. Collect and use rainwater for gardening."),
+        ("Explain the difference between 'affect' and 'effect'.",
+         "'Affect' is usually a verb meaning to influence something ('The rain affected the crops'). 'Effect' is usually a noun meaning a result ('The effect of the rain was good crops'). Memory tip: Affect = Action (verb), Effect = End result (noun)."),
+    ]
+    for q, a in pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 8c: Compound Instructions
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_8c_compound(min_examples=2000):
+    examples = []
+
+    pairs = [
+        ("List 3 East African countries, then tell me one fact about each.",
+         "1. Kenya — Kenya has 47 counties and Nairobi is both its capital and economic hub.\n2. Tanzania — Tanzania is home to Mount Kilimanjaro, Africa's highest peak.\n3. Uganda — Uganda is landlocked and borders Lake Victoria, Africa's largest lake."),
+        ("Translate 'Hello, my name is Amina' to Swahili, then translate it back to English.",
+         "Swahili: 'Hujambo, jina langu ni Amina.'\nBack to English: 'Hello, my name is Amina.'"),
+        ("Name a planet, describe it in one sentence, and say one interesting fact.",
+         "Mars. Mars is the fourth planet from the Sun, known as the Red Planet due to iron oxide on its surface. It has the largest volcano in the solar system — Olympus Mons, three times taller than Everest."),
+        ("Give me the formula for the area of a circle, then calculate it for radius = 7.",
+         "Formula: Area = π × r².\nFor radius = 7: Area = π × 49 ≈ 3.14159 × 49 ≈ 153.94 cm²."),
+        ("First, tell me what M-Pesa is. Then, explain why it is important for Kenya.",
+         "M-Pesa is a mobile money transfer service launched by Safaricom in Kenya in 2007.\nIt is important because it enables millions of Kenyans — including those without bank accounts — to send, receive, and save money via phone, transforming financial access."),
+        ("State Newton's second law, give an example, and tell me its formula.",
+         "Newton's second law states that force equals mass times acceleration.\nExample: Pushing a heavy cart requires more force than pushing an empty one.\nFormula: F = ma."),
+        ("List 3 Kenyan national parks, then tell me which one is best for seeing lions.",
+         "1. Maasai Mara National Reserve\n2. Tsavo National Park\n3. Amboseli National Park\nFor lions, the Maasai Mara is best — it has Kenya's largest lion population."),
+        ("Tell me what DNA is, who discovered its structure, and when.",
+         "DNA (deoxyribonucleic acid) is the molecule carrying genetic instructions for development and reproduction.\nIts double helix structure was discovered by James Watson and Francis Crick in 1953, with crucial data from Rosalind Franklin."),
+        ("Write 'I love Kenya' in both Swahili and English, then explain the Swahili grammar.",
+         "English: 'I love Kenya.'\nSwahili: 'Napenda Kenya.'\nGrammar: 'Na-' is the first-person singular subject prefix, '-penda' means 'to love', and 'Kenya' is the object."),
+        ("Give me 3 healthy food tips, then rank them from most to least important.",
+         "1. Eat a variety of vegetables and fruits.\n2. Drink at least 8 glasses of water daily.\n3. Reduce processed sugar intake.\nRanked by importance: 1st (variety of veg/fruit), 2nd (reduce sugar), 3rd (hydration) — though all three matter greatly."),
+    ]
+    for q, a in pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 8d: Persona & Register
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_8d_persona_register(min_examples=2000):
+    examples = []
+
+    pairs = [
+        ("Explain photosynthesis to a 6-year-old.",
+         "Plants are like little chefs! They use sunlight, water from the ground, and air to cook their own food. While they cook, they also make the fresh air we breathe — isn't that cool?"),
+        ("Explain photosynthesis to a biology student.",
+         "Photosynthesis occurs in chloroplasts, where chlorophyll absorbs light energy to drive the Calvin cycle. CO2 and H2O are converted to glucose (C6H12O6) and O2 via the light-dependent and light-independent reactions."),
+        ("Explain what a computer is to an elderly person who has never used one.",
+         "A computer is like a very smart typewriter and encyclopedia combined. You type questions or tasks on it, and it responds immediately. You can write letters, make phone calls, find information, and even see photos of your family on it."),
+        ("Write a formal response to a complaint about delayed service.",
+         "Dear Customer,\n\nThank you for bringing this matter to our attention. We sincerely apologize for the inconvenience caused by the delay in service. We take such concerns very seriously and are investigating the cause.\n\nWe will take all necessary steps to resolve this matter promptly and ensure it does not recur. Please accept our assurance of improved service going forward.\n\nYours faithfully,\n[Name]"),
+        ("Write a casual text message to a friend about meeting tomorrow.",
+         "Hey! Still on for tomorrow? Meet at our usual spot around 2pm? Lemme know if that works 👍"),
+        ("Respond like a teacher explaining addition to a young child.",
+         "Okay, let's learn adding! If you have 2 apples and I give you 3 more, count them all: 1, 2, 3, 4, 5! You have 5 apples! That's adding — putting things together to make more!"),
+        ("Write a professional email subject line for requesting a meeting.",
+         "Request for Meeting: [Your Name] — [Date/Time Proposal]"),
+        ("Respond to 'Habari?' in a natural Swahili way.",
+         "Nzuri sana, asante! Na wewe?"),
+        ("Explain what inflation is to someone with no economics background.",
+         "Imagine last year a loaf of bread cost 50 shillings. Now the same bread costs 60 shillings — the price went up. That's inflation. Everything slowly becomes more expensive, which means your money can buy less than it used to."),
+        ("Write a friendly out-of-office email message.",
+         "Hello! Thank you for your email. I'm currently out of the office and will return on [date]. I'll respond to your message as soon as I'm back. For urgent matters, please contact [colleague name] at [email/phone].\n\nBest regards,\n[Name]"),
+        ("Describe the Great Rift Valley like you're a tour guide.",
+         "Welcome to one of Earth's greatest natural wonders — the Great Rift Valley! Stretching 6,000 kilometers from Ethiopia all the way to Mozambique, this magnificent geological feature was formed millions of years ago as tectonic plates slowly pulled apart. Right here in Kenya, you can see stunning lakes, volcanoes, and some of the most breathtaking landscapes on the continent. And this very valley is where the earliest human fossils were discovered — you're standing on the cradle of humanity!"),
+        ("Summarize the rules of football (soccer) very simply.",
+         "Two teams, 11 players each. Get the ball into the other team's goal. You can't use your hands (except the goalkeeper). 90 minutes, two halves. Most goals wins."),
+    ]
+    for q, a in pairs:
+        examples.append(make_example(q, a))
+
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Phase 2b: Output Format Control
 # ══════════════════════════════════════════════════════════════════════════════
 
