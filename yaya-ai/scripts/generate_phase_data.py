@@ -854,6 +854,258 @@ def generate_3d_technology(min_examples=2000):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Phase 4a: History & Politics
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_4a_history_politics(min_examples=2000):
+    examples = []
+    qa = [
+        ("When did World War I begin?", "1914, triggered by the assassination of Archduke Franz Ferdinand."),
+        ("When did World War I end?", "11 November 1918, with the Armistice."),
+        ("When did World War II begin?", "1939, when Germany invaded Poland."),
+        ("When did World War II end?", "1945 — in Europe on 8 May (V-E Day), and in the Pacific on 2 September (V-J Day)."),
+        ("Who was Adolf Hitler?", "Leader of Nazi Germany from 1933 to 1945, responsible for World War II and the Holocaust."),
+        ("What was the Holocaust?", "The systematic genocide of six million Jews and millions of others by Nazi Germany during WWII."),
+        ("What was the Cold War?", "A period of geopolitical tension (1947-1991) between the USA and USSR, without direct major conflict."),
+        ("When did the Berlin Wall fall?", "9 November 1989."),
+        ("When did the Soviet Union collapse?", "25 December 1991."),
+        ("What was the French Revolution?", "A period of radical political and social transformation in France (1789-1799) that overthrew the monarchy."),
+        ("When was the American Declaration of Independence signed?", "4 July 1776."),
+        ("Who was Abraham Lincoln?", "16th US President (1861-1865), who led the Union during the Civil War and abolished slavery."),
+        ("What was apartheid?", "A system of racial segregation in South Africa (1948-1994) enforcing white minority rule."),
+        ("Who was Nelson Mandela?", "South African anti-apartheid activist who served 27 years in prison and became South Africa's first democratically elected president in 1994."),
+        ("When did Kenya gain independence?", "12 December 1963, from British colonial rule."),
+        ("Who was Kenya's first president?", "Jomo Kenyatta, who served from 1964 to 1978."),
+        ("What was the Mau Mau uprising?", "An armed resistance movement (1952-1960) against British colonial rule in Kenya."),
+        ("When was the United Nations founded?", "24 October 1945, after World War II."),
+        ("What is the UN Security Council?", "The UN body responsible for international peace and security, with 5 permanent members (USA, UK, France, Russia, China)."),
+        ("What is democracy?", "A system of government in which citizens choose their leaders through free and fair elections."),
+        ("What is a republic?", "A state in which supreme power is held by the people and their elected representatives."),
+        ("What is communism?", "A political and economic ideology advocating collective ownership and the abolition of private property."),
+        ("What was the colonialism?", "The practice of powerful nations extending control over other territories, often exploiting their resources and people."),
+        ("When did the transatlantic slave trade begin to end?", "Britain abolished the trade in 1807; the US in 1808. Full slavery abolition came later (US 1865, Brazil 1888)."),
+        ("What is NATO?", "The North Atlantic Treaty Organization — a military alliance of Western democracies founded in 1949."),
+        ("What was the League of Nations?", "An international organization founded after WWI (1920) to maintain peace; predecessor to the UN."),
+        ("Who was Mahatma Gandhi?", "Indian independence leader who used nonviolent civil disobedience to campaign against British rule."),
+        ("When did India gain independence?", "15 August 1947, from British rule, simultaneously with Pakistan's creation."),
+        ("What was the Ottoman Empire?", "A powerful empire centered in Turkey that lasted from the 13th century until 1922."),
+        ("What was the Roman Empire?", "The largest empire of the ancient Western world, centered in Italy, lasting from 27 BC to 476 AD."),
+        ("Who built the pyramids?", "Ancient Egyptians built the pyramids as tombs for pharaohs, around 2500 BCE."),
+        ("Who was Julius Caesar?", "A Roman general and statesman who was assassinated in 44 BC, central to the transition from Roman Republic to Empire."),
+        ("What was the Renaissance?", "A cultural and intellectual movement (14th-17th centuries) in Europe emphasizing classical learning, art, and science."),
+        ("What was the Industrial Revolution?", "The transition to new manufacturing processes in Britain (late 18th-19th centuries), transforming economies worldwide."),
+        ("Who invented the printing press?", "Johannes Gutenberg, around 1440, revolutionizing the spread of information."),
+        ("What is the African Union?", "A continental organization of 55 African countries, founded in 2002, promoting unity and development."),
+        ("What was colonialism's impact on Africa?", "It disrupted societies, exploited resources, drew arbitrary borders, suppressed languages and cultures, and left lasting economic and political challenges."),
+        ("What is a constitution?", "The fundamental law of a country, establishing the structure of government and the rights of citizens."),
+        ("What is the rule of law?", "The principle that all people and institutions are subject to the same laws."),
+        ("What is the Universal Declaration of Human Rights?", "A document adopted by the UN in 1948 establishing fundamental rights and freedoms for all people."),
+        ("Who was Che Guevara?", "Argentine Marxist revolutionary who played a key role in the Cuban Revolution."),
+        ("What was the Cuban Missile Crisis?", "A 1962 confrontation between the US and USSR over Soviet nuclear missiles in Cuba, the closest the Cold War came to nuclear war."),
+        ("What is imperialism?", "The policy of a nation extending its power and influence through colonization, military force, or other means."),
+        ("What was the Berlin Conference of 1884?", "A meeting where European powers divided Africa among themselves without African input — the 'Scramble for Africa'."),
+        ("What is a political party?", "An organized group of people with similar political views who compete for government power."),
+        ("What is separation of powers?", "The division of government into legislative, executive, and judicial branches to prevent concentration of power."),
+        ("What are human rights?", "Basic rights and freedoms that all people are entitled to regardless of nationality, race, or religion."),
+        ("What was the Arab Spring?", "A wave of pro-democracy protests across the Arab world (2010-2012) that overthrew several governments."),
+        ("Who is the current UN Secretary-General?", "António Guterres, who has served since 2017."),
+        ("What is the ICC?", "The International Criminal Court — a court in The Hague that prosecutes individuals for genocide, war crimes, and crimes against humanity."),
+        ("What was the Cold War arms race?", "The competition between the US and USSR to build more and more powerful nuclear weapons."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 4b: World Geography
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_4b_geography(min_examples=2000):
+    examples = []
+    qa = [
+        ("How many continents are there?", "Seven: Africa, Antarctica, Asia, Australia/Oceania, Europe, North America, South America."),
+        ("What is the largest continent?", "Asia, covering about 44.6 million km²."),
+        ("What is the smallest continent?", "Australia (or Oceania if including Pacific islands)."),
+        ("What is the largest country by area?", "Russia, covering about 17.1 million km²."),
+        ("What is the smallest country?", "Vatican City, about 0.44 km²."),
+        ("What is the most populous country?", "India (overtook China around 2023)."),
+        ("What is the world's longest river?", "The Nile in Africa, about 6,650 km."),
+        ("What is the world's largest ocean?", "The Pacific Ocean, covering about 165 million km²."),
+        ("What is the deepest point in the ocean?", "The Mariana Trench in the Pacific, about 11 km deep."),
+        ("What is the world's largest desert?", "Antarctica (a cold desert). The largest hot desert is the Sahara."),
+        ("Where is the Sahara Desert?", "Across northern Africa."),
+        ("What is the Amazon Rainforest?", "The world's largest tropical rainforest in South America, spanning 9 countries including Brazil."),
+        ("What is the Himalayas?", "The highest mountain range on Earth, in Asia, containing Mount Everest."),
+        ("Where is Mount Everest?", "On the border of Nepal and Tibet (China), in the Himalayas."),
+        ("What is the capital of South Africa?", "South Africa has three capitals: Pretoria (executive), Cape Town (legislative), Bloemfontein (judicial)."),
+        ("What is the Mediterranean Sea?", "An inland sea bordered by Europe, North Africa, and the Middle East, connected to the Atlantic via the Strait of Gibraltar."),
+        ("What is the Strait of Gibraltar?", "The narrow passage between Spain and Morocco connecting the Atlantic Ocean and Mediterranean Sea."),
+        ("What is the Suez Canal?", "An artificial canal in Egypt connecting the Red Sea to the Mediterranean, crucial for international shipping."),
+        ("Where is the Amazon River?", "In South America, flowing through Brazil into the Atlantic Ocean."),
+        ("What countries share the Nile River?", "The Nile flows through Uganda, Ethiopia, Sudan, and Egypt, among others."),
+        ("What is the Dead Sea?", "A hypersaline lake between Israel and Jordan — its shores are the lowest point on Earth's surface (-430m)."),
+        ("What is the largest lake in Africa?", "Lake Victoria, shared by Kenya, Tanzania, and Uganda."),
+        ("What is Lake Baikal?", "The world's deepest and oldest freshwater lake, in Siberia, Russia."),
+        ("What are the Great Lakes of North America?", "Superior, Michigan, Huron, Erie, Ontario — five large freshwater lakes on the US-Canada border."),
+        ("What are the BRICS nations?", "Brazil, Russia, India, China, South Africa — major emerging economies (now expanding)."),
+        ("What is the Equator?", "The imaginary line at 0° latitude dividing Earth into Northern and Southern hemispheres."),
+        ("What is the Prime Meridian?", "The line at 0° longitude (running through Greenwich, England) dividing Earth into Eastern and Western hemispheres."),
+        ("What is the International Date Line?", "An imaginary line at 180° longitude where the calendar date changes."),
+        ("What is Southeast Asia?", "A region including countries like Thailand, Vietnam, Indonesia, Philippines, Malaysia, and Singapore."),
+        ("What is the Caucasus region?", "The region between the Black Sea and Caspian Sea, including Georgia, Armenia, and Azerbaijan."),
+        ("What is the Sahel?", "A semi-arid region stretching across Africa south of the Sahara, prone to drought and desertification."),
+        ("What is the Caribbean?", "A region of islands in the Caribbean Sea between North and South America."),
+        ("What is Scandinavia?", "The northern European region including Norway, Sweden, Denmark, and sometimes Finland and Iceland."),
+        ("What is the Iberian Peninsula?", "A peninsula in southwestern Europe containing Spain and Portugal."),
+        ("What are the Balkans?", "A region in southeastern Europe including countries like Serbia, Croatia, Bosnia, and Albania."),
+        ("What is the Middle East?", "A region spanning Western Asia and Egypt, including countries like Saudi Arabia, Iran, Iraq, Israel, Turkey."),
+        ("What is sub-Saharan Africa?", "The part of Africa south of the Sahara Desert, comprising 46 countries."),
+        ("What is the Ring of Fire?", "A path around the Pacific Ocean with high volcanic and earthquake activity."),
+        ("What is the Panama Canal?", "An artificial waterway in Panama connecting the Atlantic and Pacific Oceans."),
+        ("What is the Arabian Peninsula?", "A peninsula in Western Asia, the world's largest, containing Saudi Arabia, UAE, Yemen, Oman, Qatar, Kuwait, Bahrain."),
+        ("What is the Horn of Africa?", "A peninsula in East Africa including Ethiopia, Eritrea, Djibouti, and Somalia."),
+        ("What is the longitude of Kenya?", "Kenya spans approximately 34°E to 42°E longitude."),
+        ("What is the latitude of the Equator through Kenya?", "The Equator runs through Kenya at 0° latitude."),
+        ("What ocean borders Kenya?", "The Indian Ocean, along Kenya's southeastern coast."),
+        ("What countries border Kenya?", "Ethiopia to the north, Somalia to the east, Tanzania to the south, Uganda to the west, South Sudan to the northwest."),
+        ("What is the largest city in Africa?", "Lagos, Nigeria, is often cited as Africa's largest city by population."),
+        ("What is the capital of Ethiopia?", "Addis Ababa, also the headquarters of the African Union."),
+        ("What is the Great Barrier Reef?", "The world's largest coral reef system, off the northeastern coast of Australia."),
+        ("What is Greenland?", "The world's largest island, located between the Arctic and Atlantic Oceans, administered by Denmark."),
+        ("What is the tundra?", "A treeless, frozen biome in Arctic regions with extremely cold temperatures and permafrost."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 4c: Culture & Arts
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_4c_culture_arts(min_examples=2000):
+    examples = []
+    qa = [
+        ("Who painted the Mona Lisa?", "Leonardo da Vinci, around 1503-1519."),
+        ("Who painted the Sistine Chapel ceiling?", "Michelangelo, between 1508 and 1512."),
+        ("Who wrote Romeo and Juliet?", "William Shakespeare."),
+        ("Who wrote Hamlet?", "William Shakespeare."),
+        ("Who wrote 1984?", "George Orwell, published in 1949."),
+        ("Who wrote Pride and Prejudice?", "Jane Austen, published in 1813."),
+        ("Who wrote Things Fall Apart?", "Chinua Achebe, Nigerian author, published in 1958."),
+        ("Who wrote Weep Not Child?", "Ngugi wa Thiong'o, published in 1964 — the first East African novel in English."),
+        ("Who was Ludwig van Beethoven?", "German composer (1770-1827) who created masterworks like the 9th Symphony despite going deaf."),
+        ("Who was Wolfgang Amadeus Mozart?", "Austrian composer (1756-1791), a child prodigy who composed over 600 works."),
+        ("What is jazz?", "A music genre originating in African American communities in New Orleans in the early 20th century."),
+        ("What is hip-hop?", "A cultural movement from the South Bronx, New York in the 1970s, including rap music, DJing, breakdancing, and graffiti."),
+        ("What is reggae?", "A music genre from Jamaica, developed in the late 1960s, associated with Bob Marley."),
+        ("What is Afrobeats?", "A modern West African pop music genre blending traditional African music with hip-hop, dancehall, and R&B."),
+        ("What is benga music?", "A popular Kenyan music genre originating among the Luo people, featuring guitar and lively rhythms."),
+        ("What is the Maasai Mara?", "A famous national game reserve in southwestern Kenya, known for the Great Migration of wildebeest."),
+        ("What are griots?", "West African storytellers, musicians, and historians who preserve oral traditions."),
+        ("What is the Great Migration?", "The annual movement of millions of wildebeest, zebras, and gazelles across the Maasai Mara and Serengeti."),
+        ("Who was Pablo Picasso?", "Spanish artist (1881-1973) and co-founder of Cubism, one of the 20th century's most influential artists."),
+        ("What is impressionism?", "A 19th-century art movement capturing fleeting light and atmosphere, exemplified by Monet and Renoir."),
+        ("Who was Vincent van Gogh?", "Dutch Post-Impressionist painter (1853-1890) known for Starry Night and Sunflowers."),
+        ("What is the Louvre?", "The world's largest art museum, in Paris, housing the Mona Lisa and thousands of other masterworks."),
+        ("What is the Nobel Prize?", "Annual prizes awarded in physics, chemistry, medicine, literature, peace, and economics, established by Alfred Nobel."),
+        ("What is the Booker Prize?", "A prestigious British literary award for the best novel written in English and published in the UK."),
+        ("What are the Olympic Games?", "International multi-sport events held every four years (summer and winter), promoting global peace through athletics."),
+        ("What is the FIFA World Cup?", "The quadrennial international football (soccer) tournament, the world's most watched sporting event."),
+        ("What is cricket?", "A bat-and-ball sport played between two teams of eleven, popular in South Asia, England, and parts of Africa."),
+        ("What is the Tour de France?", "An annual multi-stage bicycle race held mainly in France, the most prestigious in cycling."),
+        ("What is Carnival?", "A festive season involving street parades and parties, most famous in Brazil (Rio Carnival)."),
+        ("What is Eid al-Fitr?", "The Islamic festival marking the end of Ramadan (the month of fasting), celebrated with prayers and family gatherings."),
+        ("What is Diwali?", "The Hindu festival of lights, celebrating the victory of light over darkness."),
+        ("What is Christmas?", "A Christian holiday on 25 December celebrating the birth of Jesus Christ."),
+        ("What is Jamhuri Day?", "Kenya's Republic Day, celebrated on 12 December, marking independence from Britain in 1963."),
+        ("What is Madaraka Day?", "A Kenyan public holiday on 1 June, marking the day Kenya attained internal self-governance in 1963."),
+        ("What is Mashujaa Day?", "Kenya's Heroes Day (formerly Kenyatta Day), celebrated on 20 October."),
+        ("What is the Swahili proverb 'Haraka haraka haina baraka'?", "It means 'Hurry hurry has no blessing' — advising against rushing."),
+        ("What is 'Ubuntu'?", "An African philosophical concept meaning 'I am because we are' — emphasizing community and shared humanity."),
+        ("What is the significance of the Maasai culture?", "The Maasai are a Nilotic people in Kenya and Tanzania known for their distinctive customs, red clothing, and traditional lifestyle."),
+        ("What is Batik?", "A fabric dyeing technique using wax resist to create patterns, traditional in many African and Asian cultures."),
+        ("What is architecture?", "The art and science of designing buildings and structures."),
+        ("What is the Taj Mahal?", "A white marble mausoleum in Agra, India, built by Emperor Shah Jahan for his wife Mumtaz Mahal in 1632."),
+        ("What is Stonehenge?", "A prehistoric monument in England consisting of large standing stones, built around 3000-2000 BCE."),
+        ("What is the Colosseum?", "An ancient amphitheater in Rome, Italy, capable of holding 50,000 spectators, completed in 80 AD."),
+        ("What is the Great Wall of China?", "A series of fortifications along China's northern border, built over centuries to defend against invasion."),
+        ("What is a UNESCO World Heritage Site?", "A place recognized by UNESCO for its outstanding cultural, historical, scientific, or natural significance."),
+        ("What Kenyan sites are UNESCO World Heritage Sites?", "Kenya's UNESCO sites include the Kenya Lake System (Rift Valley), Lamu Old Town, and the Sacred Mijikenda Kaya Forests."),
+        ("What is calligraphy?", "The art of decorative handwriting, prized in many cultures including Arabic, Chinese, and East African traditions."),
+        ("What is the significance of kanga in Kenya?", "A kanga is a colorful cotton cloth worn by women in East Africa, often printed with Swahili proverbs."),
+        ("What is Ngugi wa Thiong'o known for?", "Kenyan author known for novels including Weep Not Child, Petals of Blood, and A Grain of Wheat; advocates writing in African languages."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Phase 4d: Economics & Daily Life
+# ══════════════════════════════════════════════════════════════════════════════
+
+def generate_4d_economics_daily(min_examples=2000):
+    examples = []
+    qa = [
+        ("What is economics?", "The social science studying how people produce, distribute, and consume goods and services."),
+        ("What is GDP?", "Gross Domestic Product — the total monetary value of goods and services produced in a country in a given period."),
+        ("What is inflation?", "The rate at which prices for goods and services rise, reducing purchasing power."),
+        ("What is deflation?", "A decrease in the general price level of goods and services, often signaling economic weakness."),
+        ("What is interest?", "A charge paid for borrowing money, or a return earned on savings/investments."),
+        ("What is a currency?", "A system of money in general use in a country."),
+        ("What is Kenya's currency?", "The Kenyan Shilling (KES)."),
+        ("What is the stock market?", "A marketplace where shares of publicly listed companies are bought and sold."),
+        ("What is a budget?", "A financial plan estimating income and expenses over a period."),
+        ("What is taxation?", "Money collected by governments from individuals and businesses to fund public services."),
+        ("What is supply and demand?", "The relationship between how much of something is available (supply) and how much people want it (demand), determining price."),
+        ("What happens when demand exceeds supply?", "Prices tend to rise."),
+        ("What is a monopoly?", "When a single company or entity controls an entire market for a product or service."),
+        ("What is free trade?", "International trade without government restrictions like tariffs or quotas."),
+        ("What is the IMF?", "The International Monetary Fund — an international organization providing financial stability and development support."),
+        ("What is the World Bank?", "An international financial institution providing loans and grants to developing countries for development projects."),
+        ("What is a recession?", "A period of economic decline, typically defined as two consecutive quarters of negative GDP growth."),
+        ("What is unemployment?", "The situation where people who want to work cannot find jobs."),
+        ("What is the minimum wage?", "The lowest wage an employer is legally allowed to pay workers."),
+        ("What is a bank?", "A financial institution that accepts deposits, makes loans, and provides other financial services."),
+        ("What is M-Pesa?", "A mobile money platform launched by Safaricom in Kenya in 2007, allowing money transfers via phone."),
+        ("What is microfinance?", "Providing small loans and financial services to low-income individuals and small businesses."),
+        ("What is the circular economy?", "An economic model aimed at eliminating waste by reusing, repairing, and recycling materials."),
+        ("What is food security?", "The state of having reliable access to sufficient, safe, and nutritious food."),
+        ("What is subsistence farming?", "Growing crops primarily to feed one's own family, with little surplus for sale."),
+        ("What is cash cropping?", "Growing crops specifically for sale rather than personal consumption (e.g., tea, coffee in Kenya)."),
+        ("What is remittance?", "Money sent by migrants back to their home country."),
+        ("What is FDI?", "Foreign Direct Investment — investment made by a company or individual in one country in business interests in another."),
+        ("What is the Nairobi Securities Exchange (NSE)?", "Kenya's main stock exchange, listing companies including Safaricom, Equity Bank, and Kenya Airways."),
+        ("What are Kenya's main exports?", "Tea, coffee, cut flowers, vegetables, and refined petroleum products."),
+        ("What is agribusiness?", "Business activities related to agriculture, from farming to food processing and distribution."),
+        ("What is entrepreneurship?", "The process of designing, launching, and running a new business."),
+        ("What is a cooperative?", "An enterprise owned and operated by its members for their mutual benefit."),
+        ("What is financial literacy?", "The ability to understand and effectively use financial skills like budgeting, investing, and managing debt."),
+        ("What is compound interest?", "Interest calculated on both the initial principal and previously accumulated interest."),
+        ("What is insurance?", "A contract providing financial protection against specific risks in exchange for regular premium payments."),
+        ("What is debt?", "Money owed by one party to another, typically repaid with interest."),
+        ("What is infrastructure?", "Basic physical systems (roads, power, water, communications) supporting economic activity."),
+        ("What is urbanization?", "The increase in the proportion of people living in cities over time."),
+        ("What is a cooperative society?", "An autonomous association of people united voluntarily to meet common needs through a jointly-owned enterprise."),
+        ("What is a Small and Medium Enterprise (SME)?", "A business classified as small or medium by number of employees, revenue, or assets."),
+        ("What is digital banking?", "Banking services delivered through digital channels (apps, internet) without physical branches."),
+        ("What is Saccos in Kenya?", "Savings and Credit Co-operative Organizations — member-owned financial cooperatives providing savings and loans."),
+        ("What is the East African Community (EAC)?", "A regional intergovernmental organization of East African countries working toward economic integration."),
+        ("What is AfCFTA?", "The African Continental Free Trade Area — a trade agreement creating a single market across 54 African countries."),
+        ("What is renewable energy's economic benefit?", "It reduces dependence on fossil fuel imports, creates local jobs, and can lower long-term energy costs."),
+        ("What is poverty?", "A state of lacking sufficient resources for basic needs like food, shelter, healthcare, and education."),
+        ("What is the Human Development Index (HDI)?", "A measure of a country's development based on life expectancy, education, and per capita income."),
+        ("What is a trade deficit?", "When a country imports more than it exports."),
+        ("What is a trade surplus?", "When a country exports more than it imports."),
+    ]
+    for q, a in qa:
+        examples.append(make_example(q, a))
+    return pad_to_minimum(examples, min_examples)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Phase 2b: Output Format Control
 # ══════════════════════════════════════════════════════════════════════════════
 
