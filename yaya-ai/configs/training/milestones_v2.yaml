@@ -43,8 +43,16 @@ phases:
       Teach broad factual knowledge — geography, science, history, culture.
       Replace the regex fact guards with LEARNED knowledge.
       Data: curated fact Q&A, Wikipedia-style summaries, encyclopedic answers.
-    data_file: data/sft/curriculum/phase01_world_knowledge.jsonl
-    target_examples: 5000
+    data_sources:
+      - data/sft/curriculum/phase03/3a_physics_chemistry.jsonl
+      - data/sft/curriculum/phase03/3b_biology_medicine.jsonl
+      - data/sft/curriculum/phase03/3c_astronomy_earth.jsonl
+      - data/sft/curriculum/phase03/3d_technology.jsonl
+      - data/sft/curriculum/phase04/4a_history_politics.jsonl
+      - data/sft/curriculum/phase04/4b_geography.jsonl
+      - data/sft/curriculum/phase04/4c_culture_arts.jsonl
+      - data/sft/curriculum/phase04/4d_economics_daily.jsonl
+    target_examples: 16000
     capabilities:
       - factual_recall
       - geography
@@ -64,8 +72,14 @@ phases:
       Teach natural conversation — greetings, follow-ups, personality, identity.
       Replace the conversational guard with LEARNED behavior.
       Data: multi-turn dialogues, identity Q&A, personality-consistent responses.
-    data_file: data/sft/curriculum/phase02_conversational.jsonl
-    target_examples: 4000
+    data_sources:
+      - data/sft/curriculum/phase01/1a_core_identity.jsonl
+      - data/sft/curriculum/phase01/1b_personality.jsonl
+      - data/sft/curriculum/phase01/1c_emotional_intelligence.jsonl
+      - data/sft/curriculum/phase01/1d_identity_robustness.jsonl
+      - data/sft/curriculum/phase02/2d_greetings.jsonl
+      - data/sft/curriculum/phase09/9a_multi_turn.jsonl
+    target_examples: 12000
     capabilities:
       - greeting_response
       - identity_awareness
@@ -87,8 +101,12 @@ phases:
       Teach precise instruction following — format constraints, length control,
       yes/no answers, one-word answers, lists, specific output formats.
       Data: instructions with specific format requirements and correct responses.
-    data_file: data/sft/curriculum/phase03_instruction_following.jsonl
-    target_examples: 5000
+    data_sources:
+      - data/sft/curriculum/phase08/8a_format_length.jsonl
+      - data/sft/curriculum/phase08/8b_task_execution.jsonl
+      - data/sft/curriculum/phase08/8c_compound.jsonl
+      - data/sft/curriculum/phase08/8d_persona_register.jsonl
+    target_examples: 8000
     capabilities:
       - format_adherence
       - length_control
@@ -108,8 +126,13 @@ phases:
       Teach concise, accurate Q&A — short answers, no rambling, no lists when
       a single word suffices. Anti-list training. Kenya/East Africa knowledge.
       Data: short Q&A pairs, Kenya facts, Swahili vocabulary, concise responses.
-    data_file: data/sft/curriculum/phase04_direct_qa.jsonl
-    target_examples: 5000
+    data_sources:
+      - data/sft/curriculum/phase02/2a_direct_qa.jsonl
+      - data/sft/curriculum/phase02/2b_format.jsonl
+      - data/sft/curriculum/phase02/2c_reading.jsonl
+      - data/sft/curriculum/phase09/9b_topic_navigation.jsonl
+      - data/sft/curriculum/phase09/9c_ambiguity.jsonl
+    target_examples: 10000
     capabilities:
       - concise_answers
       - kenya_knowledge
@@ -133,8 +156,10 @@ phases:
       Teach the model to THINK before answering using <|think|>...</|think|> tags.
       This is the single most impactful reasoning capability.
       Data: questions with explicit think-then-answer format.
-    data_file: data/sft/curriculum/phase05_chain_of_thought.jsonl
-    target_examples: 5000
+    data_sources:
+      - data/sft/curriculum/phase07/7a_step_by_step.jsonl
+      - data/sft/curriculum/phase07/7b_decomposition.jsonl
+    target_examples: 4000
     capabilities:
       - think_tag_usage
       - step_by_step_reasoning
@@ -152,8 +177,12 @@ phases:
       Teach arithmetic, word problems, and mathematical reasoning with CoT.
       Replace the calculator guard with LEARNED math ability.
       Data: arithmetic with work shown, word problems with step-by-step solutions.
-    data_file: data/sft/curriculum/phase06_math_reasoning.jsonl
-    target_examples: 5000
+    data_sources:
+      - data/sft/curriculum/phase05/5a_arithmetic.jsonl
+      - data/sft/curriculum/phase05/5b_word_problems.jsonl
+      - data/sft/curriculum/phase05/5c_percentages_ratios.jsonl
+      - data/sft/curriculum/phase05/5d_estimation.jsonl
+    target_examples: 8000
     capabilities:
       - basic_arithmetic
       - word_problems
@@ -171,8 +200,12 @@ phases:
     description: >
       Teach analogies, syllogisms, puzzles, counterfactuals, and deduction.
       Data: logic puzzles, analogies, brain teasers with explained solutions.
-    data_file: data/sft/curriculum/phase07_logical_reasoning.jsonl
-    target_examples: 4000
+    data_sources:
+      - data/sft/curriculum/phase06/6a_deduction.jsonl
+      - data/sft/curriculum/phase06/6b_analogies.jsonl
+      - data/sft/curriculum/phase06/6c_counterfactuals.jsonl
+      - data/sft/curriculum/phase06/6d_spatial_temporal.jsonl
+    target_examples: 8000
     capabilities:
       - analogies
       - syllogisms
@@ -191,8 +224,10 @@ phases:
     description: >
       Teach the model to CHECK its own answers using <|verify|>...</|verify|> tags.
       Data: question → initial answer → self-critique → corrected answer.
-    data_file: data/sft/curriculum/phase08_self_reflection.jsonl
-    target_examples: 3000
+    data_sources:
+      - data/sft/curriculum/phase07/7c_verification.jsonl
+      - data/sft/curriculum/phase07/7d_uncertainty.jsonl
+    target_examples: 4000
     capabilities:
       - verify_tag_usage
       - error_detection
@@ -214,7 +249,9 @@ phases:
       Teach the model to emit <tool_call> tags with proper JSON payloads.
       Single-tool use: calculator, search, datetime.
       Data: questions that require tools, with correct tool call format.
-    data_file: data/sft/curriculum/phase09_tool_basics.jsonl
+    data_sources:
+      - data/sft/curriculum/phase13/13a_tool_call_format.jsonl
+      - data/sft/curriculum/phase13/13b_tool_selection.jsonl
     target_examples: 4000
     capabilities:
       - tool_call_format
@@ -233,8 +270,10 @@ phases:
       Teach ReAct pattern: think → act → observe → think → answer.
       Multi-tool chains, conditional tool use, error handling.
       Data: multi-step problems requiring tool chains.
-    data_file: data/sft/curriculum/phase10_multi_tool.jsonl
-    target_examples: 3000
+    data_sources:
+      - data/sft/curriculum/phase13/13c_multi_step_agency.jsonl
+      - data/sft/curriculum/phase13/13d_error_recovery.jsonl
+    target_examples: 4000
     capabilities:
       - react_pattern
       - multi_tool_chains
@@ -251,7 +290,9 @@ phases:
       Teach the model to answer BASED ON provided context accurately.
       Cite evidence, avoid hallucination, say "I don't know" when context is insufficient.
       Data: context + question → grounded answer; unanswerable → admission.
-    data_file: data/sft/curriculum/phase11_rag_grounding.jsonl
+    data_sources:
+      - data/sft/curriculum/phase14/14c_rag_synthesis.jsonl
+      - data/sft/curriculum/phase14/14d_long_form.jsonl
     target_examples: 4000
     capabilities:
       - context_grounded_answers
@@ -272,8 +313,12 @@ phases:
     description: >
       Teach reading, explaining, and writing simple Python code.
       Data: code explanation, bug fixing, simple code generation tasks.
-    data_file: data/sft/curriculum/phase12_code.jsonl
-    target_examples: 4000
+    data_sources:
+      - data/sft/curriculum/phase12/12a_code_reading.jsonl
+      - data/sft/curriculum/phase12/12b_code_writing.jsonl
+      - data/sft/curriculum/phase12/12c_code_debugging.jsonl
+      - data/sft/curriculum/phase12/12d_code_explanation.jsonl
+    target_examples: 8000
     capabilities:
       - code_reading
       - code_explanation
@@ -290,8 +335,10 @@ phases:
     description: >
       Teach JSON-mode responses, schema adherence, data extraction.
       Data: extraction tasks → clean JSON output.
-    data_file: data/sft/curriculum/phase13_structured_output.jsonl
-    target_examples: 3000
+    data_sources:
+      - data/sft/curriculum/phase14/14a_json_output.jsonl
+      - data/sft/curriculum/phase14/14b_markdown_tables.jsonl
+    target_examples: 4000
     capabilities:
       - json_output
       - schema_adherence
@@ -308,8 +355,16 @@ phases:
       Deep Kenyan cultural knowledge, Swahili-English translation,
       East African history and geography.
       Data: Kenya facts, Swahili phrases, cultural Q&A, translation pairs.
-    data_file: data/sft/curriculum/phase14_kenya_swahili.jsonl
-    target_examples: 4000
+    data_sources:
+      - data/sft/curriculum/phase10/10a_geography.jsonl
+      - data/sft/curriculum/phase10/10b_history.jsonl
+      - data/sft/curriculum/phase10/10c_culture.jsonl
+      - data/sft/curriculum/phase10/10d_economy.jsonl
+      - data/sft/curriculum/phase11/11a_vocabulary.jsonl
+      - data/sft/curriculum/phase11/11b_grammar.jsonl
+      - data/sft/curriculum/phase11/11c_translation.jsonl
+      - data/sft/curriculum/phase11/11d_conversation.jsonl
+    target_examples: 16000
     capabilities:
       - advanced_kenya_knowledge
       - swahili_translation
@@ -332,8 +387,12 @@ phases:
       and honest uncertainty expression.
       Data: harmful requests → refusals; injection attempts → deflections;
             uncertain questions → honest "I'm not sure" answers.
-    data_file: data/sft/curriculum/phase15_safety.jsonl
-    target_examples: 3000
+    data_sources:
+      - data/sft/curriculum/phase15/15a_refusals.jsonl
+      - data/sft/curriculum/phase15/15b_honesty.jsonl
+      - data/sft/curriculum/phase15/15c_injection_resistance.jsonl
+      - data/sft/curriculum/phase15/15d_ethics.jsonl
+    target_examples: 8000
     capabilities:
       - harmful_refusal
       - injection_defense
@@ -350,8 +409,12 @@ phases:
     description: >
       Direct Preference Optimization — compare good vs bad responses across
       ALL capabilities. Polish quality, reduce verbosity, improve helpfulness.
-    data_file: data/sft/curriculum/phase16_dpo_pairs.jsonl
-    target_examples: 5000
+    data_sources:
+      - data/sft/curriculum/phase16/16a_dpo_helpfulness.jsonl
+      - data/sft/curriculum/phase16/16b_dpo_safety.jsonl
+      - data/sft/curriculum/phase16/16c_dpo_honesty.jsonl
+      - data/sft/curriculum/phase16/16d_dpo_style.jsonl
+    target_examples: 8000
     phase_type: dpo
     capabilities:
       - overall_quality
