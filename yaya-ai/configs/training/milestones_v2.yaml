@@ -52,7 +52,8 @@ phases:
       - data/sft/curriculum/phase04/4b_geography.jsonl
       - data/sft/curriculum/phase04/4c_culture_arts.jsonl
       - data/sft/curriculum/phase04/4d_economics_daily.jsonl
-    target_examples: 16000
+      - data/sft/curriculum/phase03/hf_science_qa.jsonl       # SciQ + ARC (enriched)
+    target_examples: 30000
     capabilities:
       - factual_recall
       - geography
@@ -79,7 +80,9 @@ phases:
       - data/sft/curriculum/phase01/1d_identity_robustness.jsonl
       - data/sft/curriculum/phase02/2d_greetings.jsonl
       - data/sft/curriculum/phase09/9a_multi_turn.jsonl
-    target_examples: 12000
+      - data/sft/curriculum/phase09/9d_full_conversation.jsonl
+      - data/sft/curriculum/phase01/hf_oasst_conversations.jsonl  # OpenAssistant (enriched)
+    target_examples: 24000
     capabilities:
       - greeting_response
       - identity_awareness
@@ -106,7 +109,8 @@ phases:
       - data/sft/curriculum/phase08/8b_task_execution.jsonl
       - data/sft/curriculum/phase08/8c_compound.jsonl
       - data/sft/curriculum/phase08/8d_persona_register.jsonl
-    target_examples: 8000
+      - data/sft/curriculum/phase08/hf_alpaca.jsonl            # Alpaca-cleaned (enriched)
+    target_examples: 23000
     capabilities:
       - format_adherence
       - length_control
@@ -132,7 +136,8 @@ phases:
       - data/sft/curriculum/phase02/2c_reading.jsonl
       - data/sft/curriculum/phase09/9b_topic_navigation.jsonl
       - data/sft/curriculum/phase09/9c_ambiguity.jsonl
-    target_examples: 10000
+      - data/sft/curriculum/phase02/hf_trivia_qa.jsonl         # TriviaQA (enriched)
+    target_examples: 20000
     capabilities:
       - concise_answers
       - kenya_knowledge
@@ -159,7 +164,8 @@ phases:
     data_sources:
       - data/sft/curriculum/phase07/7a_step_by_step.jsonl
       - data/sft/curriculum/phase07/7b_decomposition.jsonl
-    target_examples: 4000
+      - data/sft/curriculum/phase07/hf_cot_reasoning.jsonl     # StrategyQA CoT (enriched)
+    target_examples: 8000
     capabilities:
       - think_tag_usage
       - step_by_step_reasoning
@@ -182,7 +188,8 @@ phases:
       - data/sft/curriculum/phase05/5b_word_problems.jsonl
       - data/sft/curriculum/phase05/5c_percentages_ratios.jsonl
       - data/sft/curriculum/phase05/5d_estimation.jsonl
-    target_examples: 8000
+      - data/sft/curriculum/phase05/hf_gsm8k.jsonl             # GSM8K + MathQA (enriched)
+    target_examples: 24000
     capabilities:
       - basic_arithmetic
       - word_problems
@@ -205,7 +212,8 @@ phases:
       - data/sft/curriculum/phase06/6b_analogies.jsonl
       - data/sft/curriculum/phase06/6c_counterfactuals.jsonl
       - data/sft/curriculum/phase06/6d_spatial_temporal.jsonl
-    target_examples: 8000
+      - data/sft/curriculum/phase06/hf_logic.jsonl             # PIQA + WinoGrande (enriched)
+    target_examples: 23000
     capabilities:
       - analogies
       - syllogisms
@@ -318,7 +326,8 @@ phases:
       - data/sft/curriculum/phase12/12b_code_writing.jsonl
       - data/sft/curriculum/phase12/12c_code_debugging.jsonl
       - data/sft/curriculum/phase12/12d_code_explanation.jsonl
-    target_examples: 8000
+      - data/sft/curriculum/phase12/hf_code_alpaca.jsonl       # CodeAlpaca-20k (enriched)
+    target_examples: 28000
     capabilities:
       - code_reading
       - code_explanation
@@ -392,7 +401,8 @@ phases:
       - data/sft/curriculum/phase15/15b_honesty.jsonl
       - data/sft/curriculum/phase15/15c_injection_resistance.jsonl
       - data/sft/curriculum/phase15/15d_ethics.jsonl
-    target_examples: 8000
+      - data/sft/curriculum/phase15/hf_safety.jsonl            # Do-Not-Answer (enriched)
+    target_examples: 9000
     capabilities:
       - harmful_refusal
       - injection_defense
@@ -435,9 +445,20 @@ guard_removal_schedule:
   # after_phase_16: all guards disabled          # true AI, no crutches
 
 # ══════════════════════════════════════════════════════════════════════════════
+# Data budget (with enrichment)
+# ══════════════════════════════════════════════════════════════════════════════
+#   Hand-crafted data:   126,000 examples (8K × 16 phases)
+#   HF enrichment:      ~100,000 examples (SciQ, ARC, OpenAssistant, Alpaca,
+#                         TriviaQA, StrategyQA, GSM8K, MathQA, PIQA, WinoGrande,
+#                         CodeAlpaca-20k, Do-Not-Answer)
+#   Total SFT data:     ~230,000+ examples
+#   Pretraining data:   ~350M+ tokens (WikiText-103, TinyStories, C4-en)
+#
 # Compute estimates (T4 GPU)
 # ══════════════════════════════════════════════════════════════════════════════
-#   Per phase: 2000 steps × ~1.2s/step = ~40 min
-#   Total:     16 phases × 40 min = ~10.7 hours
-#   With eval: ~12–13 hours total
-#   Kaggle:    fits in ~4 sessions (3.5h each)
+#   Pretraining: 40K steps × ~1.5s = ~17h → 6 Kaggle sessions
+#   Per SFT phase: 1000 steps × ~1.2s = ~20 min
+#   Total SFT:    16 phases × 20 min = ~5.3 hours
+#   With enrichment + eval: ~7 hours total
+#   Kaggle SFT:   fits in ~2 sessions (3.5h each)
+#   Grand total:  ~8 Kaggle sessions (6 pretrain + 2 SFT)

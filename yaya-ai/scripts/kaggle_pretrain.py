@@ -33,8 +33,8 @@ HUB_REPO       = 'Jaylink-coder/yaya-125m'
 
 # ── Training hyperparameters ──────────────────────────────────────────────────
 # Optimized for T4 (16GB VRAM), 3h sessions
-TOTAL_STEPS        = 20000    # ~640M tokens at 32K tokens/step → enough for coherent English
-STEPS_PER_SESSION  = 7000     # ~3h on T4 at ~1.5 sec/step
+TOTAL_STEPS        = 40000    # ~1.3B tokens seen (350M corpus × ~3.5 epochs) at 32K tokens/step
+STEPS_PER_SESSION  = 7000     # ~3h on T4 at ~1.5 sec/step → ~6 sessions total
 BATCH_SIZE         = 8
 GRAD_ACCUM         = 4        # effective batch = 32 * 1024 = 32K tokens/step
 SEQ_LEN            = 1024
@@ -69,68 +69,140 @@ def get_gpu_info():
 
 
 # ── Data preparation ──────────────────────────────────────────────────────────
+def _tokenize_texts(texts, tokenizer, min_len=50):
+    """Tokenize an iterable of text strings, skipping short ones."""
+    tokens = []
+    for text in texts:
+        text = text.strip() if isinstance(text, str) else ''
+        if len(text) < min_len:
+            continue
+        tokens.extend(tokenizer.encode(text, add_bos=True, add_eos=True))
+    return tokens
+
+
+def _save_shard(tokens, path):
+    """Save token list as uint16 binary shard."""
+    arr = np.array(tokens, dtype=np.uint16)
+    arr.tofile(path)
+    print(f'  → {len(tokens):,} tokens saved to {os.path.basename(path)}')
+
+
 def download_and_tokenize():
-    """Download WikiText-103 from HuggingFace and tokenize into .bin shards."""
+    """Download multiple corpora and tokenize into .bin shards.
+
+    Corpora (in order of priority):
+      1. WikiText-103  (~100M tokens)  — encyclopedic, well-structured
+      2. TinyStories   (~150M subset)  — teaches coherent narrative generation
+      3. C4-en sample  (~100M subset)  — diverse web text
+    Total target: ~350M+ tokens — enough to train a solid 125M-param model.
+    """
     train_dir = os.path.join(DATA_DIR, 'train')
     eval_dir  = os.path.join(DATA_DIR, 'eval')
-    train_shard = os.path.join(train_dir, 'shard_00000.bin')
 
-    if os.path.exists(train_shard):
-        size = os.path.getsize(train_shard) // 2  # uint16
-        print(f'[Data] Already tokenized: {size:,} train tokens')
-        return
-
-    print('[Data] Downloading WikiText-103 from HuggingFace...')
-    from datasets import load_dataset
-    ds = load_dataset('wikitext', 'wikitext-103-raw-v1', trust_remote_code=True)
-
-    print('[Data] Loading tokenizer...')
-    from src.tokenizer.tokenizer import YayaTokenizer
-    tokenizer = YayaTokenizer(TOKENIZER_PATH)
+    # Check if already prepared
+    existing_shards = sorted(
+        [f for f in os.listdir(train_dir) if f.endswith('.bin')]
+    ) if os.path.isdir(train_dir) else []
+    if existing_shards:
+        total = sum(os.path.getsize(os.path.join(train_dir, f)) // 2 for f in existing_shards)
+        print(f'[Data] Already tokenized: {total:,} tokens in {len(existing_shards)} shards')
+        if total > 200_000_000:  # >200M tokens — rich enough
+            return total
+        print(f'[Data] Only {total:,} tokens — enriching...')
 
     os.makedirs(train_dir, exist_ok=True)
     os.makedirs(eval_dir, exist_ok=True)
 
-    # Tokenize train split
-    print('[Data] Tokenizing train split...')
-    train_tokens = []
-    for i, example in enumerate(ds['train']):
-        text = example['text'].strip()
-        if len(text) < 50:  # skip very short lines
-            continue
-        tokens = tokenizer.encode(text, add_bos=True, add_eos=True)
-        train_tokens.extend(tokens)
-        if (i + 1) % 50000 == 0:
-            print(f'  {i+1} docs → {len(train_tokens):,} tokens')
+    from datasets import load_dataset
+    from src.tokenizer.tokenizer import YayaTokenizer
+    tokenizer = YayaTokenizer(TOKENIZER_PATH)
 
-    # Save as uint16 binary shard
-    arr = np.array(train_tokens, dtype=np.uint16)
-    arr.tofile(os.path.join(train_dir, 'shard_00000.bin'))
-    print(f'[Data] Train: {len(train_tokens):,} tokens saved')
+    shard_idx = len(existing_shards)
+    total_tokens = sum(os.path.getsize(os.path.join(train_dir, f)) // 2
+                       for f in existing_shards)
 
-    # Tokenize validation split
-    print('[Data] Tokenizing validation split...')
-    eval_tokens = []
-    for example in ds['validation']:
-        text = example['text'].strip()
-        if len(text) < 50:
-            continue
-        tokens = tokenizer.encode(text, add_bos=True, add_eos=True)
-        eval_tokens.extend(tokens)
+    # ── Corpus 1: WikiText-103 (~100M tokens) ──────────────────────────────
+    wt_shard = os.path.join(train_dir, 'shard_00000.bin')
+    if not os.path.exists(wt_shard):
+        print('[Data] Downloading WikiText-103...')
+        ds = load_dataset('wikitext', 'wikitext-103-raw-v1', trust_remote_code=True)
 
-    arr = np.array(eval_tokens, dtype=np.uint16)
-    arr.tofile(os.path.join(eval_dir, 'shard_00000.bin'))
-    # Also save as eval.bin for TextDataset compatibility
-    arr.tofile(os.path.join(eval_dir, 'eval.bin'))
-    print(f'[Data] Eval: {len(eval_tokens):,} tokens saved')
+        print('[Data] Tokenizing WikiText-103 train...')
+        tokens = _tokenize_texts((ex['text'] for ex in ds['train']), tokenizer)
+        _save_shard(tokens, wt_shard)
+        total_tokens += len(tokens)
+        shard_idx = max(shard_idx, 1)
 
-    # Also make train.bin symlink for TextDataset compatibility
+        # Eval from WikiText-103 validation
+        eval_tokens = _tokenize_texts((ex['text'] for ex in ds['validation']), tokenizer)
+        _save_shard(eval_tokens, os.path.join(eval_dir, 'eval.bin'))
+        _save_shard(eval_tokens, os.path.join(eval_dir, 'shard_00000.bin'))
+        del ds
+    else:
+        print(f'[Data] WikiText-103 shard exists')
+
+    # ── Corpus 2: TinyStories (~150M token subset) ─────────────────────────
+    ts_shard = os.path.join(train_dir, f'shard_{shard_idx:05d}.bin')
+    if not os.path.exists(ts_shard):
+        print('[Data] Downloading TinyStories (subset)...')
+        try:
+            ds = load_dataset('roneneldan/TinyStories', split='train',
+                              trust_remote_code=True)
+            # Take up to 500K stories (~150M tokens)
+            max_stories = 500_000
+            print(f'[Data] Tokenizing TinyStories ({min(len(ds), max_stories)} stories)...')
+            tokens = []
+            for i, ex in enumerate(ds):
+                if i >= max_stories:
+                    break
+                text = ex.get('text', '').strip()
+                if len(text) < 50:
+                    continue
+                tokens.extend(tokenizer.encode(text, add_bos=True, add_eos=True))
+                if (i + 1) % 100000 == 0:
+                    print(f'  {i+1} stories → {len(tokens):,} tokens')
+            _save_shard(tokens, ts_shard)
+            total_tokens += len(tokens)
+            shard_idx += 1
+            del ds
+        except Exception as e:
+            print(f'[Data] TinyStories failed: {e} — skipping')
+
+    # ── Corpus 3: C4-en sample (~100M tokens) ─────────────────────────────
+    c4_shard = os.path.join(train_dir, f'shard_{shard_idx:05d}.bin')
+    if not os.path.exists(c4_shard):
+        print('[Data] Downloading C4-en (streaming subset)...')
+        try:
+            ds = load_dataset('allenai/c4', 'en', split='train',
+                              streaming=True, trust_remote_code=True)
+            max_docs = 200_000  # ~100M tokens
+            print(f'[Data] Tokenizing C4-en (up to {max_docs} docs)...')
+            tokens = []
+            for i, ex in enumerate(ds):
+                if i >= max_docs:
+                    break
+                text = ex.get('text', '').strip()
+                if len(text) < 100:
+                    continue
+                tokens.extend(tokenizer.encode(text, add_bos=True, add_eos=True))
+                if (i + 1) % 50000 == 0:
+                    print(f'  {i+1} docs → {len(tokens):,} tokens')
+            if tokens:
+                _save_shard(tokens, c4_shard)
+                total_tokens += len(tokens)
+                shard_idx += 1
+            del ds
+        except Exception as e:
+            print(f'[Data] C4-en failed: {e} — skipping')
+
+    # ── Make train.bin copy for TextDataset compatibility ──────────────────
     train_bin = os.path.join(train_dir, 'train.bin')
-    if not os.path.exists(train_bin):
+    if not os.path.exists(train_bin) and os.path.exists(wt_shard):
         import shutil
-        shutil.copy2(os.path.join(train_dir, 'shard_00000.bin'), train_bin)
+        shutil.copy2(wt_shard, train_bin)
 
-    return len(train_tokens)
+    print(f'\n[Data] TOTAL: {total_tokens:,} tokens in {shard_idx} shards')
+    return total_tokens
 
 
 # ── Hub checkpoint management ─────────────────────────────────────────────────

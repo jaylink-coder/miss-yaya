@@ -521,6 +521,19 @@ print('=' * 60)
 os.makedirs(CKPT_DIR, exist_ok=True)
 os.makedirs(CURRICULUM_DIR, exist_ok=True)
 
+# Step 1.5: Enrich curriculum data with HF datasets (runs once, caches results)
+enrich_script = os.path.join(REPO_ROOT, 'scripts', 'enrich_curriculum_data.py')
+if os.path.exists(enrich_script):
+    print('\n[Enrichment] Downloading open-source datasets to beef up curriculum...')
+    result = subprocess.run(
+        [sys.executable, enrich_script],
+        cwd=REPO_ROOT, capture_output=False, text=True
+    )
+    if result.returncode != 0:
+        print('[Enrichment] Some datasets may have failed — continuing with available data')
+else:
+    print('[Enrichment] enrich_curriculum_data.py not found — using existing data only')
+
 # Step 2: Load progress (from Hub if needed)
 progress = load_progress()
 if hf_token and not progress.get('completed_phases'):
