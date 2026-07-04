@@ -33,7 +33,19 @@ HUB_REPO       = 'Jaylink-coder/yaya-125m'
 
 # ── Training hyperparameters ──────────────────────────────────────────────────
 # Optimized for T4 (16GB VRAM), 3h sessions
-TOTAL_STEPS        = 40000    # ~1.3B tokens seen (350M corpus × ~3.5 epochs) at 32K tokens/step
+#
+# Corpus was previously only 350M unique tokens, repeated ~3.5 epochs to fill
+# 40,000 steps. Per training-audit research (Sardana et al. 2024, and the
+# comparable Cerebras-GPT-111M reference run at ~2.2B tokens), that's both
+# undertrained relative to comparable ~125M models AND wastes steps repeating
+# a too-small corpus rather than seeing more unique data. TARGET_TOTAL_TOKENS
+# below raises the corpus to ~1.3B unique tokens (mostly via C4, which streams
+# effectively unlimited data) so 40,000 steps is close to ONE epoch instead of
+# 3.5 — same compute budget, meaningfully more/more-diverse data. Raise this
+# further (toward Cerebras-GPT's ~2.2B) if willing to spend more Kaggle
+# sessions; TOTAL_STEPS should scale with it to keep epochs low.
+TARGET_TOTAL_TOKENS = 1_300_000_000
+TOTAL_STEPS        = 40000    # ~1.3B tokens seen at 32K tokens/step ≈ 1 epoch over TARGET_TOTAL_TOKENS
 STEPS_PER_SESSION  = 7000     # ~3h on T4 at ~1.5 sec/step → ~6 sessions total
 BATCH_SIZE         = 8
 GRAD_ACCUM         = 4        # effective batch = 32 * 1024 = 32K tokens/step
