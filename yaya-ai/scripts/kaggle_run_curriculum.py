@@ -146,6 +146,14 @@ def get_next_phase(progress):
     core = [p for p in incomplete if p.get('priority', 'core') == 'core']
     return core[0] if core else incomplete[0]
 
+def tier_progress(progress):
+    """(core_done, core_total, stretch_done, stretch_total)."""
+    completed = set(progress.get('completed_phases', []))
+    core_ids = {p['id'] for p in PHASES if p.get('priority', 'core') == 'core'}
+    stretch_ids = {p['id'] for p in PHASES} - core_ids
+    return (len(completed & core_ids), len(core_ids),
+            len(completed & stretch_ids), len(stretch_ids))
+
 # ── Checkpoint helpers ────────────────────────────────────────────────────────
 def find_latest_local_checkpoint(directory):
     ckpts = sorted([c for c in glob.glob(os.path.join(directory, '*checkpoint-*'))
