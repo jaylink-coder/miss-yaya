@@ -148,6 +148,24 @@ def get_step_from_checkpoint(ckpt_path):
     m = re.search(r'checkpoint-0*(\d+)', os.path.basename(ckpt_path))
     return int(m.group(1)) if m else 0
 
+def hash_model_weights(ckpt_dir):
+    """SHA-256 of a checkpoint directory's model.pt, or None if missing.
+
+    Used to verify a phase actually produced new weights before we push it
+    to the Hub and mark it complete. A prior bug silently re-uploaded the
+    same unchanged checkpoint under all 16 phase names — see training audit.
+    """
+    if not ckpt_dir:
+        return None
+    model_path = os.path.join(ckpt_dir, 'model.pt')
+    if not os.path.isfile(model_path):
+        return None
+    h = hashlib.sha256()
+    with open(model_path, 'rb') as f:
+        for chunk in iter(lambda: f.read(1 << 20), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
 # ── Data generation ──────────────────────────────────────────────────────────
 def generate_phase_data(phase_id):
     """Generate curriculum data for a single phase."""
