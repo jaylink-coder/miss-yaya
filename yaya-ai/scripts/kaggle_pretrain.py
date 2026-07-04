@@ -105,22 +105,22 @@ def download_and_tokenize():
     Corpora (in order of priority):
       1. WikiText-103  (~100M tokens)  — encyclopedic, well-structured
       2. TinyStories   (~150M subset)  — teaches coherent narrative generation
-      3. C4-en sample  (~100M subset)  — diverse web text
-    Total target: ~350M+ tokens — enough to train a solid 125M-param model.
+      3. C4-en (streamed, chunked)     — diverse web text, fills remaining budget
+    Total target: TARGET_TOTAL_TOKENS (~1.3B) — see rationale above TOTAL_STEPS.
     """
     train_dir = os.path.join(DATA_DIR, 'train')
     eval_dir  = os.path.join(DATA_DIR, 'eval')
 
     # Check if already prepared
     existing_shards = sorted(
-        [f for f in os.listdir(train_dir) if f.endswith('.bin')]
+        [f for f in os.listdir(train_dir) if f.endswith('.bin') and 'train' not in f]
     ) if os.path.isdir(train_dir) else []
     if existing_shards:
         total = sum(os.path.getsize(os.path.join(train_dir, f)) // 2 for f in existing_shards)
         print(f'[Data] Already tokenized: {total:,} tokens in {len(existing_shards)} shards')
-        if total > 200_000_000:  # >200M tokens — rich enough
+        if total >= TARGET_TOTAL_TOKENS:
             return total
-        print(f'[Data] Only {total:,} tokens — enriching...')
+        print(f'[Data] Only {total:,} / {TARGET_TOTAL_TOKENS:,} tokens — enriching...')
 
     os.makedirs(train_dir, exist_ok=True)
     os.makedirs(eval_dir, exist_ok=True)
