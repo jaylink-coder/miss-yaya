@@ -130,11 +130,21 @@ def save_progress(progress):
         json.dump(progress, f, indent=2)
 
 def get_next_phase(progress):
+    """Pick the next incomplete phase, preferring 'core' phases over 'stretch'.
+
+    At 125M params, capacity is the real constraint: identity, conversation,
+    factual QA, Kenya/Swahili, safety, and DPO polish ("core") are realistic
+    for this model size. Multi-step reasoning, tool use/ReAct, code, and
+    structured output ("stretch") ask more of a model this small than it can
+    likely deliver reliably — so they're trained last, after the achievable
+    capabilities are in place and can be honestly evaluated.
+    """
     completed = set(progress.get("completed_phases", []))
-    for p in PHASES:
-        if p['id'] not in completed:
-            return p
-    return None
+    incomplete = [p for p in PHASES if p['id'] not in completed]
+    if not incomplete:
+        return None
+    core = [p for p in incomplete if p.get('priority', 'core') == 'core']
+    return core[0] if core else incomplete[0]
 
 # ── Checkpoint helpers ────────────────────────────────────────────────────────
 def find_latest_local_checkpoint(directory):
