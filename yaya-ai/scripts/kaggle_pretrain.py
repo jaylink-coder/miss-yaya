@@ -113,7 +113,7 @@ def download_and_tokenize():
 
     # Check if already prepared
     existing_shards = sorted(
-        [f for f in os.listdir(train_dir) if f.endswith('.bin') and 'train' not in f]
+        [f for f in os.listdir(train_dir) if f.endswith('.bin') and f != 'train.bin']
     ) if os.path.isdir(train_dir) else []
     if existing_shards:
         total = sum(os.path.getsize(os.path.join(train_dir, f)) // 2 for f in existing_shards)
