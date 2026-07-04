@@ -773,17 +773,22 @@ completed = progress.get('completed_phases', [])
 print(f'\n{"="*60}')
 print(f' SESSION SUMMARY')
 print(f'{"="*60}')
+core_done, core_total, stretch_done, stretch_total = tier_progress(progress)
 print(f'  Phases trained this session: {phases_trained}')
-print(f'  Total completed: {len(completed)}/16')
+print(f'  Total completed: {len(completed)}/16  (core: {core_done}/{core_total}, stretch: {stretch_done}/{stretch_total})')
 print(f'  Completed phases: {sorted(completed)}')
 print(f'  Session time: {elapsed:.0f} min')
 
 next_phase = get_next_phase(progress)
 if next_phase:
-    print(f'\n  Next session: Phase {next_phase["id"]} — {next_phase["name"]}')
+    print(f'\n  Next session: Phase {next_phase["id"]} — {next_phase["name"]} [{next_phase.get("priority", "core")}]')
     print(f'  Just re-run this notebook!')
+    if core_done == core_total and stretch_done < stretch_total:
+        print(f'  All CORE phases are done — evaluate the model now before spending')
+        print(f'  more sessions on the stretch phases (tool use / ReAct / code / JSON).')
+        print(f'  Run: python scripts/benchmark.py --checkpoint <latest> --dual')
 else:
-    print(f'\n  ALL 16 PHASES COMPLETE! Yaya is now a True AI.')
+    print(f'\n  ALL 16 PHASES COMPLETE.')
 
 print()
 sys.exit(0)
