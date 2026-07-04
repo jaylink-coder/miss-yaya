@@ -22,6 +22,7 @@ Compute budget:
   Total: 16 phases = ~4 sessions
 """
 
+import hashlib
 import json
 import os
 import random
