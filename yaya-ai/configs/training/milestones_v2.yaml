@@ -39,6 +39,7 @@ phases:
 
   - id: 1
     name: "World Knowledge"
+    priority: core
     description: >
       Teach broad factual knowledge — geography, science, history, culture.
       Replace the regex fact guards with LEARNED knowledge.
@@ -69,6 +70,7 @@ phases:
 
   - id: 2
     name: "Conversational Fluency"
+    priority: core
     description: >
       Teach natural conversation — greetings, follow-ups, personality, identity.
       Replace the conversational guard with LEARNED behavior.
@@ -100,6 +102,7 @@ phases:
 
   - id: 3
     name: "Instruction Following"
+    priority: core
     description: >
       Teach precise instruction following — format constraints, length control,
       yes/no answers, one-word answers, lists, specific output formats.
@@ -126,6 +129,7 @@ phases:
 
   - id: 4
     name: "Direct Q&A Mastery"
+    priority: core
     description: >
       Teach concise, accurate Q&A — short answers, no rambling, no lists when
       a single word suffices. Anti-list training. Kenya/East Africa knowledge.
@@ -157,6 +161,7 @@ phases:
 
   - id: 5
     name: "Chain-of-Thought"
+    priority: stretch
     description: >
       Teach the model to THINK before answering using <|think|>...</|think|> tags.
       This is the single most impactful reasoning capability.
@@ -179,6 +184,7 @@ phases:
 
   - id: 6
     name: "Math Reasoning"
+    priority: stretch
     description: >
       Teach arithmetic, word problems, and mathematical reasoning with CoT.
       Replace the calculator guard with LEARNED math ability.
@@ -204,6 +210,7 @@ phases:
 
   - id: 7
     name: "Logical Reasoning"
+    priority: stretch
     description: >
       Teach analogies, syllogisms, puzzles, counterfactuals, and deduction.
       Data: logic puzzles, analogies, brain teasers with explained solutions.
@@ -229,6 +236,7 @@ phases:
 
   - id: 8
     name: "Self-Reflection"
+    priority: stretch
     description: >
       Teach the model to CHECK its own answers using <|verify|>...</|verify|> tags.
       Data: question → initial answer → self-critique → corrected answer.
@@ -253,6 +261,7 @@ phases:
 
   - id: 9
     name: "Tool Calling Basics"
+    priority: stretch
     description: >
       Teach the model to emit <tool_call> tags with proper JSON payloads.
       Single-tool use: calculator, search, datetime.
@@ -274,6 +283,7 @@ phases:
 
   - id: 10
     name: "Multi-Step Tool Use"
+    priority: stretch
     description: >
       Teach ReAct pattern: think → act → observe → think → answer.
       Multi-tool chains, conditional tool use, error handling.
@@ -294,6 +304,7 @@ phases:
 
   - id: 11
     name: "RAG & Context Grounding"
+    priority: stretch
     description: >
       Teach the model to answer BASED ON provided context accurately.
       Cite evidence, avoid hallucination, say "I don't know" when context is insufficient.
@@ -318,6 +329,7 @@ phases:
 
   - id: 12
     name: "Code Understanding"
+    priority: stretch
     description: >
       Teach reading, explaining, and writing simple Python code.
       Data: code explanation, bug fixing, simple code generation tasks.
@@ -341,6 +353,7 @@ phases:
 
   - id: 13
     name: "Structured Output"
+    priority: stretch
     description: >
       Teach JSON-mode responses, schema adherence, data extraction.
       Data: extraction tasks → clean JSON output.
@@ -360,6 +373,7 @@ phases:
 
   - id: 14
     name: "Kenya & Swahili Specialist"
+    priority: core
     description: >
       Deep Kenyan cultural knowledge, Swahili-English translation,
       East African history and geography.
@@ -391,6 +405,7 @@ phases:
 
   - id: 15
     name: "Safety & Refusals"
+    priority: core
     description: >
       Teach appropriate refusals for harmful requests, prompt injection defense,
       and honest uncertainty expression.
@@ -416,6 +431,7 @@ phases:
 
   - id: 16
     name: "DPO Alignment"
+    priority: core
     description: >
       Direct Preference Optimization — compare good vs bad responses across
       ALL capabilities. Polish quality, reduce verbosity, improve helpfulness.
