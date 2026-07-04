@@ -180,32 +180,52 @@ def download_and_tokenize():
         except Exception as e:
             print(f'[Data] TinyStories failed: {e} — skipping')
 
-    # ── Corpus 3: C4-en sample (~100M tokens) ─────────────────────────────
-    c4_shard = os.path.join(train_dir, f'shard_{shard_idx:05d}.bin')
-    if not os.path.exists(c4_shard):
-        print('[Data] Downloading C4-en (streaming subset)...')
+    # ── Corpus 3: C4-en (streamed, chunked to fill the remaining token budget) ──
+    # Streamed and flushed to disk every SHARD_TOKENS tokens instead of
+    # accumulating one giant in-memory list — at the ~1B-token scale needed to
+    # reach TARGET_TOTAL_TOKENS, holding it all in a single Python list would
+    # need tens of GB of RAM, well past what a free Kaggle instance has.
+    c4_marker = os.path.join(train_dir, '.c4_done')
+    c4_target = TARGET_TOTAL_TOKENS - total_tokens
+    if not os.path.exists(c4_marker) and c4_target > 0:
+        print(f'[Data] Downloading C4-en (streaming, target {c4_target:,} tokens)...')
         try:
             ds = load_dataset('allenai/c4', 'en', split='train',
                               streaming=True, trust_remote_code=True)
-            max_docs = 200_000  # ~100M tokens
-            print(f'[Data] Tokenizing C4-en (up to {max_docs} docs)...')
+            SHARD_TOKENS = 50_000_000     # flush every ~50M tokens to bound memory
+            SAFETY_MAX_DOCS = 20_000_000  # hard stop even if token/doc estimate is off
             tokens = []
-            for i, ex in enumerate(ds):
-                if i >= max_docs:
+            c4_tokens = 0
+            docs_seen = 0
+            for ex in ds:
+                docs_seen += 1
+                if docs_seen > SAFETY_MAX_DOCS or c4_tokens >= c4_target:
                     break
                 text = ex.get('text', '').strip()
                 if len(text) < 100:
                     continue
                 tokens.extend(tokenizer.encode(text, add_bos=True, add_eos=True))
-                if (i + 1) % 50000 == 0:
-                    print(f'  {i+1} docs → {len(tokens):,} tokens')
+                if len(tokens) >= SHARD_TOKENS:
+                    shard_path = os.path.join(train_dir, f'shard_{shard_idx:05d}.bin')
+                    _save_shard(tokens, shard_path)
+                    c4_tokens += len(tokens)
+                    total_tokens += len(tokens)
+                    shard_idx += 1
+                    tokens = []
+                    print(f'  [C4] {docs_seen:,} docs seen, {c4_tokens:,} / {c4_target:,} C4 tokens')
             if tokens:
-                _save_shard(tokens, c4_shard)
+                shard_path = os.path.join(train_dir, f'shard_{shard_idx:05d}.bin')
+                _save_shard(tokens, shard_path)
+                c4_tokens += len(tokens)
                 total_tokens += len(tokens)
                 shard_idx += 1
             del ds
+            with open(c4_marker, 'w') as f:
+                f.write(f'{c4_tokens}\n')
         except Exception as e:
             print(f'[Data] C4-en failed: {e} — skipping')
+    elif os.path.exists(c4_marker):
+        print('[Data] C4-en already collected (marker found)')
 
     # ── Make train.bin copy for TextDataset compatibility ──────────────────
     train_bin = os.path.join(train_dir, 'train.bin')
