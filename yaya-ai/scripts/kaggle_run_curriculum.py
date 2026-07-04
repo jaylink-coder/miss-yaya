@@ -432,47 +432,85 @@ def run_phase(phase, checkpoint_path, progress):
     # Step 2: Augment with base SFT data + replay from prior phases
     data_file = augment_with_replay(data_file, phase_id)
 
-    # Step 3: Create config
-    config_path = create_training_config(phase, data_file)
-
-    # Step 4: Train
+    # Step 3: Train (DPO phases route to train_dpo.py — they use
+    # {"messages": [...user only...], "chosen": ..., "rejected": ...} pairs,
+    # which train_sft.py's InstructionDataset cannot consume: it masks every
+    # non-assistant turn, and a DPO example has no assistant turn at all, so
+    # every label would be -100 and no gradient would ever be computed.)
+    is_dpo = phase.get('phase_type') == 'dpo'
     phase_save_dir = os.path.join(CKPT_DIR, f'phase{phase_id:02d}')
     os.makedirs(phase_save_dir, exist_ok=True)
 
-    cmd = [
-        sys.executable, '-u',
-        os.path.join(REPO_ROOT, 'scripts/train_sft.py'),
-        '--model_config', MODEL_CONFIG,
-        '--train_config', config_path,
-    ]
+    # Baseline hash — used below to prove training actually changed the model.
+    baseline_hash = hash_model_weights(checkpoint_path)
 
-    if checkpoint_path:
-        cmd += ['--pretrain_checkpoint', checkpoint_path]
+    if is_dpo:
+        cmd = [
+            sys.executable, '-u',
+            os.path.join(REPO_ROOT, 'scripts/train_dpo.py'),
+            '--model_config',   MODEL_CONFIG,
+            '--sft_checkpoint', checkpoint_path,
+            '--dpo_data',       data_file,
+            '--save_dir',       phase_save_dir,
+            '--lr',             str(DPO_LR),
+            '--max_steps',      str(STEPS_PER_PHASE),
+            '--save_steps',     str(STEPS_PER_PHASE),
+        ]
+        print(f'\n  Training (DPO): {STEPS_PER_PHASE} steps, lr {DPO_LR}')
+    else:
+        config_path = create_training_config(phase, data_file)
+        cmd = [
+            sys.executable, '-u',
+            os.path.join(REPO_ROOT, 'scripts/train_sft.py'),
+            '--model_config', MODEL_CONFIG,
+            '--train_config', config_path,
+        ]
+        if checkpoint_path:
+            cmd += ['--pretrain_checkpoint', checkpoint_path]
+        print(f'\n  Training (SFT): {STEPS_PER_PHASE} steps, batch 32, lr {BASE_LR}')
 
-    print(f'\n  Training: {STEPS_PER_PHASE} steps, batch 32, lr {BASE_LR}')
     print(f'  Checkpoint: {os.path.basename(checkpoint_path) if checkpoint_path else "random init"}')
     print(f'  Save dir: {phase_save_dir}')
     print()
 
     try:
         result = subprocess.run(cmd, cwd=REPO_ROOT, timeout=PHASE_TIMEOUT_SEC)
-        success = result.returncode == 0
+        ran_clean = result.returncode == 0
+        if not ran_clean:
+            print(f'  ERROR: training subprocess exited with code {result.returncode}')
     except subprocess.TimeoutExpired:
         print(f'  TIMEOUT: Phase {phase_id} exceeded {PHASE_TIMEOUT_SEC//60} min — killed')
-        success = False
+        ran_clean = False
 
     # Clear CUDA cache between phases to prevent OOM buildup
     if torch.cuda.is_available():
         torch.cuda.empty_cache()
 
-    # Step 5: Find new checkpoint from THIS phase's save dir
-    phase_save_dir = os.path.join(CKPT_DIR, f'phase{phase_id:02d}')
+    # Step 4: Find new checkpoint from THIS phase's save dir
     new_ckpt = find_latest_local_checkpoint(phase_save_dir)
-    if not new_ckpt:
-        new_ckpt = find_latest_local_checkpoint(CKPT_DIR)
 
-    # Step 6: Push final checkpoint (non-blocking — don't let network stall training)
-    if new_ckpt and hf_token:
+    # Step 5: VERIFY the phase actually trained — don't trust exit code alone.
+    # A prior bug (missing --train_config in a since-removed runner script)
+    # made every training subprocess fail instantly at argument parsing, but
+    # the runner still found *some* checkpoint file lying around (the
+    # unchanged input), pushed it to the Hub under the new phase's name, and
+    # marked the phase complete. All 16 phases were faked this way. The only
+    # way to catch that class of bug is to check the actual weights changed.
+    new_hash = hash_model_weights(new_ckpt)
+    success = (
+        ran_clean
+        and new_ckpt is not None
+        and new_hash is not None
+        and new_hash != baseline_hash
+    )
+    if ran_clean and not success:
+        reason = ('no checkpoint file was produced' if new_ckpt is None
+                   else 'the output checkpoint is byte-identical to the input '
+                        '— training did not actually change the model')
+        print(f'\n  VERIFICATION FAILED: {reason}')
+
+    # Step 6: Push final checkpoint — only if verified (non-blocking).
+    if success and hf_token:
         from scripts.hub_utils import push_checkpoint_async
         push_checkpoint_async(new_ckpt, HUB_REPO, hf_token)
 
@@ -486,10 +524,11 @@ def run_phase(phase, checkpoint_path, progress):
             'phase_name': phase_name,
             'status': 'complete',
             'checkpoint': os.path.basename(new_ckpt) if new_ckpt else None,
+            'model_hash': new_hash,
             'completed_at': datetime.now(timezone.utc).isoformat(),
         })
         save_progress(progress)
-        print(f'\n  Phase {phase_id} COMPLETE')
+        print(f'\n  Phase {phase_id} COMPLETE (verified: new weight hash {new_hash[:12]}...)')
     else:
         progress['history'].append({
             'phase_id': phase_id,
@@ -498,9 +537,9 @@ def run_phase(phase, checkpoint_path, progress):
             'completed_at': datetime.now(timezone.utc).isoformat(),
         })
         save_progress(progress)
-        print(f'\n  Phase {phase_id} FAILED')
+        print(f'\n  Phase {phase_id} FAILED — session will stop rather than fake subsequent phases')
 
-    return success, new_ckpt
+    return success, (new_ckpt if success else checkpoint_path)
 
 # ── Run phase evaluation ──────────────────────────────────────────────────────
 def run_phase_eval(phase_id, checkpoint_path=None):
