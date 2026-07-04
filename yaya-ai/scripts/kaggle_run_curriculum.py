@@ -108,6 +108,10 @@ PHASES         = ms_cfg['phases']
 STEPS_PER_PHASE = ms_cfg.get('steps_per_phase', 2000)
 REPLAY_RATIO   = ms_cfg.get('replay_ratio', 0.20)
 BASE_LR        = ms_cfg.get('base_lr', 1.5e-5)
+# DPO needs a much lower LR than SFT (empirically ~2-5x lower; the project's
+# previous DPO run used 8e-7 which is 19x lower than SFT and likely too
+# conservative to learn anything in 1500 steps) — see training audit.
+DPO_LR         = ms_cfg.get('dpo_lr', 3e-6)
 WARMUP_STEPS   = ms_cfg.get('warmup_steps', 100)
 MAX_SEQ_LEN    = ms_cfg.get('max_seq_length', 512)
 BASE_PRETRAIN_CKPT = 'patch-checkpoint-00000300'  # Original pretrained model
