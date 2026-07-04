@@ -688,9 +688,11 @@ if next_phase is None:
     sys.exit(0)
 
 completed = progress.get('completed_phases', [])
-print(f'\n[2] Progress: {len(completed)}/16 phases complete')
+core_done, core_total, stretch_done, stretch_total = tier_progress(progress)
+print(f'\n[2] Progress: {len(completed)}/16 phases complete '
+      f'(core: {core_done}/{core_total}, stretch: {stretch_done}/{stretch_total})')
 print(f'  Completed: {completed if completed else "none"}')
-print(f'  Next: Phase {next_phase["id"]} — {next_phase["name"]}')
+print(f'  Next: Phase {next_phase["id"]} — {next_phase["name"]} [{next_phase.get("priority", "core")}]')
 
 # Step 4: Generate ALL curriculum data upfront (fast, <10s)
 print('\n[3] Generating curriculum data...')
